@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 import sqlite3
 
+
 # Third-party imports
 import numpy as np
 import faiss
@@ -72,15 +73,28 @@ class Pipeline:
             client.shutdown()
 
     def build_graphs_and_registry(self):
-        for ast_file in self.ast_dir.glob("*.jsonl"):
+        # *** NEW: Load the manifest first ***
+        manifest_path = self.ast_dir / "ast_manifest.json"
+        if not manifest_path.exists():
+            print("FATAL: ast_manifest.json not found. Please run the parsing stage.", file=sys.stderr)
+            return
+            
+        with open(manifest_path, 'r', encoding='utf-8') as f:
+            ast_manifest = json.load(f)
+
+        # *** CHANGED: Iterate over the manifest, not the directory ***
+        for ast_filename, original_filepath_str in ast_manifest.items():
+            ast_file = self.ast_dir / ast_filename
+            original_file = Path(original_filepath_str)
+
+            if not ast_file.exists():
+                print(f"Warning: Skipping {ast_filename}, file not found.", file=sys.stderr)
+                continue
+
             try:
-                with open(ast_file, 'r') as f:
+                with open(ast_file, 'r', encoding='utf-8') as f:
                     ast_nodes = [json.loads(line) for line in f]
                 
-                # Infer original file path from a manifest or filename convention
-                # For now, a bit of a hack to get the original path
-                original_file_name = ast_file.name.split('_')[0]
-                original_file = next(self.repo_path.glob(f"**/{original_file_name}"))
                 relative_path = str(original_file.relative_to(self.repo_path))
 
                 with open(original_file, 'r', encoding='utf-8') as f:
@@ -105,42 +119,78 @@ class Pipeline:
                 # Get imports for the graph
                 imports = adapter.get_imports(ast_nodes, source_code)
                 self.import_graph[relative_path] = imports
-                print(f"Processed graphs for {relative_path}")
+                # print(f"Processed graphs for {relative_path}") # Quieter log
 
             except Exception as e:
-                print(f"Failed to process graph for {ast_file.name}: {e}", file=sys.stderr)
+                # More informative error message
+                print(f"Failed to process graph for {ast_filename} (original: {relative_path}): {e}", file=sys.stderr)
         
         with open(self.output_path / "name_registry.json", "w") as f:
             json.dump(self.name_registry, f, indent=2)
         with open(self.output_path / "import_graph.json", "w") as f:
             json.dump(self.import_graph, f, indent=2)
 
+        print("Finished building graphs and name registry.")
+
     def run_static_analysis(self):
         cursor = self.db_conn.cursor()
-        for fqn, data in self.name_registry.items():
-            if data['kind'] != 'function_definition' or not data['file_path'].endswith('.py'):
-                continue
-            
-            file_path = self.repo_path / data['file_path']
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    source_code = f.read()
-                
-                # Get complexity for just the function's code block
-                func_code = source_code[data['start_byte']:data['end_byte']]
-                complexity_scores = cc_visit(func_code)
-                
-                if complexity_scores:
-                    # cc_visit returns a list, we take the first (and only) for the block
-                    complexity = complexity_scores[0].complexity
-                    symbol_name = fqn.split(':')[-1]
-                    cursor.execute(
-                        "INSERT OR IGNORE INTO complexity (file_path, symbol_name, complexity) VALUES (?, ?, ?)",
-                        (data['file_path'], symbol_name, complexity)
-                    )
-            except Exception as e:
-                print(f"Radon analysis failed for {fqn}: {e}", file=sys.stderr)
         
+        files_to_analyze = {}
+        for fqn, data in self.name_registry.items():
+            if "function" in data['kind'] or "method" in data['kind']:
+                 if data['file_path'].endswith('.py'):
+                    file_path = data['file_path']
+                    if file_path not in files_to_analyze:
+                        files_to_analyze[file_path] = []
+                    
+                    symbol_name = fqn.split(':')[-1]
+                    files_to_analyze[file_path].append(symbol_name)
+
+        # Use Ruff via subprocess to check McCabe complexity
+        # We select only the "mccabe" complexity checker (C901)
+        # and set its max_complexity to 1 to report on every function.
+        
+        print("Running static analysis with Ruff...")
+        for file_path_str, symbol_names in files_to_analyze.items():
+            file_path = self.repo_path / file_path_str
+            
+            try:
+                # Run Ruff with C901 (McCabe complexity) enabled and max complexity of 1
+                result = subprocess.run(
+                    [
+                        sys.executable, "-m", "ruff", "check",
+                        str(file_path),
+                        "--select", "C901",
+                        "--config", f"mccabe.max-complexity=1",
+                        "--output-format", "json"
+                    ],
+                    capture_output=True,
+                    text=True
+                )
+                
+                # Parse JSON output from Ruff
+                if result.stdout:
+                    diagnostics = json.loads(result.stdout)
+                    
+                    for diag in diagnostics:
+                        # Extract function name and complexity from the message
+                        message = diag.get('message', '')
+                        try:
+                            # Message format: "`function_name` is too complex (10)"
+                            func_name = message.split('`')[1]
+                            complexity = int(message.split('(')[-1].replace(')', ''))
+                            
+                            if func_name in symbol_names:
+                                cursor.execute(
+                                    "INSERT OR IGNORE INTO complexity (file_path, symbol_name, complexity) VALUES (?, ?, ?)",
+                                    (file_path_str, func_name, complexity)
+                                )
+                        except (IndexError, ValueError):
+                            continue
+                        
+            except Exception as e:
+                print(f"Ruff analysis failed for {file_path_str}: {e}", file=sys.stderr)
+
         self.db_conn.commit()
         print("Static analysis metrics saved to analysis.sqlite")
 
