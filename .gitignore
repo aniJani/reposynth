@@ -150,4 +150,3 @@ temp_repos/
 # =============================================================================
 # Ignore local overrides for docker-compose
 docker-compose.override.yml
-/.re SUSY_cache
