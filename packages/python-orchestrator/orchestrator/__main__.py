@@ -1,6 +1,7 @@
 # --- FILE: packages/python-orchestrator/orchestrator/__main__.py ---
 
 import sys
+import os 
 from pathlib import Path
 
 # When running as a module, Python adds the project root to the path,
@@ -16,7 +17,18 @@ def main():
     # --- This logic is moved from the bottom of pipeline_runner.py ---
     
     # Cleanly resolve the project's root directory
+    target_repo_path_str = os.environ.get("REPOSYNTH_TARGET_REPO")
+
     root_dir = Path(__file__).parent.parent.parent.parent.resolve()
+    
+    if target_repo_path_str:
+        # Use the path from the environment variable (provided by the shell script)
+        repo_to_parse = Path(target_repo_path_str).resolve()
+        print(f"--- Target repository set from environment: {repo_to_parse} ---")
+    else:
+        # Fallback to parsing the project itself if the variable is not set
+        repo_to_parse = root_dir
+        print(f"--- No target repository specified. Parsing the RepoSynth project itself. ---")
     daemon_path = root_dir / "packages/rust-parser-daemon/target/release/rust-parser-daemon"
     
     if sys.platform == "darwin": # Use darwin for macOS
@@ -35,7 +47,7 @@ def main():
     
     print("--- Initializing Pipeline ---")
     pipeline = Pipeline(
-        repo_path=str(root_dir),
+        repo_path=str(repo_to_parse),
         output_path=str(output_pack_dir),
         daemon_path=str(daemon_path)
     )
