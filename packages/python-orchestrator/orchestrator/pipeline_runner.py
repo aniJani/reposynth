@@ -25,6 +25,14 @@ from .parser_client import ParserClient
 from .language_adapter import get_adapter
 import zipfile
 
+def get_file_hash(file_path: Path) -> str:
+    """Computes the SHA256 hash of a file's content."""
+    if not file_path.exists(): return ""
+    hasher = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        while chunk := f.read(8192):
+            hasher.update(chunk)
+    return hasher.hexdigest()
 
 class Pipeline:
     def __init__(self, repo_path: str, output_path: str, daemon_path: str, config=None):
@@ -33,10 +41,13 @@ class Pipeline:
         self.daemon_path = daemon_path
         self.config = config or {}
 
+        self.cache_dir = self.repo_path / ".re SUSY_cache"
+        self.cache_dir.mkdir(exist_ok=True)
+
         self.output_path.mkdir(exist_ok=True)
-        db_path = self.output_path / "analysis.sqlite"
-        if db_path.exists():
-            db_path.unlink()  # Delete the old database file
+        self.db_path = self.output_path / "analysis.sqlite"
+        if self.db_path.exists():
+            self.db_path.unlink()  # Delete the old database file
         self.variable_registry = defaultdict(list)
         self.ast_dir = self.output_path / "ast_raw"
         if self.ast_dir.exists():
@@ -48,7 +59,7 @@ class Pipeline:
         self.name_registry = {}
         self.import_graph = {}
         self.db_conn = sqlite3.connect(
-            db_path
+            self.db_path
         )  # Connect to the now-guaranteed-fresh path
         self._init_db()
 
@@ -67,39 +78,105 @@ class Pipeline:
         )
         self.db_conn.commit()
 
-    def run(self):
-        print("--- Running Stage 1: Parsing Repository ---")
-        self.run_parsing()
-
-        print("\n--- Running Stage 2: Building Graphs & Name Registry ---")
-        self.build_graphs_and_registry()
-
-        if self.config.get("mode") == "hybrid":
-            print("\n--- Running HYBRID Stage: Building Variable Registry ---")
+    def run(self, config: dict):
+        # Determine the commit hash for caching
+        commit_hash = self._get_commit_hash()
+        
+        if config.get("run_parsing"):
+            print("--- Running Stage 1: Parsing Repository ---")
+            self.run_parsing(commit_hash=commit_hash)
+        
+        if config.get("build_graphs"):
+            print("\n--- Running Stage 2: Building Graphs & Name Registry ---")
+            self.build_graphs_and_registry()
+        
+        if config.get("build_variable_registry"):
+            print("\n--- Running Stage 2.5 (Hybrid): Building Variable Registry ---")
             self.build_variable_registry()
 
-        print("\n--- Running Stage 3: Static Analysis ---")
-        self.run_static_analysis()
+        if config.get("run_analysis"):
+            print("\n--- Running Stage 3: Static Analysis ---")
+            self.run_static_analysis()
 
-        print("\n--- Running Stage 4: Generating Embeddings ---")
-        self.generate_embeddings()
-
-        if self.config.get("mode") == "hybrid":
-            print("\n--- Running HYBRID Stage: Storing Spans ---")
-            self.store_spans()
+        if config.get("run_embeddings"):
+            print("\n--- Running Stage 4: Generating Embeddings ---")
+            self.generate_embeddings()
 
         print("\n--- Running Stage 5: Assembling Final Pack ---")
-        self.assemble_pack()
+        self.assemble_pack(config=config)
 
         print("\n--- Pipeline Finished Successfully! ---")
         print(f"Artifacts saved in: {self.output_path}")
+    
+    def _get_commit_hash(self) -> str:
+        """Gets the current git commit hash of the repository."""
+        # Check if it's a git repository first
+        git_dir = self.repo_path / ".git"
+        if not git_dir.exists():
+            print("Warning: Not a git repository. Caching will be less reliable.", file=sys.stderr)
+            # Fallback for non-git directories: hash the file structure
+            # This is not perfect but better than nothing for local folders.
+            file_list_str = "".join(sorted([str(p) for p in self.repo_path.glob("**/*") if p.is_file()]))
+            return hashlib.sha256(file_list_str.encode()).hexdigest()
 
-    def run_parsing(self):
+        try:
+            result = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=self.repo_path,
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return result.stdout.strip()
+        except Exception as e:
+            print(f"Warning: Could not get git commit hash: {e}", file=sys.stderr)
+            return "no-git-commit"
+
+    def run_parsing(self, commit_hash: str):
+        file_hashes_path = self.cache_dir / f"{commit_hash}_file_hashes.json"
+        
+        last_hashes = {}
+        if file_hashes_path.exists():
+            with open(file_hashes_path, 'r') as f:
+                last_hashes = json.load(f)
+        
         client = ParserClient(daemon_path=self.daemon_path)
         try:
-            client.parse_repository(
-                repo_path=str(self.repo_path), output_dir=str(self.ast_dir)
-            )
+            # Discover all files first
+            all_files = client._discover_files(self.repo_path)
+            
+            files_to_parse = []
+            current_hashes = {}
+            for file_path in all_files:
+                file_hash = get_file_hash(file_path)
+                current_hashes[str(file_path)] = file_hash
+                # Only parse if file is new or has changed
+                if last_hashes.get(str(file_path)) != file_hash:
+                    files_to_parse.append(file_path)
+            
+            print(f"Found {len(all_files)} total files. {len(files_to_parse)} files are new or modified.")
+            
+            if files_to_parse:
+                # This method now needs to be modified to only parse a subset of files
+                # And to not create the manifest itself.
+                client.parse_files(files_to_parse, output_dir=str(self.ast_dir))
+
+            # Create the manifest based on ALL files, not just parsed ones
+            ast_manifest = {}
+            for file_path in all_files:
+                # Create a stable unique name based on the file path
+                relative_path = file_path.relative_to(self.repo_path)
+                safe_name = str(relative_path).replace('/', '_').replace('\\', '_')
+                unique_ast_filename = f"{safe_name}.jsonl"
+                ast_manifest[unique_ast_filename] = str(file_path.resolve())
+            
+            with open(self.ast_dir / "ast_manifest.json", 'w') as f:
+                json.dump(ast_manifest, f, indent=2)
+
+            # Save the new hashes for the next run
+            with open(file_hashes_path, 'w') as f:
+                json.dump(current_hashes, f, indent=2)
+
         finally:
             client.shutdown()
 
@@ -281,6 +358,10 @@ class Pipeline:
         print(f"Spans and source files saved to {zip_path}")
 
     def run_static_analysis(self):
+        if self.db_path.exists():
+            self.db_path.unlink()
+        self.db_conn = sqlite3.connect(self.db_path)
+        self._init_db()
         cursor = self.db_conn.cursor()
 
         files_to_analyze = {}
@@ -487,13 +568,15 @@ class Pipeline:
         return "\n".join(brief)
 
     # --- NEW METHOD ---
-    def assemble_pack(self):
+    def assemble_pack(self, config: dict):
         """Generates the final repoBrief.md and manifest.json."""
 
         # 1. Generate the brief
         brief_content = self.generate_deterministic_brief()
         with open(self.output_path / "repoBrief.md", "w", encoding="utf-8") as f:
             f.write(brief_content)
+        if config.get("store_spans"):
+            self.store_spans()
 
         # 2. Generate the manifest
         manifest = {

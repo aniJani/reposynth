@@ -173,6 +173,48 @@ class ParserClient:
         self.writer_thread.join(timeout=1)
         self.reader_thread.join(timeout=1)
 
+    def parse_files(self, files_to_parse: list[Path], output_dir: str):
+        if not files_to_parse:
+            print("No files to parse.")
+            return
+
+        output_dir = Path(output_dir)
+        pending_requests = {}
+
+        for file_path in files_to_parse:
+            req_id = str(uuid.uuid4())
+            request = {"id": req_id, "path": str(file_path.resolve())}
+            pending_requests[req_id] = file_path
+            self.request_queue.put(request)
+        
+        while pending_requests:
+            try:
+                response = self.response_queue.get(timeout=20)
+                if response is None:
+                    print("Daemon stdout closed.", file=sys.stderr)
+                    break
+                
+                req_id = response.get("id")
+                if req_id in pending_requests:
+                    file_path = pending_requests.pop(req_id)
+                    if not response.get("error"):
+                        # Create a stable unique name based on the file path
+                        relative_path = file_path.relative_to(Path.cwd()) # Adjust if needed
+                        safe_name = str(relative_path).replace('/', '_').replace('\\', '_')
+                        unique_ast_filename = f"{safe_name}.jsonl"
+                        
+                        output_file = output_dir / unique_ast_filename
+                        with open(output_file, 'w', encoding='utf-8') as f:
+                             for node in response.get('ast', []):
+                                f.write(json.dumps(node) + '\n')
+                    else:
+                        print(f"Error parsing {file_path}: {response['error']}", file=sys.stderr)
+            except queue.Empty:
+                print("Timeout waiting for response from daemon.", file=sys.stderr)
+                break
+        
+        print("Parsing of modified files complete.")
+
 
 if __name__ == "__main__":
     # --- THIS IS THE ROBUST SOLUTION ---
