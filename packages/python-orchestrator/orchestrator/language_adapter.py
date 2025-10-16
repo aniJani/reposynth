@@ -174,26 +174,37 @@ class JavaScriptAdapter(LanguageAdapter):
             return []
 
         def find_defs(node, is_exported=False):
+            # Handle module.exports = function myFunction() { ... }
+            # And module.exports = class MyClass { ... }
+            if node.kind == "assignment_expression":
+                left_node = node.children[0]
+                right_node = node.children[2] # a = b, left is child 0, right is child 2
+                
+                left_text = self._get_node_text(left_node, source_code)
+                if left_text == "module.exports":
+                    is_exported = True
+                    # The actual definition is the right-hand side of the assignment
+                    node = right_node
+
             if node.kind == "export_statement":
                 for child in node.children:
                     find_defs(child, is_exported=True)
                 return
-            if node.kind in [
-                "function_declaration",
-                "class_declaration",
-                "method_definition",
-            ]:
+            
+            if node.kind in ["function_declaration", "class_declaration", "method_definition", "function"]:
+                # For `function_declaration`, the identifier is a direct child.
+                # For anonymous `function`, there is no identifier.
                 name_node = self._find_first_descendant_by_kind_bfs(node, "identifier")
                 if name_node:
-                    definitions.append(
-                        {
-                            "name": self._get_node_text(name_node, source_code),
-                            "kind": node.kind,
-                            "start_byte": node.start_byte,
-                            "end_byte": node.end_byte,
-                            "is_public": is_exported,
-                        }
-                    )
+                    definitions.append({
+                        "name": self._get_node_text(name_node, source_code),
+                        "kind": node.kind,
+                        "start_byte": node.start_byte,
+                        "end_byte": node.end_byte,
+                        "is_public": is_exported,
+                    })
+
+            # Recurse carefully
             for child in node.children:
                 find_defs(child, is_exported)
 
@@ -206,16 +217,25 @@ class JavaScriptAdapter(LanguageAdapter):
             return []
 
         def find_imports(node):
+            # Find `require('module')`
             if node.kind == "call_expression":
-                id_node = self._find_first_descendant_by_kind_bfs(node, "identifier")
-                if id_node and self._get_node_text(id_node, source_code) == "require":
-                    arg_node = self._find_first_descendant_by_kind_bfs(node, "string")
-                    if arg_node:
-                        imports.append(self._get_node_text(arg_node, source_code)[1:-1])
+                # Check if the function being called is an identifier named 'require'
+                func_node = node.children[0]
+                if func_node.kind == 'identifier' and self._get_node_text(func_node, source_code) == "require":
+                    # The argument is usually the first child of 'arguments'
+                    args_node = next((c for c in node.children if c.kind == 'arguments'), None)
+                    if args_node:
+                        string_node = self._find_first_descendant_by_kind_bfs(args_node, "string")
+                        if string_node:
+                            # Remove quotes from the module path
+                            imports.append(self._get_node_text(string_node, source_code)[1:-1])
+            
+            # Find `import ... from 'module'`
             if node.kind == "import_statement":
                 source_node = self._find_first_descendant_by_kind_bfs(node, "string")
                 if source_node:
                     imports.append(self._get_node_text(source_node, source_code)[1:-1])
+            
             for child in node.children:
                 find_imports(child)
 
@@ -226,43 +246,43 @@ class JavaScriptAdapter(LanguageAdapter):
         variables, root = [], self._build_tree(ast_nodes)
         if not root:
             return []
-        func_scopes = {
-            d["start_byte"]: d["name"] for d in definitions if "function" in d["kind"]
-        }
 
-        def find_scope(node):
-            curr = node.parent
-            while curr:
-                if (
-                    curr.kind in ["function_declaration", "method_definition"]
-                    and curr.start_byte in func_scopes
-                ):
-                    return func_scopes[curr.start_byte]
-                curr = curr.parent
-            return "global"
+        # --- REFINED LOGIC ---
+        def find_top_level_vars(node, is_exported=False):
+            # Handle `module.exports = ...` or `exports.foo = ...`
+            if node.kind == "assignment_expression":
+                left_node = node.children[0]
+                left_text = self._get_node_text(left_node, source_code)
+                if left_text.startswith("module.exports") or left_text.startswith("exports."):
+                     is_exported = True
 
-        def find_vars(node):
+            # Standard ES6 export
+            if node.kind == "export_statement":
+                for child in node.children:
+                    find_top_level_vars(child, is_exported=True)
+                return # Stop recursion here for this branch
+
+            # Find `const app = express()` or `var app = express()`
             if node.kind in ["lexical_declaration", "variable_declaration"]:
-                declarator = self._find_first_descendant_by_kind_bfs(
-                    node, "variable_declarator"
-                )
+                declarator = self._find_first_descendant_by_kind_bfs(node, "variable_declarator")
                 if declarator:
-                    id_node = self._find_first_descendant_by_kind_bfs(
-                        declarator, "identifier"
-                    )
+                    id_node = self._find_first_descendant_by_kind_bfs(declarator, "identifier")
                     if id_node:
-                        variables.append(
-                            {
-                                "name": self._get_node_text(id_node, source_code),
-                                "scope": find_scope(node),
-                                "start_byte": id_node.start_byte,
-                                "end_byte": id_node.end_byte,
-                            }
-                        )
-            for child in node.children:
-                find_vars(child)
+                        variables.append({
+                            "name": self._get_node_text(id_node, source_code),
+                            # Use `is_exported` flag determined by parent traversal
+                            "scope": "export" if is_exported else "global",
+                            "start_byte": node.start_byte, # Use the span of the whole declaration
+                            "end_byte": node.end_byte,
+                        })
 
-        find_vars(root)
+        # --- CRITICAL CHANGE ---
+        # Only iterate through the direct children of the root 'program' node.
+        # This prevents us from capturing variables inside functions.
+        if root and root.children:
+            for child in root.children:
+                find_top_level_vars(child)
+            
         return variables
 
 
