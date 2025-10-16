@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 import sys
 from gitignore_parser import parse_gitignore
 
+
 class ParserClient:
     def __init__(self, daemon_path: str):
         self.daemon_path = daemon_path
@@ -65,36 +66,41 @@ class ParserClient:
 
     def _discover_files(self, repo_path: Path):
         """Discovers all relevant files, respecting .gitignore rules."""
-        
+
         gitignore_path = repo_path / ".gitignore"
-        
+
         # The base path for the parser should be the repo root
         matches = parse_gitignore(gitignore_path, base_dir=repo_path)
-        
-        all_files = list(repo_path.glob('**/*.py')) + list(repo_path.glob('**/*.ts'))
-        
+
+        # Include .js files for JavaScript repositories
+        all_files = (
+            list(repo_path.glob("**/*.py"))
+            + list(repo_path.glob("**/*.ts"))
+            + list(repo_path.glob("**/*.js"))
+        )
+
         files_to_parse = []
         for file_path in all_files:
             # The matches function expects a path relative to the base_dir
             if not matches(file_path):
                 files_to_parse.append(file_path)
-                
+
         return files_to_parse
 
     def parse_repository(self, repo_path: str, output_dir: str):
         repo_path = Path(repo_path)
         output_dir = Path(output_dir)
         output_dir.mkdir(exist_ok=True, parents=True)
-        
+
         print("Discovering files to parse (respecting .gitignore)...")
         files_to_parse = self._discover_files(repo_path)
-        
+
         if not files_to_parse:
-            print(f"Warning: No .py or .ts files found to parse in {repo_path}")
+            print(f"Warning: No .py, .ts, or .js files found to parse in {repo_path}")
             return
-            
+
         print(f"Found {len(files_to_parse)} files to parse.")
-        
+
         pending_requests = {}
         # *** NEW: A dictionary to store our manifest data ***
         ast_manifest = {}
@@ -103,45 +109,56 @@ class ParserClient:
             req_id = str(uuid.uuid4())
             request = {"id": req_id, "path": str(file_path.resolve())}
             pending_requests[req_id] = file_path
-            
+
             # *** NEW: Record the mapping before sending the request ***
             # The key is the unique filename we will create for the AST data
             unique_ast_filename = f"{file_path.name}_{req_id[:8]}.jsonl"
             ast_manifest[unique_ast_filename] = str(file_path.resolve())
 
             self.request_queue.put(request)
-        
+
         # *** NEW: Save the manifest file immediately ***
         manifest_path = output_dir / "ast_manifest.json"
-        with open(manifest_path, 'w', encoding='utf-8') as f:
+        with open(manifest_path, "w", encoding="utf-8") as f:
             json.dump(ast_manifest, f, indent=2)
-        
+
         print(f"AST manifest saved to {manifest_path}")
 
         # --- The rest of the loop is the same ---
         while pending_requests:
             try:
-                response = self.response_queue.get(timeout=20) # Increased timeout for larger repos
+                response = self.response_queue.get(
+                    timeout=20
+                )  # Increased timeout for larger repos
                 if response is None:
-                    print("Daemon stdout closed unexpectedly. Check stderr for daemon errors.", file=sys.stderr)
+                    print(
+                        "Daemon stdout closed unexpectedly. Check stderr for daemon errors.",
+                        file=sys.stderr,
+                    )
                     break
-                
+
                 req_id = response.get("id")
                 if req_id in pending_requests:
                     file_path = pending_requests.pop(req_id)
                     if response.get("error"):
-                        print(f"Error parsing {file_path}: {response['error']}", file=sys.stderr)
+                        print(
+                            f"Error parsing {file_path}: {response['error']}",
+                            file=sys.stderr,
+                        )
                     else:
                         unique_ast_filename = f"{file_path.name}_{req_id[:8]}.jsonl"
                         output_file = output_dir / unique_ast_filename
-                        with open(output_file, 'w', encoding='utf-8') as f:
-                             for node in response.get('ast', []):
-                                f.write(json.dumps(node) + '\n')
-                
+                        with open(output_file, "w", encoding="utf-8") as f:
+                            for node in response.get("ast", []):
+                                f.write(json.dumps(node) + "\n")
+
             except queue.Empty:
-                print("Timeout waiting for response. Daemon might be stuck or crashed.", file=sys.stderr)
+                print(
+                    "Timeout waiting for response. Daemon might be stuck or crashed.",
+                    file=sys.stderr,
+                )
                 break
-        
+
         print("Parsing stage complete.")
 
     def shutdown(self):
