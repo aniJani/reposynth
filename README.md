@@ -18,3 +18,8 @@ pip install radon sentence-transformers faiss-cpu numpy
 # Go back to the project root
 cd ../..
 python3 -m packages.python-orchestrator.orchestrator
+
+chmod +x run-pipeline.sh
+
+# Run the script with a target repository URL
+./run-pipeline.sh https://github.com/jquense/yup
