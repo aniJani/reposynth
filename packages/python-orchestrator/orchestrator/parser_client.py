@@ -173,7 +173,7 @@ class ParserClient:
         self.writer_thread.join(timeout=1)
         self.reader_thread.join(timeout=1)
 
-    def parse_files(self, files_to_parse: list[Path], output_dir: str):
+    def parse_files(self, files_to_parse: list[Path], output_dir: str, repo_path: Path):
         if not files_to_parse:
             print("No files to parse.")
             return
@@ -186,23 +186,23 @@ class ParserClient:
             request = {"id": req_id, "path": str(file_path.resolve())}
             pending_requests[req_id] = file_path
             self.request_queue.put(request)
-        
+
         while pending_requests:
             try:
                 response = self.response_queue.get(timeout=20)
                 if response is None:
                     print("Daemon stdout closed.", file=sys.stderr)
                     break
-                
+
                 req_id = response.get("id")
                 if req_id in pending_requests:
                     file_path = pending_requests.pop(req_id)
                     if not response.get("error"):
                         # Create a stable unique name based on the file path
-                        relative_path = file_path.relative_to(Path.cwd()) # Adjust if needed
+                        relative_path = file_path.relative_to(repo_path)
                         safe_name = str(relative_path).replace('/', '_').replace('\\', '_')
                         unique_ast_filename = f"{safe_name}.jsonl"
-                        
+
                         output_file = output_dir / unique_ast_filename
                         with open(output_file, 'w', encoding='utf-8') as f:
                              for node in response.get('ast', []):
@@ -212,7 +212,7 @@ class ParserClient:
             except queue.Empty:
                 print("Timeout waiting for response from daemon.", file=sys.stderr)
                 break
-        
+
         print("Parsing of modified files complete.")
 
 

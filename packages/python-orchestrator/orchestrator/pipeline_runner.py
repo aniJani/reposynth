@@ -41,30 +41,25 @@ class Pipeline:
         self.daemon_path = daemon_path
         self.config = config or {}
 
-        self.cache_dir = self.repo_path / ".re SUSY_cache"
+        # CORRECT: No cleanup in __init__. Only define paths and create directories.
+        self.cache_dir = self.repo_path / ".reposynth_cache" # Corrected typo
+        self.output_path.mkdir(exist_ok=True)
         self.cache_dir.mkdir(exist_ok=True)
 
-        self.output_path.mkdir(exist_ok=True)
-        self.db_path = self.output_path / "analysis.sqlite"
-        if self.db_path.exists():
-            self.db_path.unlink()  # Delete the old database file
-        self.variable_registry = defaultdict(list)
         self.ast_dir = self.output_path / "ast_raw"
-        if self.ast_dir.exists():
-            import shutil
-
-            shutil.rmtree(self.ast_dir)  # Recursively delete the old ast_raw directory
         self.ast_dir.mkdir(exist_ok=True)
+        self.db_path = self.output_path / "analysis.sqlite"
 
+        # These will be populated by the pipeline stages
         self.name_registry = {}
         self.import_graph = {}
-        self.db_conn = sqlite3.connect(
-            self.db_path
-        )  # Connect to the now-guaranteed-fresh path
-        self._init_db()
+        self.variable_registry = defaultdict(list)
+        self.definitions_by_file = defaultdict(list)
 
-    def _init_db(self):
-        cursor = self.db_conn.cursor()
+    def _init_db(self, db_conn):
+        """Initializes the database schema on a given connection."""
+        # CORRECT: Use the passed-in db_conn, not self.db_conn
+        cursor = db_conn.cursor()
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS complexity (
@@ -76,7 +71,7 @@ class Pipeline:
             )
         """
         )
-        self.db_conn.commit()
+        db_conn.commit()
 
     def run(self, config: dict):
         # Determine the commit hash for caching
@@ -159,7 +154,7 @@ class Pipeline:
             if files_to_parse:
                 # This method now needs to be modified to only parse a subset of files
                 # And to not create the manifest itself.
-                client.parse_files(files_to_parse, output_dir=str(self.ast_dir))
+                client.parse_files(files_to_parse, output_dir=str(self.ast_dir), repo_path=self.repo_path)
 
             # Create the manifest based on ALL files, not just parsed ones
             ast_manifest = {}
@@ -359,74 +354,83 @@ class Pipeline:
 
     def run_static_analysis(self):
         if self.db_path.exists():
-            self.db_path.unlink()
-        self.db_conn = sqlite3.connect(self.db_path)
-        self._init_db()
-        cursor = self.db_conn.cursor()
+            try:
+                self.db_path.unlink()
+            except OSError as e:
+                print(f"Warning: Could not delete old database file: {e}", file=sys.stderr)
+                return # Exit the stage if we can't clean up
 
-        files_to_analyze = {}
-        for fqn, data in self.name_registry.items():
-            if "function" in data["kind"] or "method" in data["kind"]:
-                if data["file_path"].endswith(".py"):
-                    file_path = data["file_path"]
-                    if file_path not in files_to_analyze:
-                        files_to_analyze[file_path] = []
+        # 2. Connect to the new, empty database and initialize schema.
+        db_conn = sqlite3.connect(self.db_path)
+        try:
+            self._init_db(db_conn)
+            cursor = db_conn.cursor()
 
-                    symbol_name = fqn.split(":")[-1]
-                    files_to_analyze[file_path].append(symbol_name)
+            files_to_analyze = {}
+            for fqn, data in self.name_registry.items():
+                if "function" in data["kind"] or "method" in data["kind"]:
+                    if data["file_path"].endswith(".py"):
+                        file_path = data["file_path"]
+                        if file_path not in files_to_analyze:
+                            files_to_analyze[file_path] = []
+
+                        symbol_name = fqn.split(":")[-1]
+                        files_to_analyze[file_path].append(symbol_name)
 
         # Use Ruff via subprocess to check McCabe complexity
         # We select only the "mccabe" complexity checker (C901)
         # and set its max_complexity to 1 to report on every function.
 
-        print("Running static analysis with Ruff...")
-        for file_path_str, symbol_names in files_to_analyze.items():
-            file_path = self.repo_path / file_path_str
+            print("Running static analysis with Ruff...")
+            for file_path_str, symbol_names in files_to_analyze.items():
+                file_path = self.repo_path / file_path_str
 
-            try:
-                # Run Ruff with C901 (McCabe complexity) enabled and max complexity of 1
-                result = subprocess.run(
-                    [
-                        sys.executable,
-                        "-m",
-                        "ruff",
-                        "check",
-                        str(file_path),
-                        "--select",
-                        "C901",
-                        "--config",
-                        f"mccabe.max-complexity=1",
-                        "--output-format",
-                        "json",
-                    ],
-                    capture_output=True,
-                    text=True,
-                )
+                try:
+                    # Run Ruff with C901 (McCabe complexity) enabled and max complexity of 1
+                    result = subprocess.run(
+                        [
+                            sys.executable,
+                            "-m",
+                            "ruff",
+                            "check",
+                            str(file_path),
+                            "--select",
+                            "C901",
+                            "--config",
+                            f"mccabe.max-complexity=1",
+                            "--output-format",
+                            "json",
+                        ],
+                        capture_output=True,
+                        text=True,
+                    )
 
-                # Parse JSON output from Ruff
-                if result.stdout:
-                    diagnostics = json.loads(result.stdout)
+                    # Parse JSON output from Ruff
+                    if result.stdout:
+                        diagnostics = json.loads(result.stdout)
 
-                    for diag in diagnostics:
-                        # Extract function name and complexity from the message
-                        message = diag.get("message", "")
-                        try:
-                            # Message format: "`function_name` is too complex (10)"
-                            func_name = message.split("`")[1]
-                            complexity = int(message.split("(")[-1].replace(")", ""))
+                        for diag in diagnostics:
+                            # Extract function name and complexity from the message
+                            message = diag.get("message", "")
+                            try:
+                                # Message format: "`function_name` is too complex (10)"
+                                func_name = message.split("`")[1]
+                                complexity = int(message.split("(")[-1].replace(")", ""))
 
-                            if func_name in symbol_names:
-                                cursor.execute(
-                                    "INSERT OR IGNORE INTO complexity (file_path, symbol_name, complexity) VALUES (?, ?, ?)",
-                                    (file_path_str, func_name, complexity),
-                                )
-                        except (IndexError, ValueError):
-                            continue
+                                if func_name in symbol_names:
+                                    cursor.execute(
+                                        "INSERT OR IGNORE INTO complexity (file_path, symbol_name, complexity) VALUES (?, ?, ?)",
+                                        (file_path_str, func_name, complexity),
+                                    )
+                            except (IndexError, ValueError):
+                                continue
 
-            except Exception as e:
-                print(f"Ruff analysis failed for {file_path_str}: {e}", file=sys.stderr)
-
-        self.db_conn.commit()
+                except Exception as e:
+                    print(f"Ruff analysis failed for {file_path_str}: {e}", file=sys.stderr)
+        finally: 
+            db_conn.commit()
+            db_conn.close()
+        
         print("Static analysis metrics saved to analysis.sqlite")
 
     def generate_embeddings(self):
@@ -478,8 +482,20 @@ class Pipeline:
         print("Embeddings and FAISS index saved successfully.")
 
     def generate_deterministic_brief(self, top_n_modules=10, complexity_threshold=10):
-        print("Generating deterministic repo brief...")
+        hotspots = []
+        if self.db_path.exists():
+            db_conn = sqlite3.connect(self.db_path)
+            try:
+                cursor = db_conn.cursor()
+                cursor.execute("SELECT file_path, symbol_name, complexity FROM complexity WHERE complexity >= ? ORDER BY complexity DESC LIMIT 5", (complexity_threshold,))
+                hotspots = cursor.fetchall()
+            finally:
+                db_conn.close()
+        else:
+            print("Warning: analysis.sqlite not found. Skipping complexity hotspots.", file=sys.stderr)
+
         brief = []
+
 
         repo_name = self.repo_path.name
         brief.append(f"# Architectural Briefing: {repo_name}\n")
@@ -519,13 +535,6 @@ class Pipeline:
         else:
             brief.append("Could not determine key modules based on internal imports.")
         brief.append("\n---\n")
-
-        cursor = self.db_conn.cursor()
-        cursor.execute(
-            "SELECT file_path, symbol_name, complexity FROM complexity WHERE complexity >= ? ORDER BY complexity DESC LIMIT 5",
-            (complexity_threshold,),
-        )
-        hotspots = cursor.fetchall()
 
         if hotspots:
             brief.append("## Complexity Hotspots\n")
