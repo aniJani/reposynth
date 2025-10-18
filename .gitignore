@@ -150,4 +150,9 @@ temp_repos/
 # =============================================================================
 # Ignore local overrides for docker-compose
 docker-compose.override.yml
-/.re SUSY_cache
+
+# =============================================================================
+# RepoSynth Cache (Week 5 - Stage-level caching)
+# =============================================================================
+# Persistent cache directory for stage outputs
+.reposynth_cache/

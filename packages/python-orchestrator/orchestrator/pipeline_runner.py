@@ -10,6 +10,7 @@ import sys
 import sqlite3
 import datetime
 import hashlib
+import shutil
 
 
 # Third-party imports
@@ -41,10 +42,14 @@ class Pipeline:
         self.daemon_path = daemon_path
         self.config = config or {}
 
-        # CORRECT: No cleanup in __init__. Only define paths and create directories.
-        self.cache_dir = self.repo_path / ".reposynth_cache" # Corrected typo
+        # Store cache in a persistent location (project root) instead of inside the repo
+        # This prevents cache loss when temp repos are deleted
+        project_root = Path(output_path).parent  # output_path is <root>/pack, so parent is root
+        repo_name = self.repo_path.name
+        self.cache_dir = project_root / ".reposynth_cache" / repo_name
+
         self.output_path.mkdir(exist_ok=True)
-        self.cache_dir.mkdir(exist_ok=True)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         self.ast_dir = self.output_path / "ast_raw"
         self.ast_dir.mkdir(exist_ok=True)
@@ -55,6 +60,19 @@ class Pipeline:
         self.import_graph = {}
         self.variable_registry = defaultdict(list)
         self.definitions_by_file = defaultdict(list)
+
+        # Current commit hash for caching
+        self.commit_hash = None
+
+    def _get_cache_key(self, stage_name: str, inputs: dict) -> str:
+        """Generate a cache key for a pipeline stage based on its inputs."""
+        cache_data = {
+            "stage": stage_name,
+            "commit": self.commit_hash,
+            "inputs": inputs
+        }
+        cache_str = json.dumps(cache_data, sort_keys=True)
+        return hashlib.sha256(cache_str.encode()).hexdigest()
 
     def _init_db(self, db_conn):
         """Initializes the database schema on a given connection."""
@@ -75,27 +93,27 @@ class Pipeline:
 
     def run(self, config: dict):
         # Determine the commit hash for caching
-        commit_hash = self._get_commit_hash()
-        
+        self.commit_hash = self._get_commit_hash()
+
         if config.get("run_parsing"):
             print("--- Running Stage 1: Parsing Repository ---")
-            self.run_parsing(commit_hash=commit_hash)
-        
+            self.run_parsing(commit_hash=self.commit_hash)
+
         if config.get("build_graphs"):
             print("\n--- Running Stage 2: Building Graphs & Name Registry ---")
-            self.build_graphs_and_registry()
-        
+            self.build_graphs_and_registry(config=config)
+
         if config.get("build_variable_registry"):
             print("\n--- Running Stage 2.5 (Hybrid): Building Variable Registry ---")
-            self.build_variable_registry()
+            self.build_variable_registry(config=config)
 
         if config.get("run_analysis"):
             print("\n--- Running Stage 3: Static Analysis ---")
-            self.run_static_analysis()
+            self.run_static_analysis(config=config)
 
         if config.get("run_embeddings"):
             print("\n--- Running Stage 4: Generating Embeddings ---")
-            self.generate_embeddings()
+            self.generate_embeddings(config=config)
 
         print("\n--- Running Stage 5: Assembling Final Pack ---")
         self.assemble_pack(config=config)
@@ -175,8 +193,10 @@ class Pipeline:
         finally:
             client.shutdown()
 
-    def build_graphs_and_registry(self):
-        self.definitions_by_file = defaultdict(list)
+    def build_graphs_and_registry(self, config: dict = None):
+        config = config or {}
+
+        # Check cache first
         manifest_path = self.ast_dir / "ast_manifest.json"
         if not manifest_path.exists():
             print(
@@ -188,9 +208,44 @@ class Pipeline:
                 json.dump({}, f, indent=2)
             with open(self.output_path / "import_graph.json", "w") as f:
                 json.dump({}, f, indent=2)
+            self.name_registry = {}
+            self.import_graph = {}
+            self.definitions_by_file = defaultdict(list)
             return
+
         with open(manifest_path, "r", encoding="utf-8") as f:
             ast_manifest = json.load(f)
+
+        # Create cache key based on AST files
+        manifest_hash = hashlib.sha256(json.dumps(ast_manifest, sort_keys=True).encode()).hexdigest()
+        cache_key = self._get_cache_key("build_graphs", {"manifest_hash": manifest_hash})
+
+        cache_name_registry = self.cache_dir / f"name_registry_{cache_key}.json"
+        cache_import_graph = self.cache_dir / f"import_graph_{cache_key}.json"
+        cache_definitions = self.cache_dir / f"definitions_{cache_key}.json"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_name_registry.exists() and cache_import_graph.exists():
+            print("⚡ CACHE HIT: Loading graphs from cache...")
+            with open(cache_name_registry, "r") as f:
+                self.name_registry = json.load(f)
+            with open(cache_import_graph, "r") as f:
+                self.import_graph = json.load(f)
+            if cache_definitions.exists():
+                with open(cache_definitions, "r") as f:
+                    defs_dict = json.load(f)
+                    self.definitions_by_file = defaultdict(list, defs_dict)
+            else:
+                self.definitions_by_file = defaultdict(list)
+
+            # Also copy to output directory
+            shutil.copy(cache_name_registry, self.output_path / "name_registry.json")
+            shutil.copy(cache_import_graph, self.output_path / "import_graph.json")
+            print("✓ Graphs loaded from cache (instant)")
+            return
+
+        # Cache miss - build from scratch
+        self.definitions_by_file = defaultdict(list)
 
         for ast_filename, original_filepath_str in ast_manifest.items():
             ast_file = self.ast_dir / ast_filename
@@ -278,19 +333,55 @@ class Pipeline:
         with open(self.output_path / "import_graph.json", "w") as f:
             json.dump(self.import_graph, f, indent=2)
 
+        # Save to cache for next run
+        if not config.get("no_cache"):
+            with open(cache_name_registry, "w") as f:
+                json.dump(self.name_registry, f, indent=2)
+            with open(cache_import_graph, "w") as f:
+                json.dump(self.import_graph, f, indent=2)
+            with open(cache_definitions, "w") as f:
+                json.dump(dict(self.definitions_by_file), f, indent=2)
+
         print("Finished building graphs and name registry.")
 
-    def build_variable_registry(self):
+    def build_variable_registry(self, config: dict = None):
+        config = config or {}
+
         manifest_path = self.ast_dir / "ast_manifest.json"
         if not manifest_path.exists():
             print(
                 "Warning: ast_manifest.json not found. Skipping variable registry.",
                 file=sys.stderr,
             )
+            self.variable_registry = defaultdict(list)
             return
 
         with open(manifest_path, "r", encoding="utf-8") as f:
             ast_manifest = json.load(f)
+
+        # Create cache key based on AST manifest + definitions
+        manifest_hash = hashlib.sha256(json.dumps(ast_manifest, sort_keys=True).encode()).hexdigest()
+        definitions_hash = hashlib.sha256(json.dumps(dict(self.definitions_by_file), sort_keys=True).encode()).hexdigest()
+        cache_key = self._get_cache_key("variable_registry", {
+            "manifest_hash": manifest_hash,
+            "definitions_hash": definitions_hash
+        })
+
+        cache_variable_registry = self.cache_dir / f"variable_registry_{cache_key}.json"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_variable_registry.exists():
+            print("⚡ CACHE HIT: Loading variable registry from cache...")
+            with open(cache_variable_registry, "r") as f:
+                var_dict = json.load(f)
+                self.variable_registry = defaultdict(list, var_dict)
+            # Also copy to output directory
+            shutil.copy(cache_variable_registry, self.output_path / "variable_registry.json")
+            print("✓ Variable registry loaded from cache (instant)")
+            return
+
+        # Cache miss - build from scratch
+        self.variable_registry = defaultdict(list)
 
         for ast_filename, original_filepath_str in ast_manifest.items():
             ast_file = self.ast_dir / ast_filename
@@ -323,6 +414,12 @@ class Pipeline:
 
         with open(self.output_path / "variable_registry.json", "w") as f:
             json.dump(self.variable_registry, f, indent=2)
+
+        # Save to cache for next run
+        if not config.get("no_cache"):
+            with open(cache_variable_registry, "w") as f:
+                json.dump(dict(self.variable_registry), f, indent=2)
+
         print("Variable registry saved.")
 
     def store_spans(self):
@@ -352,7 +449,35 @@ class Pipeline:
 
         print(f"Spans and source files saved to {zip_path}")
 
-    def run_static_analysis(self):
+    def run_static_analysis(self, config: dict = None):
+        config = config or {}
+
+        # Determine files to analyze based on name_registry
+        files_to_analyze = {}
+        for fqn, data in self.name_registry.items():
+            if "function" in data["kind"] or "method" in data["kind"]:
+                if data["file_path"].endswith(".py"):
+                    file_path = data["file_path"]
+                    if file_path not in files_to_analyze:
+                        files_to_analyze[file_path] = []
+
+                    symbol_name = fqn.split(":")[-1]
+                    files_to_analyze[file_path].append(symbol_name)
+
+        # Create cache key based on files to analyze
+        files_hash = hashlib.sha256(json.dumps(files_to_analyze, sort_keys=True).encode()).hexdigest()
+        cache_key = self._get_cache_key("static_analysis", {"files_hash": files_hash})
+
+        cache_db_path = self.cache_dir / f"analysis_{cache_key}.sqlite"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_db_path.exists():
+            print("⚡ CACHE HIT: Loading static analysis from cache...")
+            shutil.copy(cache_db_path, self.db_path)
+            print("✓ Static analysis loaded from cache (instant)")
+            return
+
+        # Cache miss - run analysis from scratch
         if self.db_path.exists():
             try:
                 self.db_path.unlink()
@@ -365,17 +490,6 @@ class Pipeline:
         try:
             self._init_db(db_conn)
             cursor = db_conn.cursor()
-
-            files_to_analyze = {}
-            for fqn, data in self.name_registry.items():
-                if "function" in data["kind"] or "method" in data["kind"]:
-                    if data["file_path"].endswith(".py"):
-                        file_path = data["file_path"]
-                        if file_path not in files_to_analyze:
-                            files_to_analyze[file_path] = []
-
-                        symbol_name = fqn.split(":")[-1]
-                        files_to_analyze[file_path].append(symbol_name)
 
         # Use Ruff via subprocess to check McCabe complexity
         # We select only the "mccabe" complexity checker (C901)
@@ -427,13 +541,19 @@ class Pipeline:
 
                 except Exception as e:
                     print(f"Ruff analysis failed for {file_path_str}: {e}", file=sys.stderr)
-        finally: 
+        finally:
             db_conn.commit()
             db_conn.close()
-        
+
+        # Save to cache for next run
+        if not config.get("no_cache"):
+            shutil.copy(self.db_path, cache_db_path)
+
         print("Static analysis metrics saved to analysis.sqlite")
 
-    def generate_embeddings(self):
+    def generate_embeddings(self, config: dict = None):
+        config = config or {}
+
         # 1. Collect public APIs to embed
         public_apis = {}
         for fqn, data in self.name_registry.items():
@@ -453,6 +573,21 @@ class Pipeline:
 
         if not public_apis:
             print("No public APIs found to embed. Skipping.")
+            return
+
+        # Create cache key based on public APIs
+        apis_hash = hashlib.sha256(json.dumps(public_apis, sort_keys=True).encode()).hexdigest()
+        cache_key = self._get_cache_key("embeddings", {"apis_hash": apis_hash})
+
+        cache_faiss_path = self.cache_dir / f"vectors_{cache_key}.faiss"
+        cache_ids_path = self.cache_dir / f"vector_ids_{cache_key}.json"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_faiss_path.exists() and cache_ids_path.exists():
+            print("⚡ CACHE HIT: Loading embeddings from cache (skipping expensive ML model)...")
+            shutil.copy(cache_faiss_path, self.output_path / "vectors.faiss")
+            shutil.copy(cache_ids_path, self.output_path / "vector_ids.json")
+            print("✓ Embeddings loaded from cache (instant - saved ~10 seconds)")
             return
 
         # 2. Load model and generate embeddings
@@ -478,6 +613,11 @@ class Pipeline:
         id_map = {i: fqn for i, fqn in enumerate(fqns)}
         with open(self.output_path / "vector_ids.json", "w") as f:
             json.dump(id_map, f, indent=2)
+
+        # Save to cache for next run
+        if not config.get("no_cache"):
+            shutil.copy(self.output_path / "vectors.faiss", cache_faiss_path)
+            shutil.copy(self.output_path / "vector_ids.json", cache_ids_path)
 
         print("Embeddings and FAISS index saved successfully.")
 
