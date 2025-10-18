@@ -115,6 +115,10 @@ class Pipeline:
             print("\n--- Running Stage 4: Generating Embeddings ---")
             self.generate_embeddings(config=config)
 
+        if config.get("run_security_scans"):
+            print("\n--- Running Stage 4.5: Security Scanning ---")
+            self.run_security_scans(config=config)
+
         print("\n--- Running Stage 5: Assembling Final Pack ---")
         self.assemble_pack(config=config)
 
@@ -260,7 +264,9 @@ class Pipeline:
 
                 relative_path = str(original_file.relative_to(self.repo_path))
 
-                with open(original_file, "r", encoding="utf-8") as f:
+                # Read with newline='' to preserve original line endings (CRLF on Windows)
+                # This ensures byte positions from AST match the source text
+                with open(original_file, "r", encoding="utf-8", newline='') as f:
                     source_code = f.read()
 
                 adapter = get_adapter(original_file)
@@ -284,38 +290,112 @@ class Pipeline:
                 current_dir = original_file.parent
 
                 for imp in raw_imports:
-                    # Skip built-in/third-party library imports for now
-                    if not imp.startswith("."):
-                        continue
-
                     try:
-                        resolved_path = (current_dir / imp).resolve()
-                        # Check if the resolved path is within our repo
-                        if self.repo_path in resolved_path.parents:
-                            # Try to find a file with .ts, .js, .py extensions
+                        # Handle relative imports (e.g., ".schemas", "..utils")
+                        if imp.startswith("."):
+                            # Count leading dots and strip them
+                            num_dots = len(imp) - len(imp.lstrip('.'))
+                            module_name = imp.lstrip('.')
+
+                            # Determine the base directory
+                            # . = current directory, .. = parent, ... = grandparent, etc.
+                            base_dir = current_dir
+                            for _ in range(num_dots - 1):
+                                base_dir = base_dir.parent
+
+                            # Resolve to the target file/directory
+                            if module_name:
+                                target = base_dir / module_name
+                            else:
+                                # Just dots like "." or ".." - refers to __init__.py
+                                target = base_dir
+
+                            # Check if the target is within our repo
+                            if self.repo_path in target.parents or target == self.repo_path:
+                                # Try to find a file with .ts, .js, .py extensions
+                                found = False
+                                for ext in [".py", ".ts", ".js", ".tsx", ".jsx"]:
+                                    file_path = target.with_suffix(ext)
+                                    if file_path.exists():
+                                        try:
+                                            resolved_imports.append(str(file_path.relative_to(self.repo_path)))
+                                            found = True
+                                            break
+                                        except ValueError:
+                                            continue
+
+                                # Try as a package (with __init__.py)
+                                if not found:
+                                    init_path = target / "__init__.py"
+                                    if init_path.exists():
+                                        try:
+                                            resolved_imports.append(str(init_path.relative_to(self.repo_path)))
+                                        except ValueError:
+                                            continue
+                        else:
+                            # Handle absolute imports (e.g., "orchestrator.parser_client")
+                            # We need to search for the module in the repository
+                            module_parts = imp.split(".")
+                            module_filename = module_parts[-1]  # Last part is the module name
+
+                            # Directories to exclude from import resolution
+                            exclude_dirs = {".venv", "venv", "node_modules", ".git", "__pycache__", "build", "dist", ".tox", ".pytest_cache"}
+
+                            # Search for files matching the module name
                             found = False
-                            for ext in [".ts", ".js", ".py", ".tsx", ".jsx"]:
-                                if (
-                                    resolved_path.parent / f"{resolved_path.name}{ext}"
-                                ).exists():
-                                    resolved_imports.append(
-                                        str(
-                                            (
-                                                resolved_path.parent
-                                                / f"{resolved_path.name}{ext}"
-                                            ).relative_to(self.repo_path)
-                                        )
-                                    )
-                                    found = True
+                            for ext in [".py", ".ts", ".js", ".tsx", ".jsx"]:
+                                # Use glob to find all files with this name
+                                pattern = f"**/{module_filename}{ext}"
+                                matching_files = list(self.repo_path.glob(pattern))
+
+                                # Filter out excluded directories
+                                matching_files = [
+                                    f for f in matching_files
+                                    if not any(excluded in f.parts for excluded in exclude_dirs)
+                                ]
+
+                                # Try to find the most likely match based on the full module path
+                                for match in matching_files:
+                                    try:
+                                        rel_path = match.relative_to(self.repo_path)
+                                        # Check if the module path matches the file path structure
+                                        # For "orchestrator.parser_client", look for files ending with "orchestrator/parser_client.py"
+                                        expected_suffix = "/".join(module_parts) + ext
+                                        if str(rel_path).replace("\\", "/").endswith(expected_suffix):
+                                            resolved_imports.append(str(rel_path))
+                                            found = True
+                                            break
+                                    except ValueError:
+                                        continue
+
+                                if found:
                                     break
-                            if not found and (resolved_path / "__init__.py").exists():
-                                resolved_imports.append(
-                                    str(
-                                        (resolved_path / "__init__.py").relative_to(
-                                            self.repo_path
-                                        )
-                                    )
-                                )
+
+                            # Try as a package (with __init__.py)
+                            if not found:
+                                pattern = f"**/{module_filename}/__init__.py"
+                                matching_files = list(self.repo_path.glob(pattern))
+
+                                # Filter out excluded directories
+                                matching_files = [
+                                    f for f in matching_files
+                                    if not any(excluded in f.parts for excluded in exclude_dirs)
+                                ]
+
+                                for match in matching_files:
+                                    try:
+                                        rel_path = match.relative_to(self.repo_path)
+                                        # Verify it matches the module structure
+                                        path_parts = str(rel_path).replace("\\", "/").split("/")
+                                        # Remove __init__.py from the end
+                                        path_parts = path_parts[:-1]
+                                        # Check if the module parts appear in order at the end of the path
+                                        if len(path_parts) >= len(module_parts):
+                                            if path_parts[-len(module_parts):] == module_parts:
+                                                resolved_imports.append(str(rel_path))
+                                                break
+                                    except ValueError:
+                                        continue
 
                     except Exception:
                         continue  # Ignore resolution errors
@@ -398,7 +478,7 @@ class Pipeline:
             try:
                 with open(ast_file, "r", encoding="utf-8") as f:
                     ast_nodes = [json.loads(line) for line in f]
-                with open(original_file, "r", encoding="utf-8") as f:
+                with open(original_file, "r", encoding="utf-8", newline='') as f:
                     source_code = f.read()
 
                 # Pass definitions for context
@@ -560,7 +640,7 @@ class Pipeline:
             if data.get("is_public", False):
                 file_path = self.repo_path / data["file_path"]
                 try:
-                    with open(file_path, "r", encoding="utf-8") as f:
+                    with open(file_path, "r", encoding="utf-8", newline='') as f:
                         source_code = f.read()
 
                     # Create a snippet for embedding (e.g., function signature)
@@ -620,6 +700,115 @@ class Pipeline:
             shutil.copy(self.output_path / "vector_ids.json", cache_ids_path)
 
         print("Embeddings and FAISS index saved successfully.")
+
+    def run_security_scans(self, config: dict = None):
+        """
+        Stage 4.5: Run security scans to detect potential vulnerabilities.
+        Uses detect-secrets to scan for hardcoded secrets, API keys, tokens, etc.
+        """
+        config = config or {}
+
+        # Create cache key based on commit hash
+        cache_key = self._get_cache_key("security_scans", {"commit": self.commit_hash})
+        cache_security_report = self.cache_dir / f"security_report_{cache_key}.json"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_security_report.exists():
+            print("⚡ CACHE HIT: Loading security scan results from cache...")
+            shutil.copy(cache_security_report, self.output_path / "security_report.json")
+            print("✓ Security scan results loaded from cache (instant)")
+            return
+
+        # Cache miss - run security scans
+        security_report = {
+            "scan_timestamp": datetime.datetime.utcnow().isoformat(),
+            "repository": str(self.repo_path),
+            "commit_hash": self.commit_hash,
+            "findings": []
+        }
+
+        print("Running security scans with detect-secrets...")
+
+        try:
+            # Run detect-secrets scan
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "detect_secrets",
+                    "scan",
+                    str(self.repo_path),
+                    "--baseline",
+                    "/dev/null",  # Don't use baseline file
+                ],
+                capture_output=True,
+                text=True,
+                timeout=300,  # 5 minute timeout
+            )
+
+            if result.stdout:
+                try:
+                    secrets_data = json.loads(result.stdout)
+
+                    # Parse detect-secrets output
+                    if "results" in secrets_data:
+                        for file_path, findings in secrets_data["results"].items():
+                            for finding in findings:
+                                # Make file path relative to repo
+                                try:
+                                    rel_path = Path(file_path).relative_to(self.repo_path)
+                                except (ValueError, Exception):
+                                    rel_path = file_path
+
+                                security_report["findings"].append({
+                                    "file_path": str(rel_path),
+                                    "line_number": finding.get("line_number", 0),
+                                    "type": finding.get("type", "unknown"),
+                                    "severity": "high" if "key" in finding.get("type", "").lower() else "medium",
+                                    "hashed_secret": finding.get("hashed_secret", ""),
+                                    "is_verified": finding.get("is_verified", False)
+                                })
+
+                    print(f"✓ Security scan completed. Found {len(security_report['findings'])} potential issues.")
+
+                except json.JSONDecodeError as e:
+                    print(f"Warning: Could not parse detect-secrets output: {e}", file=sys.stderr)
+                    security_report["scan_error"] = "Failed to parse scanner output"
+            else:
+                print("✓ Security scan completed. No issues found.")
+
+        except subprocess.TimeoutExpired:
+            print("Warning: Security scan timed out after 5 minutes.", file=sys.stderr)
+            security_report["scan_error"] = "Scan timed out"
+        except FileNotFoundError:
+            print("Warning: detect-secrets not found. Skipping security scan.", file=sys.stderr)
+            print("Install with: pip install detect-secrets", file=sys.stderr)
+            security_report["scan_error"] = "detect-secrets not installed"
+        except Exception as e:
+            print(f"Warning: Security scan failed: {e}", file=sys.stderr)
+            security_report["scan_error"] = str(e)
+
+        # Add scan summary
+        security_report["summary"] = {
+            "total_findings": len(security_report["findings"]),
+            "high_severity": sum(1 for f in security_report["findings"] if f.get("severity") == "high"),
+            "medium_severity": sum(1 for f in security_report["findings"] if f.get("severity") == "medium"),
+            "files_scanned": len(set(f["file_path"] for f in security_report["findings"]))
+        }
+
+        # Save the report
+        report_path = self.output_path / "security_report.json"
+        with open(report_path, "w", encoding="utf-8") as f:
+            json.dump(security_report, f, indent=2)
+
+        # Save to cache
+        if not config.get("no_cache"):
+            shutil.copy(report_path, cache_security_report)
+
+        print(f"Security report saved to: {report_path}")
+        if security_report["findings"]:
+            print(f"⚠️  Warning: Found {len(security_report['findings'])} potential security issues!")
+            print("   Review the security_report.json file for details.")
 
     def generate_deterministic_brief(self, top_n_modules=10, complexity_threshold=10):
         hotspots = []
@@ -695,12 +884,51 @@ class Pipeline:
             for fqn, data in self.name_registry.items():
                 if data["file_path"] == path and data.get("is_public", False):
                     try:
-                        with open(self.repo_path / path, "r", encoding="utf-8") as f:
+                        with open(self.repo_path / path, "r", encoding="utf-8", newline='') as f:
                             source_code = f.read()
+
+                        # Extract the signature properly
                         snippet = source_code[data["start_byte"] : data["end_byte"]]
-                        first_line = snippet.split("\n")[0].strip()
-                        if first_line:
-                            public_apis.append(f"`{first_line}`")
+                        lines = snippet.split("\n")
+
+                        # Find the definition line (skip decorators)
+                        signature_lines = []
+                        in_signature = False
+                        for i, line in enumerate(lines[:20]):  # Check first 20 lines max
+                            stripped = line.strip()
+
+                            # Skip empty lines and comments
+                            if not stripped or stripped.startswith("#") or stripped.startswith("//"):
+                                continue
+
+                            # Skip decorators
+                            if stripped.startswith("@"):
+                                continue
+
+                            # Check if this is a definition line
+                            if not in_signature:
+                                if any(keyword in stripped for keyword in ["def ", "class ", "function ", "const ", "let ", "var ", "export function", "export class", "export const"]):
+                                    in_signature = True
+                                    signature_lines.append(stripped)
+                                    # Check if signature ends on this line
+                                    if stripped.endswith(":") or stripped.endswith("{") or stripped.endswith(";"):
+                                        break
+                                    continue
+                            else:
+                                # We're collecting a multi-line signature
+                                signature_lines.append(stripped)
+                                if stripped.endswith(":") or stripped.endswith("{") or stripped.endswith(";"):
+                                    break
+
+                        if signature_lines:
+                            signature = " ".join(signature_lines)
+                            # Remove trailing : or { for cleaner display
+                            if signature.endswith(":") or signature.endswith("{") or signature.endswith(";"):
+                                signature = signature[:-1].strip()
+                            # Truncate very long signatures
+                            if len(signature) > 120:
+                                signature = signature[:117] + "..."
+                            public_apis.append(f"`{signature}`")
                     except Exception:
                         continue
 
@@ -718,20 +946,29 @@ class Pipeline:
 
     # --- NEW METHOD ---
     def assemble_pack(self, config: dict):
-        """Generates the final repoBrief.md and manifest.json."""
+        """
+        Generates the final pack in the appropriate format based on configuration.
+        - Semantic mode: Creates repoBrief.md and manifest.json (lightweight)
+        - Hybrid mode: Creates a complete .zip archive with all artifacts
+        - Full mode: Creates comprehensive .zip with all possible artifacts
+        """
 
-        # 1. Generate the brief
+        # 1. Generate the brief (always needed)
         brief_content = self.generate_deterministic_brief()
         with open(self.output_path / "repoBrief.md", "w", encoding="utf-8") as f:
             f.write(brief_content)
+
+        # 2. Store spans if requested (hybrid/full modes)
         if config.get("store_spans"):
             self.store_spans()
 
-        # 2. Generate the manifest
+        # 3. Generate the manifest with checksums
         manifest = {
             "createdAt": datetime.datetime.utcnow().isoformat(),
             "repoPath": str(self.repo_path),
             "packVersion": "1.0",
+            "mode": config.get("pack_mode", "semantic"),
+            "commit_hash": self.commit_hash,
             "artifacts": {},
         }
 
@@ -745,7 +982,73 @@ class Pipeline:
                     "sha256": file_hash,
                 }
 
+        # Save manifest
         with open(self.output_path / "manifest.json", "w") as f:
             json.dump(manifest, f, indent=2)
 
-        print("Final pack assembled with repoBrief.md and manifest.json.")
+        print("✓ Manifest and brief generated.")
+
+        # 4. Create pack format based on mode
+        pack_mode = config.get("pack_mode", "semantic")
+
+        if pack_mode == "semantic":
+            # Semantic mode: Keep files as-is (lightweight, human-readable)
+            print("✓ Semantic pack assembled (loose files format)")
+            print(f"   - Main summary: {self.output_path / 'repoBrief.md'}")
+            print(f"   - Artifacts: {len(manifest['artifacts'])} files")
+
+        elif pack_mode in ["hybrid", "full"]:
+            # Hybrid/Full mode: Create a comprehensive zip archive
+            pack_name = f"reposynth_{self.repo_path.name}_{pack_mode}.zip"
+            zip_path = self.output_path.parent / pack_name
+
+            print(f"Creating {pack_mode} pack archive: {pack_name}...")
+
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                # Add all artifacts from the pack directory
+                for artifact_path in self.output_path.glob("*"):
+                    if artifact_path.is_file():
+                        arcname = f"pack/{artifact_path.name}"
+                        zf.write(artifact_path, arcname=arcname)
+                        print(f"   ✓ Added: {artifact_path.name}")
+                    elif artifact_path.is_dir() and artifact_path.name == "ast_raw":
+                        # Include AST files in full mode
+                        for ast_file in artifact_path.glob("*"):
+                            if ast_file.is_file():
+                                arcname = f"pack/ast_raw/{ast_file.name}"
+                                zf.write(ast_file, arcname=arcname)
+                        print(f"   ✓ Added: ast_raw/ directory ({len(list(artifact_path.glob('*')))} files)")
+
+                # Add README to the zip
+                readme_content = f"""# RepoSynth {pack_mode.capitalize()} Pack
+
+Repository: {self.repo_path.name}
+Generated: {manifest['createdAt']}
+Commit: {self.commit_hash}
+Mode: {pack_mode}
+
+## Contents
+
+This archive contains a complete analysis pack for the repository.
+
+### Key Files:
+- **repoBrief.md**: Architectural summary and analysis
+- **manifest.json**: Artifact metadata and checksums
+- **name_registry.json**: Symbol definitions and locations
+- **import_graph.json**: Module dependency graph
+- **analysis.sqlite**: Complexity metrics database
+- **vectors.faiss**: Semantic embeddings index
+- **security_report.json**: Security scan results (if enabled)
+"""
+
+                if pack_mode == "hybrid":
+                    readme_content += "\n- **spans.zip**: Source code spans for public APIs\n"
+                    readme_content += "- **variable_registry.json**: Variable tracking information\n"
+
+                zf.writestr("README.md", readme_content)
+
+            print(f"✓ {pack_mode.capitalize()} pack archive created: {zip_path}")
+            print(f"   Archive size: {zip_path.stat().st_size / 1024 / 1024:.2f} MB")
+            print(f"   Extract and review the repoBrief.md file for a summary.")
+
+        print("\n✓ Final pack assembly complete!")

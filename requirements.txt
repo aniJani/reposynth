@@ -15,7 +15,7 @@ mando==0.7.1
 MarkupSafe==3.0.3
 mpmath==1.3.0
 networkx==3.5
-numpy==2.3.4
+numpy<2
 packaging==25.0
 pillow==12.0.0
 pydantic==2.10.5
@@ -35,9 +35,13 @@ sympy==1.14.0
 threadpoolctl==3.6.0
 tiktoken==0.8.0
 tokenizers==0.22.1
-torch==2.9.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.3.1+cpu
 tqdm==4.67.1
 transformers==4.57.1
 typing_extensions==4.15.0
 urllib3==2.5.0
 uvicorn[standard]==0.34.0
+
+# Week 7: Security scanning dependencies
+detect-secrets==1.5.0

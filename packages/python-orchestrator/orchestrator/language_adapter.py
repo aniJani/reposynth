@@ -82,19 +82,27 @@ class PythonAdapter(LanguageAdapter):
 
         def find_defs(node):
             if node.kind in ["function_definition", "class_definition"]:
-                name_node = next(
-                    (c for c in node.children if c.kind == "identifier"), None
-                )
+                # In Tree-sitter Python grammar, the name is always the child right after "def"/"class"
+                # Structure: [def/class keyword, name (identifier), parameters/body, ...]
+                # So we look for the first identifier that appears before any colon
+                name_node = None
+                for child in node.children:
+                    if child.kind == "identifier":
+                        name_node = child
+                        break
+                    # Stop if we hit the parameters or body (after the name)
+                    if child.kind in ["parameters", "argument_list", ":", "block", "type"]:
+                        break
+
                 if name_node:
+                    func_name = self._get_node_text(name_node, source_code)
                     definitions.append(
                         {
-                            "name": self._get_node_text(name_node, source_code),
+                            "name": func_name,
                             "kind": node.kind,
                             "start_byte": node.start_byte,
                             "end_byte": node.end_byte,
-                            "is_public": not self._get_node_text(
-                                name_node, source_code
-                            ).startswith("_"),
+                            "is_public": not func_name.startswith("_"),
                         }
                     )
             for child in node.children:
@@ -114,8 +122,9 @@ class PythonAdapter(LanguageAdapter):
                 for name_node in name_nodes:
                     imports.append(self._get_node_text(name_node, source_code))
             if node.kind == "import_from_statement":
+                # Check for both absolute imports (dotted_name) and relative imports (relative_import)
                 module_name_node = next(
-                    (c for c in node.children if c.kind == "dotted_name"), None
+                    (c for c in node.children if c.kind in ["dotted_name", "relative_import"]), None
                 )
                 if module_name_node:
                     imports.append(self._get_node_text(module_name_node, source_code))

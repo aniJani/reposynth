@@ -126,6 +126,12 @@ dist/
 repo.pkg/
 pack/
 
+# Week 7: Pack archives
+*.zip
+reposynth_*.zip
+test_hybrid/
+test_full/
+
 # Any cloned repositories for processing
 temp_repos/
 
