@@ -69,8 +69,12 @@ class ParserClient:
 
         gitignore_path = repo_path / ".gitignore"
 
-        # The base path for the parser should be the repo root
-        matches = parse_gitignore(gitignore_path, base_dir=repo_path)
+        # Check if .gitignore exists, otherwise create a no-op matcher
+        if gitignore_path.exists():
+            matches = parse_gitignore(gitignore_path, base_dir=repo_path)
+        else:
+            # No .gitignore file - accept all files (no-op matcher)
+            matches = lambda path: False
 
         # Include .js files for JavaScript repositories
         all_files = (

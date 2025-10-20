@@ -1,6 +1,10 @@
 import sys
 from pathlib import Path
 import argparse
+import subprocess
+import tempfile
+import shutil
+from urllib.parse import urlparse
 
 # Ensure the orchestrator package is in the Python path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -176,10 +180,56 @@ For more information, visit: https://github.com/aniJani/reposynth
     
     # --- Path Resolution Logic ---
     root_dir = Path(__file__).parent.parent.parent.parent.resolve()
-    
+
+    # Track if we cloned a repo so we can clean it up later
+    cloned_repo = None
+
     if args.repo:
-        repo_to_parse = Path(args.repo).resolve()
-        print(f"--- Target repository: {repo_to_parse} ---")
+        # Check if the input is a URL
+        if args.repo.startswith("http://") or args.repo.startswith("https://"):
+            print(f"--- Detected URL: {args.repo} ---")
+            print(f"--- Cloning repository... ---")
+
+            # Extract repo name from URL
+            parsed_url = urlparse(args.repo)
+            repo_name = Path(parsed_url.path).name
+            if repo_name.endswith(".git"):
+                repo_name = repo_name[:-4]
+
+            # Create a temp directory for the clone
+            temp_dir = root_dir / "temp_repos"
+            temp_dir.mkdir(exist_ok=True)
+            clone_path = temp_dir / repo_name
+
+            # Remove existing clone if present
+            if clone_path.exists():
+                print(f"--- Removing existing clone at {clone_path} ---")
+                shutil.rmtree(clone_path)
+
+            # Clone the repository
+            try:
+                subprocess.run(
+                    ["git", "clone", args.repo, str(clone_path)],
+                    check=True,
+                    capture_output=True,
+                    text=True
+                )
+                repo_to_parse = clone_path
+                cloned_repo = clone_path
+                print(f"--- Repository cloned to: {repo_to_parse} ---")
+            except subprocess.CalledProcessError as e:
+                print(f"FATAL: Failed to clone repository: {e.stderr}", file=sys.stderr)
+                sys.exit(1)
+            except FileNotFoundError:
+                print("FATAL: git command not found. Please install git.", file=sys.stderr)
+                sys.exit(1)
+        else:
+            # It's a local path
+            repo_to_parse = Path(args.repo).resolve()
+            if not repo_to_parse.exists():
+                print(f"FATAL: Repository path does not exist: {repo_to_parse}", file=sys.stderr)
+                sys.exit(1)
+            print(f"--- Target repository: {repo_to_parse} ---")
     else:
         repo_to_parse = root_dir
         print(f"--- No --repo specified. Parsing the RepoSynth project itself. ---")
@@ -202,7 +252,14 @@ For more information, visit: https://github.com/aniJani/reposynth
         output_path=str(output_pack_dir),
         daemon_path=str(daemon_path),
     )
-    pipeline.run(config=config)
+
+    try:
+        pipeline.run(config=config)
+    finally:
+        # Clean up cloned repository if it was temporary
+        # Note: We keep temp clones for caching purposes
+        # Users can manually delete temp_repos/ if needed
+        pass
 
 if __name__ == '__main__':
     main()
