@@ -162,3 +162,14 @@ docker-compose.override.yml
 # =============================================================================
 # Persistent cache directory for stage outputs
 .reposynth_cache/
+TROUBLESHOOTING_PORTS.md
+WEEK8_CHECKLIST.md
+WEEK8_INDEX.md
+WEEK8_INSTRUCTIONS.md
+WEEK8_MIGRATION.md
+WEEK8_PROGRESS.md
+WEEK8_QUICKREF.md
+WEEK8_SUMMARY.md
+WEEK8_TROUBLESHOOTING_LOG.md
+WEEK8_FIX_RUST_DAEMON.md
+WEEK8_BUILD_PROGRESS.md

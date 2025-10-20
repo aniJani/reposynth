@@ -1,0 +1,129 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database - Stores job metadata and status
+  postgres:
+    image: postgres:15-alpine
+    container_name: reposynth-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"  # Changed external port to 5433 to avoid conflict
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Message broker for Dramatiq job queue
+  redis:
+    image: redis:7-alpine
+    container_name: reposynth-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MinIO - S3-compatible object storage for pack archives
+  minio:
+    image: minio/minio:latest
+    container_name: reposynth-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"  # S3 API
+      - "9001:9001"  # Web Console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  # MinIO Client - Creates bucket on startup
+  minio-init:
+    image: minio/mc:latest
+    container_name: reposynth-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 10;
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb myminio/${S3_BUCKET} --ignore-existing;
+      /usr/bin/mc anonymous set download myminio/${S3_BUCKET};
+      echo 'MinIO bucket initialized successfully';
+      "
+
+  # FastAPI Application - REST API for job submission
+  api:
+    build:
+      context: .
+      dockerfile: packages/python-orchestrator/Dockerfile
+    container_name: reposynth-api
+    command: uvicorn orchestrator.api:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL}
+      S3_BUCKET: ${S3_BUCKET}
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./packages/python-orchestrator:/app/packages/python-orchestrator
+      - ./.reposynth_cache:/app/.reposynth_cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  # Dramatiq Worker - Background job processor
+  worker:
+    build:
+      context: .
+      dockerfile: packages/python-orchestrator/Dockerfile
+    container_name: reposynth-worker
+    command: dramatiq orchestrator.worker -p 4 -t 4
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_ENDPOINT_URL: ${AWS_ENDPOINT_URL}
+      S3_BUCKET: ${S3_BUCKET}
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./packages/python-orchestrator:/app/packages/python-orchestrator
+      - ./temp_repos:/app/temp_repos
+      - ./worker_packs:/app/worker_packs
+      - ./.reposynth_cache:/app/.reposynth_cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    name: reposynth_postgres_data
+  minio_data:
+    name: reposynth_minio_data

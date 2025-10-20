@@ -1,0 +1,38 @@
+# RepoSynth Python Dependencies
+# Generated for Week 8: Backend Foundation
+
+# Core dependencies (existing)
+glob2==0.7
+numpy==1.24.3
+faiss-cpu==1.7.4
+radon==6.0.1
+sentence-transformers==2.3.1
+transformers==4.36.0
+huggingface-hub==0.20.0
+ruff==0.1.6
+detect-secrets==1.4.0
+gitignore-parser==0.1.9
+
+# Week 8: Web API and Job Queue
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Week 8: Database
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+
+# Week 8: Background Jobs
+dramatiq[redis,watch]==1.15.0
+redis==5.0.1
+
+# Week 8: Cloud Storage
+boto3==1.29.7
+botocore==1.32.7
+
+# Week 8: Configuration
+python-dotenv==1.0.0
+
+# Additional utilities
+python-multipart==0.0.6

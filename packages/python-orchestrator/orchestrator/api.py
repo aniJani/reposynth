@@ -2,14 +2,17 @@
 """
 FastAPI application for RepoSynth.
 Week 6: Token estimation API endpoint.
+Week 8: Job queue and background processing.
 """
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pathlib import Path
 import sys
+import uuid
 from typing import Dict
+from sqlalchemy.orm import Session
 
 from .schemas import (
     EstimateRequest,
@@ -22,13 +25,17 @@ from .schemas import (
 from .estimator import estimate_tokens, TIKTOKEN_AVAILABLE, PYGOUNT_AVAILABLE
 from .git_utils import clone_repository, cleanup_cloned_repo
 
+# Week 8: Database and worker imports
+from .database import create_tables, get_db, Job
+from . import worker
+
 # Application metadata
-__version__ = "1.0.0"
+__version__ = "2.0.0"  # Week 8 update
 
 # Create FastAPI application
 app = FastAPI(
     title="RepoSynth API",
-    description="Token estimation and repository analysis pipeline",
+    description="Token estimation and repository analysis pipeline with background job processing",
     version=__version__,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -42,6 +49,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+def on_startup():
+    """Initialize database tables on application startup."""
+    print("🚀 Starting RepoSynth API...")
+    create_tables()
+    print("✓ Database initialized")
 
 
 @app.exception_handler(ValueError)
@@ -69,18 +84,28 @@ async def root():
 
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"])
-async def health_check():
+async def health_check(db: Session = Depends(get_db)):
     """
     Health check endpoint.
     Returns the status of the API and its dependencies.
     """
+    # Test database connection
+    database_healthy = False
+    try:
+        db.execute("SELECT 1")
+        database_healthy = True
+    except Exception as e:
+        print(f"Database health check failed: {e}", file=sys.stderr)
+
     dependencies: Dict[str, bool] = {
         "tiktoken": TIKTOKEN_AVAILABLE,
         "pygount": PYGOUNT_AVAILABLE,
+        "database": database_healthy,
+        "worker_queue": True,  # TODO: Add Redis health check
     }
 
     # Overall health: healthy if all critical dependencies are available
-    is_healthy = PYGOUNT_AVAILABLE  # tiktoken is optional (fallback available)
+    is_healthy = PYGOUNT_AVAILABLE and database_healthy
 
     return HealthResponse(
         status="healthy" if is_healthy else "degraded",
@@ -283,8 +308,172 @@ async def estimate_tokens_from_github_endpoint(request: GitHubEstimateRequest):
                 print(f"Warning: Failed to cleanup cloned repo: {e}", file=sys.stderr)
 
 
-# Additional endpoints can be added here in the future:
-# - POST /run-pipeline - Execute full pipeline
-# - POST /run-pipeline-from-github - Execute pipeline on GitHub repo
-# - GET /pipeline-status/{job_id} - Check pipeline status
-# - GET /results/{job_id} - Retrieve pipeline results
+# ============================================================================
+# Week 8: Job Queue Endpoints
+# ============================================================================
+
+@app.post("/jobs", status_code=status.HTTP_202_ACCEPTED, tags=["Jobs"])
+async def create_job(repo_url: str, mode: str = "semantic", db: Session = Depends(get_db)):
+    """
+    Submit a repository analysis job for background processing.
+    
+    This endpoint:
+    1. Creates a new job record in the database
+    2. Enqueues the job for processing by a worker
+    3. Returns immediately with the job ID
+    
+    The actual analysis runs asynchronously. Use GET /jobs/{job_id} to check status.
+    
+    Args:
+        repo_url: Git repository URL (e.g., https://github.com/user/repo)
+        mode: Analysis mode - 'semantic', 'hybrid', or 'full' (default: semantic)
+        db: Database session (injected)
+    
+    Returns:
+        JSON with job_id and status
+    
+    Example:
+        POST /jobs?repo_url=https://github.com/jquense/yup&mode=hybrid
+        Response: {"job_id": "abc-123", "status": "pending"}
+    """
+    # Validate mode
+    if mode not in ["semantic", "hybrid", "full"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid mode '{mode}'. Must be 'semantic', 'hybrid', or 'full'."
+        )
+    
+    # Validate URL format
+    if not repo_url.startswith(("http://", "https://")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid repository URL. Must start with http:// or https://"
+        )
+    
+    # Generate unique job ID
+    job_id = str(uuid.uuid4())
+    
+    # Create job record
+    new_job = Job(
+        id=job_id,
+        repo_url=repo_url,
+        mode=mode,
+        status="pending"
+    )
+    
+    try:
+        db.add(new_job)
+        db.commit()
+        db.refresh(new_job)
+        
+        # Enqueue job for background processing
+        worker.process_repository.send(job_id, repo_url, mode)
+        
+        print(f"✓ Created job {job_id} for {repo_url} (mode: {mode})")
+        
+        return {
+            "job_id": job_id,
+            "status": "pending",
+            "repo_url": repo_url,
+            "mode": mode,
+            "message": "Job submitted successfully. Use GET /jobs/{job_id} to check status."
+        }
+        
+    except Exception as e:
+        db.rollback()
+        print(f"✗ Failed to create job: {e}", file=sys.stderr)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create job: {str(e)}"
+        )
+
+
+@app.get("/jobs/{job_id}", tags=["Jobs"])
+async def get_job_status(job_id: str, db: Session = Depends(get_db)):
+    """
+    Get the status of a submitted job.
+    
+    Returns detailed information about the job including:
+    - Current status (pending, processing, completed, failed)
+    - Timestamps (created, started, finished)
+    - Result URL (when completed)
+    - Error message (if failed)
+    - Processing statistics
+    
+    Args:
+        job_id: Unique job identifier returned from POST /jobs
+        db: Database session (injected)
+    
+    Returns:
+        JSON with complete job details
+    
+    Example:
+        GET /jobs/abc-123
+        Response: {
+            "id": "abc-123",
+            "status": "completed",
+            "repo_url": "https://github.com/jquense/yup",
+            "result_url": "http://minio:9000/reposynth-packs/abc-123.zip",
+            ...
+        }
+    """
+    job = db.query(Job).filter(Job.id == job_id).first()
+    
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job not found: {job_id}"
+        )
+    
+    return job.to_dict()
+
+
+@app.get("/jobs", tags=["Jobs"])
+async def list_jobs(
+    status_filter: str = None,
+    limit: int = 50,
+    offset: int = 0,
+    db: Session = Depends(get_db)
+):
+    """
+    List all jobs with optional filtering.
+    
+    Args:
+        status_filter: Filter by status (pending, processing, completed, failed)
+        limit: Maximum number of jobs to return (default: 50, max: 200)
+        offset: Number of jobs to skip for pagination (default: 0)
+        db: Database session (injected)
+    
+    Returns:
+        JSON with list of jobs and pagination info
+    
+    Example:
+        GET /jobs?status_filter=completed&limit=10
+    """
+    # Validate and limit pagination
+    limit = min(limit, 200)
+    
+    # Build query
+    query = db.query(Job)
+    
+    if status_filter:
+        if status_filter not in ["pending", "processing", "completed", "failed"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid status filter: {status_filter}"
+            )
+        query = query.filter(Job.status == status_filter)
+    
+    # Get total count
+    total = query.count()
+    
+    # Apply pagination and ordering
+    jobs = query.order_by(Job.created_at.desc()).offset(offset).limit(limit).all()
+    
+    return {
+        "jobs": [job.to_dict() for job in jobs],
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "has_more": (offset + limit) < total
+    }
