@@ -210,3 +210,136 @@ class GitHubEstimateRequest(BaseModel):
             }
         }
     )
+
+
+# ============================================================================
+# Week 9: Frontend Configuration Schemas
+# ============================================================================
+
+class JobConfiguration(BaseModel):
+    """Frontend job configuration for Week 9 UI."""
+    mode: str = Field(
+        default="semantic",
+        description="Analysis mode: semantic, hybrid, or full"
+    )
+    enable_ast: bool = Field(
+        default=True,
+        description="Enable AST parsing"
+    )
+    enable_imports: bool = Field(
+        default=True,
+        description="Enable import graph analysis"
+    )
+    enable_complexity: bool = Field(
+        default=True,
+        description="Enable code complexity metrics"
+    )
+    enable_security: bool = Field(
+        default=False,
+        description="Enable security scanning"
+    )
+    enable_embeddings: bool = Field(
+        default=True,
+        description="Enable semantic embeddings"
+    )
+    output_format: str = Field(
+        default="zip",
+        description="Output format: zip, markdown, or json"
+    )
+
+    @field_validator('mode')
+    @classmethod
+    def validate_mode(cls, v: str) -> str:
+        """Validate analysis mode."""
+        valid_modes = ['semantic', 'hybrid', 'full']
+        if v not in valid_modes:
+            raise ValueError(f"Invalid mode '{v}'. Must be one of: {', '.join(valid_modes)}")
+        return v
+
+    @field_validator('output_format')
+    @classmethod
+    def validate_output_format(cls, v: str) -> str:
+        """Validate output format."""
+        valid_formats = ['zip', 'markdown', 'json']
+        if v not in valid_formats:
+            raise ValueError(f"Invalid output_format '{v}'. Must be one of: {', '.join(valid_formats)}")
+        return v
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "mode": "hybrid",
+                "enable_ast": True,
+                "enable_imports": True,
+                "enable_complexity": True,
+                "enable_security": False,
+                "enable_embeddings": True,
+                "output_format": "zip"
+            }
+        }
+    )
+
+
+class ConfiguratorEstimateRequest(BaseModel):
+    """Request for configurator-based estimation (no repo clone needed)."""
+    repo_url: str = Field(
+        ...,
+        description="GitHub repository URL"
+    )
+    config: JobConfiguration
+
+    @field_validator('repo_url')
+    @classmethod
+    def validate_repo_url(cls, v: str) -> str:
+        """Validate repository URL."""
+        v = v.strip()
+        if not v:
+            raise ValueError("Repository URL cannot be empty")
+        if not v.startswith(('http://', 'https://')):
+            raise ValueError("Repository URL must start with http:// or https://")
+        return v
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "repo_url": "https://github.com/jquense/yup",
+                "config": {
+                    "mode": "hybrid",
+                    "enable_ast": True,
+                    "enable_imports": True,
+                    "enable_complexity": True,
+                    "enable_security": False,
+                    "enable_embeddings": True
+                }
+            }
+        }
+    )
+
+
+class ConfiguratorEstimateResponse(BaseModel):
+    """Response with estimated costs and time."""
+    estimated_tokens: int = Field(..., description="Estimated total tokens")
+    estimated_time_seconds: float = Field(..., description="Estimated processing time")
+    estimated_cost_usd: float = Field(..., description="Estimated cost at $0.0001 per 1K tokens")
+    mode: str = Field(..., description="Analysis mode used")
+    features_enabled: Dict[str, bool] = Field(..., description="Map of feature names to enabled status")
+    warnings: list[str] = Field(default_factory=list, description="Configuration warnings")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "estimated_tokens": 125000,
+                "estimated_time_seconds": 75.0,
+                "estimated_cost_usd": 0.0125,
+                "mode": "hybrid",
+                "features_enabled": {
+                    "enable_ast": True,
+                    "enable_imports": True,
+                    "enable_complexity": True,
+                    "enable_security": False,
+                    "enable_embeddings": True
+                },
+                "warnings": ["Hybrid mode may take 60-120 seconds for large repositories"]
+            }
+        }
+    )

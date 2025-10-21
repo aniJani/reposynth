@@ -50,6 +50,9 @@ ENV PYTHONUNBUFFERED=1
 # Create directories for temporary data
 RUN mkdir -p /app/temp_repos /app/worker_packs /app/.reposynth_cache
 
+# Make startup script executable
+RUN chmod +x /app/packages/python-orchestrator/start-api.sh
+
 # Expose API port (for API service)
 EXPOSE 8000
 

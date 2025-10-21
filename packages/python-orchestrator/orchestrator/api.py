@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from pathlib import Path
 import sys
 import uuid
-from typing import Dict
+from typing import Dict, Optional
 from sqlalchemy.orm import Session
 
 from .schemas import (
@@ -20,7 +20,10 @@ from .schemas import (
     HealthResponse,
     LanguageStats as LanguageStatsSchema,
     FeatureEstimate as FeatureEstimateSchema,
-    GitHubEstimateRequest
+    GitHubEstimateRequest,
+    JobConfiguration,
+    ConfiguratorEstimateRequest,
+    ConfiguratorEstimateResponse
 )
 from .estimator import estimate_tokens, TIKTOKEN_AVAILABLE, PYGOUNT_AVAILABLE
 from .git_utils import clone_repository, cleanup_cloned_repo
@@ -308,17 +311,91 @@ async def estimate_tokens_from_github_endpoint(request: GitHubEstimateRequest):
                 print(f"Warning: Failed to cleanup cloned repo: {e}", file=sys.stderr)
 
 
+@app.post("/estimate", response_model=ConfiguratorEstimateResponse, tags=["Estimation"])
+async def estimate_from_config(request: ConfiguratorEstimateRequest):
+    """
+    Estimate tokens and cost based on configuration without cloning the repository.
+    
+    This endpoint provides fast, deterministic estimates based on:
+    - Analysis mode (semantic, hybrid, full)
+    - Feature toggles (AST, imports, complexity, security, embeddings)
+    
+    No actual cloning or analysis is performed - this is for UI feedback only.
+    
+    Args:
+        request: ConfiguratorEstimateRequest with repo_url and config
+    
+    Returns:
+        ConfiguratorEstimateResponse with estimated tokens, time, and cost
+    """
+    config = request.config
+    
+    # Base estimates (these are rough heuristics - you can refine them)
+    base_estimates = {
+        "semantic": {"tokens": 50000, "time": 30},
+        "hybrid": {"tokens": 100000, "time": 60},
+        "full": {"tokens": 200000, "time": 120}
+    }
+    
+    estimate = base_estimates.get(config.mode, base_estimates["semantic"])
+    estimated_tokens = estimate["tokens"]
+    estimated_time = float(estimate["time"])
+    
+    # Feature multipliers
+    feature_overhead = {
+        "enable_ast": 0.3,
+        "enable_imports": 0.2,
+        "enable_complexity": 0.15,
+        "enable_security": 0.25,
+        "enable_embeddings": 0.4
+    }
+    
+    # Apply feature toggles
+    features_enabled = {}
+    for feature, overhead in feature_overhead.items():
+        enabled = getattr(config, feature, True)
+        features_enabled[feature] = enabled
+        if enabled:
+            estimated_tokens = int(estimated_tokens * (1 + overhead))
+            estimated_time = estimated_time * (1 + overhead * 0.5)
+    
+    # Calculate cost (example: $0.0001 per 1K tokens)
+    estimated_cost = (estimated_tokens / 1000) * 0.0001
+    
+    # Generate warnings
+    warnings = []
+    if config.mode == "full":
+        warnings.append("Full mode may take 2-5 minutes for large repositories")
+    if config.enable_security:
+        warnings.append("Security scanning significantly increases processing time")
+    if estimated_tokens > 500000:
+        warnings.append("Large token count - consider using semantic mode instead")
+    
+    return ConfiguratorEstimateResponse(
+        estimated_tokens=estimated_tokens,
+        estimated_time_seconds=round(estimated_time, 1),
+        estimated_cost_usd=round(estimated_cost, 6),
+        mode=config.mode,
+        features_enabled=features_enabled,
+        warnings=warnings
+    )
+
+
 # ============================================================================
 # Week 8: Job Queue Endpoints
 # ============================================================================
 
 @app.post("/jobs", status_code=status.HTTP_202_ACCEPTED, tags=["Jobs"])
-async def create_job(repo_url: str, mode: str = "semantic", db: Session = Depends(get_db)):
+async def create_job(
+    repo_url: str,
+    config: Optional[JobConfiguration] = None,
+    db: Session = Depends(get_db)
+):
     """
     Submit a repository analysis job for background processing.
     
     This endpoint:
-    1. Creates a new job record in the database
+    1. Creates a new job record in the database with configuration
     2. Enqueues the job for processing by a worker
     3. Returns immediately with the job ID
     
@@ -326,16 +403,24 @@ async def create_job(repo_url: str, mode: str = "semantic", db: Session = Depend
     
     Args:
         repo_url: Git repository URL (e.g., https://github.com/user/repo)
-        mode: Analysis mode - 'semantic', 'hybrid', or 'full' (default: semantic)
+        config: Optional job configuration (mode, features). If not provided, defaults are used.
         db: Database session (injected)
     
     Returns:
         JSON with job_id and status
     
     Example:
-        POST /jobs?repo_url=https://github.com/jquense/yup&mode=hybrid
+        POST /jobs?repo_url=https://github.com/jquense/yup
+        Body: {"mode": "hybrid", "enable_ast": true, ...}
         Response: {"job_id": "abc-123", "status": "pending"}
     """
+    # Use config if provided, otherwise use defaults
+    if config is None:
+        config = JobConfiguration()
+    
+    # Extract mode for backward compatibility
+    mode = config.mode
+    
     # Validate mode
     if mode not in ["semantic", "hybrid", "full"]:
         raise HTTPException(
@@ -353,12 +438,13 @@ async def create_job(repo_url: str, mode: str = "semantic", db: Session = Depend
     # Generate unique job ID
     job_id = str(uuid.uuid4())
     
-    # Create job record
+    # Create job record with configuration
     new_job = Job(
         id=job_id,
         repo_url=repo_url,
         mode=mode,
-        status="pending"
+        status="pending",
+        config=config.model_dump()  # Store full config as JSON
     )
     
     try:
@@ -366,8 +452,9 @@ async def create_job(repo_url: str, mode: str = "semantic", db: Session = Depend
         db.commit()
         db.refresh(new_job)
         
-        # Enqueue job for background processing
-        worker.process_repository.send(job_id, repo_url, mode)
+        # Enqueue job for background processing with full config
+        # Note: worker.process_repository signature needs to accept config dict
+        worker.process_repository.send(job_id, repo_url, config.model_dump())
         
         print(f"✓ Created job {job_id} for {repo_url} (mode: {mode})")
         
@@ -376,6 +463,7 @@ async def create_job(repo_url: str, mode: str = "semantic", db: Session = Depend
             "status": "pending",
             "repo_url": repo_url,
             "mode": mode,
+            "config": config.model_dump(),
             "message": "Job submitted successfully. Use GET /jobs/{job_id} to check status."
         }
         

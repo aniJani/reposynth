@@ -7,7 +7,7 @@ Jobs progress through states: pending -> processing -> completed/failed
 
 import os
 import datetime
-from sqlalchemy import create_engine, Column, String, DateTime, Text, Integer
+from sqlalchemy import create_engine, Column, String, DateTime, Text, Integer, JSON
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -48,6 +48,7 @@ class Job(Base):
     status = Column(String, default="pending", nullable=False, index=True)
     repo_url = Column(String, nullable=False)
     mode = Column(String, default="semantic", nullable=False)
+    config = Column(JSON, nullable=True, comment="Full job configuration JSON")
     
     # Timestamps
     created_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
@@ -72,6 +73,7 @@ class Job(Base):
             "status": self.status,
             "repo_url": self.repo_url,
             "mode": self.mode,
+            "config": self.config,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "started_at": self.started_at.isoformat() if self.started_at else None,
             "finished_at": self.finished_at.isoformat() if self.finished_at else None,
