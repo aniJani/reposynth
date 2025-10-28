@@ -503,31 +503,67 @@ class Pipeline:
         print("Variable registry saved.")
 
     def store_spans(self):
-        zip_path = self.output_path / "spans.zip"
-        span_manifest = defaultdict(list)
-        files_to_include = set()
+        """
+        Creates a comprehensive JSON file containing source code for all public APIs.
+        The JSON includes the full source of each file plus extracted spans for each public API.
+        """
+        json_path = self.output_path / "source_spans.json"
+        source_spans = {}
 
-        # Identify files and byte ranges for all public APIs
+        # Group public APIs by file
+        files_with_apis = defaultdict(list)
         for fqn, data in self.name_registry.items():
             if data.get("is_public", False):
-                file_path = data["file_path"]
-                files_to_include.add(file_path)
-                span_manifest[file_path].append([data["start_byte"], data["end_byte"]])
+                files_with_apis[data["file_path"]].append({
+                    "fqn": fqn,
+                    "name": fqn.split(":")[-1],
+                    "kind": data["kind"],
+                    "start_byte": data["start_byte"],
+                    "end_byte": data["end_byte"]
+                })
 
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            # Write the manifest to the zip
-            zf.writestr("manifest.json", json.dumps(span_manifest, indent=2))
+        # Build the complete source spans structure
+        for file_path_str, apis in files_with_apis.items():
+            try:
+                full_path = self.repo_path / file_path_str
+                with open(full_path, "r", encoding="utf-8", newline='') as f:
+                    source_code = f.read()
 
-            # Add the raw source files to the zip
-            for file_path_str in files_to_include:
-                try:
-                    full_path = self.repo_path / file_path_str
-                    # The arcname is the path inside the zip file
-                    zf.write(full_path, arcname=file_path_str)
-                except FileNotFoundError:
-                    continue
+                # Extract the actual code span for each API
+                api_details = []
+                for api in apis:
+                    span_code = source_code[api["start_byte"]:api["end_byte"]]
+                    api_details.append({
+                        "name": api["name"],
+                        "fqn": api["fqn"],
+                        "kind": api["kind"],
+                        "start_byte": api["start_byte"],
+                        "end_byte": api["end_byte"],
+                        "span": span_code
+                    })
 
-        print(f"Spans and source files saved to {zip_path}")
+                source_spans[file_path_str] = {
+                    "file_path": file_path_str,
+                    "full_source": source_code,
+                    "public_apis": api_details
+                }
+
+            except FileNotFoundError:
+                print(f"Warning: Could not read file {file_path_str}", file=sys.stderr)
+                continue
+            except Exception as e:
+                print(f"Warning: Error processing {file_path_str}: {e}", file=sys.stderr)
+                continue
+
+        # Save the JSON file
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(source_spans, f, indent=2)
+
+        print(f"Source spans saved to {json_path}")
+        print(f"  - {len(source_spans)} files with public APIs")
+        print(f"  - {sum(len(v['public_apis']) for v in source_spans.values())} total public symbols")
+
+        return source_spans
 
     def run_static_analysis(self, config: dict = None):
         config = config or {}
@@ -955,14 +991,34 @@ class Pipeline:
 
         # 1. Generate the brief (always needed)
         brief_content = self.generate_deterministic_brief()
+
+        # 2. Store spans (now for ALL modes - creates source_spans.json)
+        source_spans = {}
+        if config.get("store_spans"):
+            source_spans = self.store_spans()
+
+        # 3. Append source code section to the brief if we have source spans
+        if source_spans:
+            brief_content += "\n\n---\n\n"
+            brief_content += "## Source Code for Public APIs\n\n"
+            brief_content += f"This section contains the full source code for all {sum(len(v['public_apis']) for v in source_spans.values())} public APIs across {len(source_spans)} files.\n\n"
+
+            for file_path, file_data in sorted(source_spans.items()):
+                brief_content += f"### File: `{file_path}`\n\n"
+
+                for api in file_data["public_apis"]:
+                    brief_content += f"#### {api['kind']}: `{api['name']}`\n\n"
+                    brief_content += f"**Fully Qualified Name:** `{api['fqn']}`\n\n"
+                    brief_content += f"**Location:** bytes {api['start_byte']}-{api['end_byte']}\n\n"
+                    brief_content += "```python\n" if file_path.endswith('.py') else "```typescript\n" if file_path.endswith(('.ts', '.tsx')) else "```javascript\n" if file_path.endswith(('.js', '.jsx')) else "```\n"
+                    brief_content += api['span']
+                    brief_content += "\n```\n\n"
+
+        # Write the complete brief with source code
         with open(self.output_path / "repoBrief.md", "w", encoding="utf-8") as f:
             f.write(brief_content)
 
-        # 2. Store spans if requested (hybrid/full modes)
-        if config.get("store_spans"):
-            self.store_spans()
-
-        # 3. Generate the manifest with checksums
+        # 4. Generate the manifest with checksums
         manifest = {
             "createdAt": datetime.datetime.utcnow().isoformat(),
             "repoPath": str(self.repo_path),
@@ -988,7 +1044,7 @@ class Pipeline:
 
         print("✓ Manifest and brief generated.")
 
-        # 4. Create pack format based on mode
+        # 5. Create pack format based on mode
         pack_mode = config.get("pack_mode", "semantic")
 
         if pack_mode == "semantic":
@@ -1032,7 +1088,7 @@ Mode: {pack_mode}
 This archive contains a complete analysis pack for the repository.
 
 ### Key Files:
-- **repoBrief.md**: Architectural summary and analysis
+- **repoBrief.md**: Architectural summary and analysis (includes full source code for public APIs)
 - **manifest.json**: Artifact metadata and checksums
 - **name_registry.json**: Symbol definitions and locations
 - **import_graph.json**: Module dependency graph
@@ -1042,8 +1098,12 @@ This archive contains a complete analysis pack for the repository.
 """
 
                 if pack_mode == "hybrid":
-                    readme_content += "\n- **spans.zip**: Source code spans for public APIs\n"
+                    readme_content += "\n- **source_spans.json**: Source code spans for public APIs (JSON format)\n"
                     readme_content += "- **variable_registry.json**: Variable tracking information\n"
+                elif pack_mode == "full":
+                    readme_content += "\n- **source_spans.json**: Source code spans for public APIs (JSON format)\n"
+                    readme_content += "- **variable_registry.json**: Variable tracking information\n"
+                    readme_content += "- **ast_raw/**: Raw AST files for all parsed sources\n"
 
                 zf.writestr("README.md", readme_content)
 

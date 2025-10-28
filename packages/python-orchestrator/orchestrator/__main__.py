@@ -106,7 +106,7 @@ For more information, visit: https://github.com/aniJani/reposynth
         "--with-spans",
         action=argparse.BooleanOptionalAction,
         default=None,
-        help="Store source code spans for public APIs in spans.zip (hybrid/full modes)."
+        help="Store source code spans for public APIs in source_spans.json and append to repoBrief.md (enabled by default for all modes)."
     )
 
     parser.add_argument(
@@ -127,7 +127,7 @@ For more information, visit: https://github.com/aniJani/reposynth
             "run_embeddings": True,
             "run_security_scans": False,
             "build_variable_registry": False,
-            "store_spans": False,
+            "store_spans": True,  # Now enabled for semantic mode to include source code in repoBrief.md
             "pack_mode": "semantic",
         }
     elif args.mode == "hybrid":
@@ -160,7 +160,7 @@ For more information, visit: https://github.com/aniJani/reposynth
             "run_embeddings": True,
             "run_security_scans": False,
             "build_variable_registry": False,
-            "store_spans": False,
+            "store_spans": True,  # Now enabled for semantic mode to include source code in repoBrief.md
             "pack_mode": "semantic",
         }
 

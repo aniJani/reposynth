@@ -112,9 +112,11 @@ After running the pipeline, you'll find the following artifacts in the `pack/` d
 ### Hybrid/Full Mode Additional Files
 
 - **`variable_registry.json`**: Variable declarations and scope tracking
-- **`spans.zip`**: Source code spans for public APIs
+- **`source_spans.json`**: Complete source code for all public APIs with byte ranges
 - **`security_report.json`**: Security scan results (if enabled)
 - **`ast_raw/`**: Raw AST files in JSONL format (full mode only)
+
+**Note:** The `repoBrief.md` file includes a complete "Source Code for Public APIs" section with all public API source code embedded directly in the markdown for easy viewing.
 
 ### Archive Output (Hybrid/Full Modes)
 
