@@ -60,6 +60,7 @@ class Pipeline:
         self.import_graph = {}
         self.variable_registry = defaultdict(list)
         self.definitions_by_file = defaultdict(list)
+        self.top_level_statements = defaultdict(list)  # NEW: Track executable statements
 
         # Current commit hash for caching
         self.commit_hash = None
@@ -227,6 +228,7 @@ class Pipeline:
         cache_name_registry = self.cache_dir / f"name_registry_{cache_key}.json"
         cache_import_graph = self.cache_dir / f"import_graph_{cache_key}.json"
         cache_definitions = self.cache_dir / f"definitions_{cache_key}.json"
+        cache_top_level_statements = self.cache_dir / f"top_level_statements_{cache_key}.json"
 
         # Try to load from cache
         if not config.get("no_cache") and cache_name_registry.exists() and cache_import_graph.exists():
@@ -242,14 +244,24 @@ class Pipeline:
             else:
                 self.definitions_by_file = defaultdict(list)
 
+            if cache_top_level_statements.exists():
+                with open(cache_top_level_statements, "r") as f:
+                    stmts_dict = json.load(f)
+                    self.top_level_statements = defaultdict(list, stmts_dict)
+            else:
+                self.top_level_statements = defaultdict(list)
+
             # Also copy to output directory
             shutil.copy(cache_name_registry, self.output_path / "name_registry.json")
             shutil.copy(cache_import_graph, self.output_path / "import_graph.json")
+            if cache_top_level_statements.exists():
+                shutil.copy(cache_top_level_statements, self.output_path / "top_level_statements.json")
             print("✓ Graphs loaded from cache (instant)")
             return
 
         # Cache miss - build from scratch
         self.definitions_by_file = defaultdict(list)
+        self.top_level_statements = defaultdict(list)
 
         for ast_filename, original_filepath_str in ast_manifest.items():
             ast_file = self.ast_dir / ast_filename
@@ -402,6 +414,15 @@ class Pipeline:
 
                 self.import_graph[relative_path] = resolved_imports
 
+                # NEW: Capture top-level executable statements
+                try:
+                    top_level_stmts = adapter.get_top_level_statements(ast_nodes, source_code)
+                    if top_level_stmts:
+                        self.top_level_statements[relative_path] = top_level_stmts
+                except Exception as stmt_error:
+                    # Don't fail the whole pipeline if statement extraction fails
+                    print(f"Warning: Failed to extract top-level statements for {relative_path}: {stmt_error}", file=sys.stderr)
+
             except Exception as e:
                 print(
                     f"Failed to process graph for {ast_filename} (original: {relative_path}): {e}",
@@ -412,6 +433,8 @@ class Pipeline:
             json.dump(self.name_registry, f, indent=2)
         with open(self.output_path / "import_graph.json", "w") as f:
             json.dump(self.import_graph, f, indent=2)
+        with open(self.output_path / "top_level_statements.json", "w") as f:
+            json.dump(dict(self.top_level_statements), f, indent=2)
 
         # Save to cache for next run
         if not config.get("no_cache"):
@@ -421,8 +444,12 @@ class Pipeline:
                 json.dump(self.import_graph, f, indent=2)
             with open(cache_definitions, "w") as f:
                 json.dump(dict(self.definitions_by_file), f, indent=2)
+            with open(cache_top_level_statements, "w") as f:
+                json.dump(dict(self.top_level_statements), f, indent=2)
 
         print("Finished building graphs and name registry.")
+        if self.top_level_statements:
+            print(f"Captured {sum(len(stmts) for stmts in self.top_level_statements.values())} top-level statements across {len(self.top_level_statements)} files.")
 
     def build_variable_registry(self, config: dict = None):
         config = config or {}
@@ -506,12 +533,15 @@ class Pipeline:
         """
         Creates a comprehensive JSON file containing source code for all public APIs.
         The JSON includes the full source of each file plus extracted spans for each public API.
+        NOW INCLUDES: Exported types, interfaces, and enums from variable_registry!
         """
         json_path = self.output_path / "source_spans.json"
         source_spans = {}
 
         # Group public APIs by file
         files_with_apis = defaultdict(list)
+
+        # Add items from name_registry (functions, classes, constants)
         for fqn, data in self.name_registry.items():
             if data.get("is_public", False):
                 files_with_apis[data["file_path"]].append({
@@ -521,6 +551,21 @@ class Pipeline:
                     "start_byte": data["start_byte"],
                     "end_byte": data["end_byte"]
                 })
+
+        # FIXED: Also add exported types/interfaces/enums from variable_registry
+        for file_path, variables in self.variable_registry.items():
+            for var in variables:
+                # Include variables with scope "export" and that have a "kind" field
+                if var.get("scope") == "export" and "kind" in var:
+                    # Create a FQN for this exported type
+                    fqn = f"{file_path}:{var['name']}"
+                    files_with_apis[file_path].append({
+                        "fqn": fqn,
+                        "name": var["name"],
+                        "kind": var.get("kind", "exported_variable"),
+                        "start_byte": var["start_byte"],
+                        "end_byte": var["end_byte"]
+                    })
 
         # Build the complete source spans structure
         for file_path_str, apis in files_with_apis.items():
