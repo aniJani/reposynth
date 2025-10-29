@@ -253,7 +253,7 @@ class JavaScriptAdapter(LanguageAdapter):
 
         collect_exported_names(root)
 
-        def find_defs(node, is_exported=False):
+        def find_defs(node, is_exported=False, depth=0):
             # Handle module.exports = function myFunction() { ... }
             # And module.exports = class MyClass { ... }
             if node.kind == "assignment_expression":
@@ -275,12 +275,12 @@ class JavaScriptAdapter(LanguageAdapter):
                     # Don't recurse into export_clause itself
                     for child in node.children:
                         if child.kind != "export_clause":
-                            find_defs(child, is_exported=False)
+                            find_defs(child, is_exported=False, depth=depth)
                     return
                 else:
                     # Direct export like: export function foo() or export default class Bar
                     for child in node.children:
-                        find_defs(child, is_exported=True)
+                        find_defs(child, is_exported=True, depth=depth)
                     return
 
             if node.kind in ["function_declaration", "class_declaration", "method_definition", "function"]:
@@ -300,8 +300,9 @@ class JavaScriptAdapter(LanguageAdapter):
                         "is_public": final_is_exported,
                     })
 
-            # Handle lexical declarations (const, let) and variable declarations (var)
-            if node.kind in ["lexical_declaration", "variable_declaration"]:
+            # FIXED: Only capture lexical/variable declarations at module level (depth <= 1)
+            # This prevents capturing block-scoped variables inside functions
+            if node.kind in ["lexical_declaration", "variable_declaration"] and depth <= 1:
                 for child in node.children:
                     if child.kind == "variable_declarator":
                         name_node = self._find_first_descendant_by_kind_bfs(child, "identifier")
@@ -318,9 +319,9 @@ class JavaScriptAdapter(LanguageAdapter):
                                 }
                             )
 
-            # Recurse carefully
+            # Recurse carefully, incrementing depth
             for child in node.children:
-                find_defs(child, is_exported)
+                find_defs(child, is_exported, depth + 1)
 
         find_defs(root)
         return definitions
@@ -476,7 +477,7 @@ class TypeScriptAdapter(LanguageAdapter):
 
         collect_exported_names(root)
 
-        def find_defs(node, is_exported=False):
+        def find_defs(node, is_exported=False, depth=0):
             # Handle export statement wrapper
             if node.kind == "export_statement":
                 # Check for export default
@@ -490,12 +491,12 @@ class TypeScriptAdapter(LanguageAdapter):
                     # They'll be matched against exported_names set
                     for child in node.children:
                         if child.kind != "export_clause":
-                            find_defs(child, is_exported=False)
+                            find_defs(child, is_exported=False, depth=depth)
                     return
                 else:
                     # Direct export like: export function foo() or export default class Bar
                     for child in node.children:
-                        find_defs(child, is_exported=True)
+                        find_defs(child, is_exported=True, depth=depth)
                     return
 
             # Handle all definition types
@@ -530,8 +531,9 @@ class TypeScriptAdapter(LanguageAdapter):
                         }
                     )
 
-            # Handle lexical declarations (const, let) and variable declarations (var)
-            if node.kind in ["lexical_declaration", "variable_declaration"]:
+            # FIXED: Only capture lexical/variable declarations at module level (depth <= 1)
+            # This prevents capturing block-scoped variables inside functions
+            if node.kind in ["lexical_declaration", "variable_declaration"] and depth <= 1:
                 # These can contain multiple declarators: const a = 1, b = 2;
                 for child in node.children:
                     if child.kind == "variable_declarator":
@@ -549,8 +551,9 @@ class TypeScriptAdapter(LanguageAdapter):
                                 }
                             )
 
+            # Recurse carefully, incrementing depth
             for child in node.children:
-                find_defs(child, is_exported)
+                find_defs(child, is_exported, depth + 1)
 
         find_defs(root)
         return definitions
@@ -591,18 +594,18 @@ class TypeScriptAdapter(LanguageAdapter):
 
         collect_exported_names(root)
 
-        def find_vars(node, is_exported=False):
+        def find_top_level_vars(node, is_exported=False):
             # Handle export statement wrapper
             if node.kind == "export_statement":
                 has_export_clause = any(c.kind == "export_clause" for c in node.children)
                 if has_export_clause:
                     for child in node.children:
                         if child.kind != "export_clause":
-                            find_vars(child, is_exported=False)
+                            find_top_level_vars(child, is_exported=False)
                     return
                 else:
                     for child in node.children:
-                        find_vars(child, is_exported=True)
+                        find_top_level_vars(child, is_exported=True)
                     return
 
             # Capture type declarations (type aliases, interfaces, enums)
@@ -645,10 +648,12 @@ class TypeScriptAdapter(LanguageAdapter):
                             if pattern_node:
                                 self._extract_destructured_names(pattern_node, source_code, variables, is_exported, exported_names, child)
 
-            for child in node.children:
-                find_vars(child, is_exported)
+        # FIXED: Only iterate through the direct children of the root 'program' node.
+        # This prevents us from capturing variables inside functions.
+        if root and root.children:
+            for child in root.children:
+                find_top_level_vars(child)
 
-        find_vars(root)
         return variables
 
     def _extract_destructured_names(self, pattern_node, source_code, variables, is_exported, exported_names, parent_node):
