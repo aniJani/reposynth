@@ -254,6 +254,9 @@ class JavaScriptAdapter(LanguageAdapter):
         collect_exported_names(root)
 
         def find_defs(node, is_exported=False, depth=0):
+            # CRITICAL FIX: Track whether we captured a definition at this node
+            captured_definition = False
+
             # Handle module.exports = function myFunction() { ... }
             # And module.exports = class MyClass { ... }
             if node.kind == "assignment_expression":
@@ -299,6 +302,7 @@ class JavaScriptAdapter(LanguageAdapter):
                         "end_byte": node.end_byte,
                         "is_public": final_is_exported,
                     })
+                    captured_definition = True
 
             # FIXED: Only capture lexical/variable declarations at module level (depth <= 1)
             # This prevents capturing block-scoped variables inside functions
@@ -320,8 +324,11 @@ class JavaScriptAdapter(LanguageAdapter):
                             )
 
             # Recurse carefully, incrementing depth
+            # CRITICAL FIX: Reset is_exported=False when recursing into a captured definition's body
+            # This prevents nested variables from inheriting the export status
+            next_is_exported = False if captured_definition else is_exported
             for child in node.children:
-                find_defs(child, is_exported, depth + 1)
+                find_defs(child, next_is_exported, depth + 1)
 
         find_defs(root)
         return definitions
@@ -500,6 +507,9 @@ class TypeScriptAdapter(LanguageAdapter):
                     return
 
             # Handle all definition types
+            # CRITICAL FIX: Track whether we captured a definition at this node
+            captured_definition = False
+
             if node.kind in [
                 "function_declaration",
                 "class_declaration",
@@ -530,6 +540,7 @@ class TypeScriptAdapter(LanguageAdapter):
                             "is_public": final_is_exported,
                         }
                     )
+                    captured_definition = True
 
             # FIXED: Only capture lexical/variable declarations at module level (depth <= 1)
             # This prevents capturing block-scoped variables inside functions
@@ -552,8 +563,11 @@ class TypeScriptAdapter(LanguageAdapter):
                             )
 
             # Recurse carefully, incrementing depth
+            # CRITICAL FIX: Reset is_exported=False when recursing into a captured definition's body
+            # This prevents nested variables from inheriting the export status
+            next_is_exported = False if captured_definition else is_exported
             for child in node.children:
-                find_defs(child, is_exported, depth + 1)
+                find_defs(child, next_is_exported, depth + 1)
 
         find_defs(root)
         return definitions
