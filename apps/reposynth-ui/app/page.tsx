@@ -3,6 +3,7 @@ import { ConfiguratorPanel } from '@/components/ConfiguratorPanel';
 import { EstimatorDisplay } from '@/components/EstimatorDisplay';
 import { SubmitButton } from '@/components/SubmitButton';
 import { JobStatusDisplay } from '@/components/JobStatusDisplay';
+import { VibeCodingPanel } from '@/components/VibeCodingPanel';
 import { Package } from 'lucide-react';
 
 export default function Home() {
@@ -49,6 +50,11 @@ export default function Home() {
           {/* Job Status Display */}
           <section>
             <JobStatusDisplay />
+          </section>
+
+          {/* Vibe Station */}
+          <section>
+            <VibeCodingPanel />
           </section>
         </div>
       </div>

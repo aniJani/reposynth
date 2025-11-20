@@ -23,7 +23,9 @@ from .schemas import (
     GitHubEstimateRequest,
     JobConfiguration,
     ConfiguratorEstimateRequest,
-    ConfiguratorEstimateResponse
+    ConfiguratorEstimateResponse,
+    VibePromptRequest,
+    VibePromptResponse
 )
 from .estimator import estimate_tokens, TIKTOKEN_AVAILABLE, PYGOUNT_AVAILABLE
 from .git_utils import clone_repository, cleanup_cloned_repo
@@ -565,3 +567,119 @@ async def list_jobs(
         "offset": offset,
         "has_more": (offset + limit) < total
     }
+
+
+# ============================================================================
+# Vibe Coding / Prompt Generation Endpoints
+# ============================================================================
+
+@app.post("/vibe-prompt", response_model=VibePromptResponse, tags=["Vibe Coding"])
+async def generate_vibe_prompt(request: VibePromptRequest, db: Session = Depends(get_db)):
+    """
+    Generate an LLM-optimized prompt from a completed job's pack.
+
+    This endpoint supports three compression modes:
+    - **Blueprint Mode**: Structure only (5-10K tokens) - No source code, just architecture
+    - **Focus Mode**: Structure + relevant files (20-50K tokens) - Query-based file selection
+    - **Bundle Mode**: Structure + dependency slice (50-200K+ tokens) - Full dependency tree
+
+    The job must be completed (status='completed') and have a result pack available.
+
+    Args:
+        request: VibePromptRequest with job_id, mode, and optional query/entry_point
+        db: Database session (injected)
+
+    Returns:
+        VibePromptResponse with generated prompt and metadata
+
+    Example:
+        POST /vibe-prompt
+        Body: {
+            "job_id": "abc-123",
+            "mode": "focus",
+            "query": "How does authentication work?",
+            "max_files": 5
+        }
+
+    Raises:
+        HTTPException: If job not found, not completed, or pack unavailable
+    """
+    from .prompt_engine import generate_vibe_prompt
+    import boto3
+    import tempfile
+
+    # Get job from database
+    job = db.query(Job).filter(Job.id == request.job_id).first()
+
+    if not job:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Job not found: {request.job_id}"
+        )
+
+    if job.status != "completed":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Job is not completed. Current status: {job.status}"
+        )
+
+    if not job.result_url:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No result pack found for job {request.job_id}"
+        )
+
+    # Validate mode-specific requirements
+    if request.mode == "focus" and not request.query:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Query is required for 'focus' mode"
+        )
+
+    if request.mode == "bundle" and not request.entry_point:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Entry point is required for 'bundle' mode"
+        )
+
+    try:
+        # Download pack from S3 to temporary location
+        with tempfile.TemporaryDirectory(prefix="vibe_prompt_") as temp_dir:
+            temp_pack_path = Path(temp_dir) / "pack.zip"
+
+            # Parse S3 URL to get bucket and key
+            # Format: http://endpoint/bucket/job_id/filename.zip
+            result_url = job.result_url
+
+            # Extract bucket and key from URL
+            # Example: http://localhost:9000/reposynth-packs/abc-123/reposynth_yup_hybrid_abc-123.zip
+            parts = result_url.split('/')
+            bucket_name = parts[-3] if len(parts) >= 3 else S3_BUCKET
+            s3_key = "/".join(parts[-2:])  # job_id/filename.zip
+
+            print(f"Downloading pack from S3: bucket={bucket_name}, key={s3_key}")
+
+            # Download from S3
+            s3_client.download_file(bucket_name, s3_key, str(temp_pack_path))
+
+            # Generate prompt using prompt engine
+            result = generate_vibe_prompt(
+                pack_path=str(temp_pack_path),
+                mode=request.mode,
+                query=request.query,
+                entry_point=request.entry_point,
+                max_files=request.max_files,
+                max_depth=request.max_depth
+            )
+
+            return VibePromptResponse(
+                prompt=result["prompt"],
+                metadata=result["metadata"]
+            )
+
+    except Exception as e:
+        print(f"Error generating vibe prompt: {e}", file=sys.stderr)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate prompt: {str(e)}"
+        )

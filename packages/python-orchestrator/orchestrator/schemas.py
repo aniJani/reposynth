@@ -343,3 +343,75 @@ class ConfiguratorEstimateResponse(BaseModel):
             }
         }
     )
+
+
+# ============================================================================
+# Vibe Coding / Prompt Generation Schemas
+# ============================================================================
+
+class VibePromptRequest(BaseModel):
+    """Request for generating a Vibe Coding prompt."""
+    job_id: str = Field(
+        ...,
+        description="Job ID of completed analysis (pack must exist)"
+    )
+    mode: str = Field(
+        ...,
+        description="Prompt mode: 'blueprint', 'focus', or 'bundle'"
+    )
+    query: Optional[str] = Field(
+        None,
+        description="Query string (required for 'focus' mode)"
+    )
+    entry_point: Optional[str] = Field(
+        None,
+        description="Entry point file path (required for 'bundle' mode)"
+    )
+    max_files: int = Field(
+        default=5,
+        description="Maximum files to include in focus mode"
+    )
+    max_depth: int = Field(
+        default=3,
+        description="Maximum dependency depth in bundle mode"
+    )
+
+    @field_validator('mode')
+    @classmethod
+    def validate_mode(cls, v: str) -> str:
+        """Validate prompt mode."""
+        valid_modes = ['blueprint', 'focus', 'bundle']
+        if v not in valid_modes:
+            raise ValueError(f"Invalid mode '{v}'. Must be one of: {', '.join(valid_modes)}")
+        return v
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "job_id": "abc-123",
+                "mode": "focus",
+                "query": "How does authentication work?",
+                "max_files": 5
+            }
+        }
+    )
+
+
+class VibePromptResponse(BaseModel):
+    """Response with generated Vibe Coding prompt."""
+    prompt: str = Field(..., description="Generated prompt optimized for LLMs")
+    metadata: Dict[str, Any] = Field(..., description="Metadata about the prompt")
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "prompt": "# CODEBASE CONTEXT...\n\n## Structural Blueprint...",
+                "metadata": {
+                    "mode": "focus",
+                    "token_estimate": 15000,
+                    "files_included": 5,
+                    "description": "Focused context for: authentication"
+                }
+            }
+        }
+    )
