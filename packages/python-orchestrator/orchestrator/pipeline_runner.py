@@ -120,6 +120,36 @@ class Pipeline:
             print("\n--- Running Stage 4.5: Security Scanning ---")
             self.run_security_scans(config=config)
 
+        # Blast Radius Mode: Generate LLM-ready context instead of pack
+        if config.get("pack_mode") == "blast-radius":
+            print("\n--- Running Blast Radius Mode ---")
+
+            # Ensure query exists
+            query = config.get("query")
+            if not query:
+                raise ValueError("Blast Radius mode requires a --query parameter")
+
+            # Import and run blast radius calculation
+            from .blast_radius import calculate_blast_radius
+
+            max_shockwave = config.get("max_shockwave_files", 50)
+            context_md = calculate_blast_radius(
+                self.repo_path,
+                self.output_path,
+                query,
+                max_shockwave_files=max_shockwave
+            )
+
+            # Save the output
+            output_file = self.output_path / "vibecode_prompt.md"
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(context_md)
+
+            print(f"\n✅ VIBECODE READY: {output_file}")
+            print(f"📋 Copy this file's content and paste into your LLM chat")
+            print("\n--- Pipeline Finished Successfully! ---")
+            return  # Skip normal pack assembly
+
         print("\n--- Running Stage 5: Assembling Final Pack ---")
         self.assemble_pack(config=config)
 

@@ -6,8 +6,9 @@ No fancy embeddings, no graph traversal - just dead simple keyword matching.
 """
 
 import json
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Tuple
 from pathlib import Path
+from collections import defaultdict
 
 
 def retrieve_relevant_symbols(query: str, name_registry: Dict[str, Any], max_items: int = 5) -> List[Dict[str, Any]]:
@@ -50,6 +51,86 @@ def retrieve_relevant_symbols(query: str, name_registry: Dict[str, Any], max_ite
     # Sort by score (descending) and return top-k
     matches.sort(reverse=True, key=lambda x: x[0])
     return [match[1] for match in matches[:max_items]]
+
+
+def retrieve_relevant_files(query: str, name_registry: Dict[str, Any], max_files: int = 10) -> List[Dict[str, Any]]:
+    """
+    Enhanced retrieval with file-level aggregation and fuzzy matching.
+
+    Designed for blast-radius mode where we need files, not individual symbols.
+
+    Improvements over retrieve_relevant_symbols:
+    1. Aggregates scores at FILE level (files with multiple matches rank higher)
+    2. Fuzzy substring matching (handles "authentication" matching "authenticate")
+    3. Returns files directly with aggregate scores
+
+    Args:
+        query: Natural language query (e.g., "add google oauth to login")
+        name_registry: Full name registry
+        max_files: Maximum number of files to return
+
+    Returns:
+        List of dicts with file metadata and aggregate scores
+        [{"file_path": "auth/service.py", "score": 12, "matching_symbols": [...]}, ...]
+
+    Example:
+        query = "login authentication user"
+
+        File scoring:
+        - auth/service.py: login(), authenticate(), validateUser() -> score = 6
+        - models/user.py: User class -> score = 2
+        - utils/helpers.py: login_url constant -> score = 1
+
+        Returns: [auth/service.py, models/user.py] (top 2)
+    """
+    query_lower = query.lower()
+    query_words = set(query_lower.split())
+
+    # File-level aggregation: {file_path: {"score": int, "symbols": [...]}}
+    file_data = defaultdict(lambda: {"score": 0, "symbols": []})
+
+    for symbol_fqn, symbol_info in name_registry.items():
+        file_path = symbol_info.get('file_path', '')
+        if not file_path:
+            continue
+
+        symbol_name = symbol_fqn.split(':')[-1].lower()
+
+        # Calculate match score for this symbol
+        score = 0
+
+        for word in query_words:
+            # Exact word match in symbol name (highest priority)
+            if word == symbol_name:
+                score += 3
+            # Fuzzy substring match in symbol name (handles variations)
+            elif word in symbol_name or symbol_name in word:
+                score += 2
+            # Match in file path (medium priority)
+            elif word in symbol_fqn.lower():
+                score += 1
+
+        if score > 0:
+            file_data[file_path]["score"] += score
+            file_data[file_path]["symbols"].append({
+                "name": symbol_name,
+                "fqn": symbol_fqn,
+                "score": score,
+                **symbol_info
+            })
+
+    # Convert to list and sort by aggregate score
+    ranked_files = []
+    for file_path, data in file_data.items():
+        ranked_files.append({
+            "file_path": file_path,
+            "score": data["score"],
+            "matching_symbols": data["symbols"],
+            "match_count": len(data["symbols"])
+        })
+
+    ranked_files.sort(reverse=True, key=lambda x: x["score"])
+    return ranked_files[:max_files]
 
 
 def retrieve_with_relationships(query: str, name_registry: Dict[str, Any], max_items: int = 5) -> Dict[str, Any]:

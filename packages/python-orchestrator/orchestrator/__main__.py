@@ -31,6 +31,12 @@ Examples:
   # Disable caching for fresh analysis
   python -m orchestrator --repo /path/to/repo --no-cache
 
+  # Generate blast-radius context for LLM (VibeCode mode)
+  python -m orchestrator --mode blast-radius --query "login authentication user"
+
+  # Blast-radius with custom max files
+  python -m orchestrator --mode blast-radius --query "payment processing" --max-shockwave-files 30
+
 For more information, visit: https://github.com/aniJani/reposynth
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter
@@ -49,14 +55,32 @@ For more information, visit: https://github.com/aniJani/reposynth
         "--mode",
         type=str,
         default="semantic",
-        choices=["semantic", "hybrid", "full"],
+        choices=["semantic", "hybrid", "full", "blast-radius"],
         metavar="MODE",
         help="""Pipeline mode (default: semantic).
 
-        semantic: Lightweight analysis with AST, graphs, metrics, and embeddings (loose files).
-        hybrid:   Adds variable registry and source spans, packaged as .zip archive.
-        full:     Complete analysis with all features and raw AST files in .zip archive.
+        semantic:      Lightweight analysis with AST, graphs, metrics, and embeddings (loose files).
+        hybrid:        Adds variable registry and source spans, packaged as .zip archive.
+        full:          Complete analysis with all features and raw AST files in .zip archive.
+        blast-radius:  Smart context generation for LLMs (requires --query). Finds relevant files
+                       and their dependencies, provides full source for epicenter files and
+                       skeleton interfaces for dependencies. Outputs vibecode_prompt.md.
         """
+    )
+
+    parser.add_argument(
+        "--query",
+        type=str,
+        metavar="TEXT",
+        help="Search query for blast-radius mode. Specifies what code to focus on (e.g., 'login authentication')."
+    )
+
+    parser.add_argument(
+        "--max-shockwave-files",
+        type=int,
+        default=50,
+        metavar="N",
+        help="Maximum number of dependency files to include in blast-radius mode (default: 50)."
     )
 
     # --- Fine-grained Feature Toggles ---
@@ -151,6 +175,25 @@ For more information, visit: https://github.com/aniJani/reposynth
             "build_variable_registry": True,
             "store_spans": True,
             "pack_mode": "full",
+        }
+    elif args.mode == "blast-radius":
+        # Blast Radius Mode: Minimal stages needed for smart context generation
+        if not args.query:
+            print("FATAL: --query is required for blast-radius mode", file=sys.stderr)
+            print("Example: python -m orchestrator --mode blast-radius --query 'login authentication'", file=sys.stderr)
+            sys.exit(1)
+
+        config = {
+            "run_parsing": True,           # Need AST for skeleton generation
+            "build_graphs": True,          # Need import_graph and name_registry
+            "run_analysis": True,          # Need complexity data for scoring
+            "run_embeddings": False,       # Not needed for blast-radius
+            "run_security_scans": False,   # Not needed for blast-radius
+            "build_variable_registry": False,  # Not needed for blast-radius
+            "store_spans": False,          # Not needed for blast-radius
+            "pack_mode": "blast-radius",
+            "query": args.query,
+            "max_shockwave_files": args.max_shockwave_files,
         }
     else:  # Default to semantic for safety
         config = {
