@@ -5,7 +5,7 @@ Week 6: Token estimation and configuration schemas.
 """
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 from pathlib import Path
 
 
