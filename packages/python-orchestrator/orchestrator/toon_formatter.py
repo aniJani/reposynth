@@ -85,62 +85,75 @@ def convert_registry_to_toon(registry: Dict[str, Any]) -> str:
         }
 
     Example Output:
-        symbols[1]{name,kind,file,public,inherits}:
-          User,class,src/auth.ts,yes,BaseModel
+        symbols[1]{name,kind,file,pub,inherits}:
+          User,class,src/auth.ts,1,BaseModel
     """
-    headers = ["name", "kind", "file", "public", "inherits"]
+    headers = ["name", "kind", "file", "pub", "inherits"]
     rows = []
+
+    # Map verbose kinds to short codes to save tokens
+    kind_map = {
+        "function_declaration": "func",
+        "method_definition": "meth",
+        "class_declaration": "class",
+        "interface_declaration": "iface",
+        "type_alias_declaration": "type",
+        "const_declaration": "const",
+        "variable_declaration": "var",
+        "enum_declaration": "enum",
+        "module_declaration": "mod",
+        "export_statement": "exp",
+        "import_statement": "imp"
+    }
 
     for key, data in registry.items():
         # Extract symbol name from FQN (format: "file:name")
         symbol_name = data.get('name', key.split(':')[-1] if ':' in key else key)
+        
+        raw_kind = data.get('kind', 'unknown')
+        short_kind = kind_map.get(raw_kind, raw_kind)
 
         rows.append([
             symbol_name,
-            data.get('kind', 'unknown'),
+            short_kind,
             data.get('file_path', ''),
-            "yes" if data.get('is_public', False) else "no",
+            "1" if data.get('is_public', False) else "0",
             "|".join(data.get('inherits_from', [])) if data.get('inherits_from') else ""
         ])
 
     return format_table("symbols", headers, rows)
 
 
-def convert_graph_to_toon(graph: Dict[str, List[str]]) -> str:
+def convert_graph_to_toon(graph: Dict[str, Any]) -> str:
     """
     Convert import_graph.json to TOON format.
 
     The import graph shows file-to-file dependencies.
+    Supports both Dictionary format and Node/Edge format.
 
     Args:
-        graph: import_graph.json as dict where keys are source files
-               and values are lists of imported files
+        graph: import_graph.json as dict
 
     Returns:
         TOON formatted string
-
-    Example Input:
-        {
-          "src/auth.ts": ["src/user.ts", "src/db.ts"],
-          "src/user.ts": ["src/db.ts"]
-        }
-
-    Example Output:
-        dependencies[3]{source,target}:
-          src/auth.ts,src/user.ts
-          src/auth.ts,src/db.ts
-          src/user.ts,src/db.ts
     """
     headers = ["source", "target"]
     rows = []
 
-    for source, targets in graph.items():
-        if isinstance(targets, list):
-            for target in targets:
-                rows.append([source, target])
-        else:
-            # Handle old format where targets might be a string
-            rows.append([source, str(targets)])
+    # CASE A: Graph is a Dictionary {"src/a.ts": ["src/b.ts"]}
+    if isinstance(graph, dict) and "edges" not in graph:
+        for source, targets in graph.items():
+            if isinstance(targets, list):
+                for target in targets:
+                    rows.append([source, target])
+            else:
+                # Handle old format where targets might be a string
+                rows.append([source, str(targets)])
+    
+    # CASE B: Graph is Node/Edge format
+    elif isinstance(graph, dict) and "edges" in graph:
+        for edge in graph["edges"]:
+            rows.append([edge["source"], edge["target"]])
 
     return format_table("dependencies", headers, rows)
 
@@ -177,6 +190,50 @@ def convert_complexity_to_toon(complexity_data: List[Dict[str, Any]]) -> str:
         ])
 
     return format_table("complexity", headers, rows)
+
+
+def convert_source_to_toon(source_spans: Dict[str, Any]) -> str:
+    """
+    Convert source code spans to TOON format (using Markdown blocks).
+    
+    Format:
+        ## Source Code (N files)
+        
+        ### File: path/to/file.ts
+        ```typescript
+        ... content ...
+        ```
+    
+    Args:
+        source_spans: Dict of source file data (from source_spans.json)
+        
+    Returns:
+        Formatted string
+    """
+    sections = []
+    count = len(source_spans)
+    sections.append(f"## Source Code ({count} files)\n")
+    
+    for file_path, data in source_spans.items():
+        # Detect language
+        ext = file_path.split('.')[-1] if '.' in file_path else 'text'
+        lang_map = {
+            'ts': 'typescript', 'tsx': 'tsx', 'js': 'javascript', 'jsx': 'jsx',
+            'py': 'python', 'rs': 'rust', 'go': 'go', 'java': 'java',
+            'cpp': 'cpp', 'c': 'c', 'h': 'c', 'hpp': 'cpp', 'cs': 'csharp',
+            'rb': 'ruby', 'php': 'php', 'sh': 'bash', 'yaml': 'yaml', 'json': 'json',
+            'md': 'markdown', 'html': 'html', 'css': 'css', 'sql': 'sql'
+        }
+        lang = lang_map.get(ext, ext)
+        
+        sections.append(f"### File: {file_path}")
+        sections.append(f"```{lang}")
+        
+        content = data.get('full_source', '')
+        sections.append(content)
+        sections.append("```\n")
+        
+    return "\n".join(sections)
 
 
 def generate_toon_blueprint(registry: Dict[str, Any], graph: Dict[str, List[str]]) -> str:

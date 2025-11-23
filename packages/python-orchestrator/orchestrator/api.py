@@ -7,12 +7,18 @@ Week 8: Job queue and background processing.
 
 from fastapi import FastAPI, HTTPException, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
 from pathlib import Path
 import sys
+import os
 import uuid
+import boto3
+import tempfile
+import json
 from typing import Dict, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from .schemas import (
     EstimateRequest,
@@ -27,12 +33,31 @@ from .schemas import (
     VibePromptRequest,
     VibePromptResponse
 )
+from .prompt_engine import generate_vibe_prompt, suggest_entry_points
 from .estimator import estimate_tokens, TIKTOKEN_AVAILABLE, PYGOUNT_AVAILABLE
 from .git_utils import clone_repository, cleanup_cloned_repo
 
 # Week 8: Database and worker imports
 from .database import create_tables, get_db, Job
 from . import worker
+
+# S3/MinIO Configuration
+S3_BUCKET = os.environ.get("S3_BUCKET", "reposynth-packs")
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
+
+# Initialize S3 client
+try:
+    s3_client = boto3.client(
+        "s3",
+        endpoint_url=AWS_ENDPOINT_URL,
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    )
+except Exception as e:
+    print(f"Warning: Failed to initialize S3 client: {e}", file=sys.stderr)
+    s3_client = None
 
 # Application metadata
 __version__ = "2.0.0"  # Week 8 update
@@ -45,6 +70,12 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# Mount worker_packs directory to serve generated files locally
+# This allows downloading packs without S3/MinIO if needed
+worker_packs_dir = Path("/app/worker_packs")
+worker_packs_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/packs", StaticFiles(directory="/app/worker_packs"), name="packs")
 
 # Enable CORS for future web UI
 app.add_middleware(
@@ -97,7 +128,7 @@ async def health_check(db: Session = Depends(get_db)):
     # Test database connection
     database_healthy = False
     try:
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         database_healthy = True
     except Exception as e:
         print(f"Database health check failed: {e}", file=sys.stderr)
@@ -569,12 +600,91 @@ async def list_jobs(
     }
 
 
+@app.get("/jobs/{job_id}/files", tags=["Jobs"])
+async def get_job_files(job_id: str):
+    """
+    Get list of files and suggested entry points for a job.
+    Useful for populating UI dropdowns in Bundle Mode.
+    """
+    # Locate pack (adjust path if using S3 vs local)
+    # Try local first
+    pack_path = Path(f"/app/worker_packs/{job_id}")
+    
+    # Check for unzipped pack folder first
+    if (pack_path / "pack").exists():
+        work_dir = pack_path / "pack"
+    # Check for zip file
+    elif (pack_path / f"reposynth_{job_id}.zip").exists():
+        # We can't easily list files inside zip without extracting or using zipfile
+        # For now, let's assume if it's zipped, we might need to peek inside
+        # But simpler is to look for import_graph.json if it was extracted
+        # If not extracted, we might fail or need to implement zip reading here
+        # Let's try to find import_graph.json in the pack directory if it exists
+        work_dir = pack_path
+    else:
+        # Fallback to just checking if we can find import_graph.json anywhere
+        work_dir = pack_path
+
+    graph_path = work_dir / "import_graph.json"
+    
+    # If not found locally, we might need to check S3 or fail
+    # For this implementation, we assume local availability or extracted pack
+    if not graph_path.exists():
+        # Try looking inside the zip if it exists
+        zip_files = list(pack_path.glob("*.zip"))
+        if zip_files:
+            import zipfile
+            try:
+                with zipfile.ZipFile(zip_files[0], 'r') as zf:
+                    if "import_graph.json" in zf.namelist():
+                        graph_data = json.loads(zf.read("import_graph.json"))
+                        
+                        if "edges" in graph_data:
+                             files = set()
+                             for edge in graph_data["edges"]:
+                                 files.add(edge["source"])
+                                 files.add(edge["target"])
+                             file_list = sorted(list(files))
+                        else:
+                             file_list = sorted(list(graph_data.keys()))
+                             
+                        return {
+                            "files": file_list,
+                            "roots": suggest_entry_points(graph_data)
+                        }
+            except Exception:
+                pass
+        
+        return {"files": [], "roots": []}
+        
+    try:
+        graph = json.loads(graph_path.read_text(encoding='utf-8'))
+        
+        # Handle edges format for file list
+        if "edges" in graph:
+             files = set()
+             for edge in graph["edges"]:
+                 files.add(edge["source"])
+                 files.add(edge["target"])
+             file_list = sorted(list(files))
+        else:
+             file_list = sorted(list(graph.keys()))
+
+        return {
+            "files": file_list,
+            "roots": suggest_entry_points(graph)
+        }
+    except Exception as e:
+        print(f"Error reading job files: {e}", file=sys.stderr)
+        return {"files": [], "roots": []}
+
+
 # ============================================================================
 # Vibe Coding / Prompt Generation Endpoints
 # ============================================================================
 
 @app.post("/vibe-prompt", response_model=VibePromptResponse, tags=["Vibe Coding"])
-async def generate_vibe_prompt(request: VibePromptRequest, db: Session = Depends(get_db)):
+async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session = Depends(get_db)):
     """
     Generate an LLM-optimized prompt from a completed job's pack.
 
@@ -584,29 +694,9 @@ async def generate_vibe_prompt(request: VibePromptRequest, db: Session = Depends
     - **Bundle Mode**: Structure + dependency slice (50-200K+ tokens) - Full dependency tree
 
     The job must be completed (status='completed') and have a result pack available.
-
-    Args:
-        request: VibePromptRequest with job_id, mode, and optional query/entry_point
-        db: Database session (injected)
-
-    Returns:
-        VibePromptResponse with generated prompt and metadata
-
-    Example:
-        POST /vibe-prompt
-        Body: {
-            "job_id": "abc-123",
-            "mode": "focus",
-            "query": "How does authentication work?",
-            "max_files": 5
-        }
-
-    Raises:
-        HTTPException: If job not found, not completed, or pack unavailable
     """
-    from .prompt_engine import generate_vibe_prompt
-    import boto3
-    import tempfile
+    # Import engine function locally to avoid name conflict if any
+    from .prompt_engine import generate_vibe_prompt as engine_generate_prompt
 
     # Get job from database
     job = db.query(Job).filter(Job.id == request.job_id).first()
@@ -643,27 +733,76 @@ async def generate_vibe_prompt(request: VibePromptRequest, db: Session = Depends
         )
 
     try:
-        # Download pack from S3 to temporary location
-        with tempfile.TemporaryDirectory(prefix="vibe_prompt_") as temp_dir:
-            temp_pack_path = Path(temp_dir) / "pack.zip"
+        # Check if the pack exists locally (shared volume)
+        local_job_dir = Path("/app/worker_packs") / request.job_id
+        local_pack_path = None
+        
+        if local_job_dir.exists():
+            # Find the pack file in the job directory
+            # Priority: TOON > ZIP > JSON
+            toons = list(local_job_dir.glob("*.toon"))
+            zips = list(local_job_dir.glob("*.zip"))
+            jsons = list(local_job_dir.glob("*.json"))
+            
+            if toons:
+                local_pack_path = toons[0]
+                print(f"Found local pack (toon): {local_pack_path}")
+            elif zips:
+                local_pack_path = zips[0]
+                print(f"Found local pack (zip): {local_pack_path}")
+            elif jsons:
+                local_pack_path = jsons[0]
+                print(f"Found local pack (json): {local_pack_path}")
 
+        if local_pack_path and local_pack_path.exists():
+            # Use local file directly
+            result = engine_generate_prompt(
+                pack_path=str(local_pack_path),
+                mode=request.mode,
+                query=request.query,
+                entry_point=request.entry_point,
+                max_files=request.max_files,
+                max_depth=request.max_depth,
+                repo_url=job.repo_url  # Pass repo_url for fallback source reading
+            )
+            
+            return VibePromptResponse(
+                prompt=result["prompt"],
+                metadata=result["metadata"]
+            )
+            
+        # Fallback to S3 download if not found locally
+        with tempfile.TemporaryDirectory(prefix="vibe_prompt_") as temp_dir:
             # Parse S3 URL to get bucket and key
-            # Format: http://endpoint/bucket/job_id/filename.zip
             result_url = job.result_url
+            
+            if not result_url:
+                 raise ValueError("No result URL found for job")
 
             # Extract bucket and key from URL
-            # Example: http://localhost:9000/reposynth-packs/abc-123/reposynth_yup_hybrid_abc-123.zip
             parts = result_url.split('/')
+            
+            # Handle local file URLs (http://localhost:8000/packs/...)
+            if "/packs/" in result_url:
+                 raise ValueError("Local pack file not found on disk")
+
             bucket_name = parts[-3] if len(parts) >= 3 else S3_BUCKET
             s3_key = "/".join(parts[-2:])  # job_id/filename.zip
+            
+            # Determine file extension from key
+            file_ext = Path(s3_key).suffix
+            temp_pack_path = Path(temp_dir) / f"pack{file_ext}"
 
             print(f"Downloading pack from S3: bucket={bucket_name}, key={s3_key}")
+
+            if s3_client is None:
+                raise RuntimeError("S3 client not initialized and local file not found")
 
             # Download from S3
             s3_client.download_file(bucket_name, s3_key, str(temp_pack_path))
 
             # Generate prompt using prompt engine
-            result = generate_vibe_prompt(
+            result = engine_generate_prompt(
                 pack_path=str(temp_pack_path),
                 mode=request.mode,
                 query=request.query,

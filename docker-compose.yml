@@ -90,6 +90,7 @@ services:
     volumes:
       - ./packages/python-orchestrator:/app/packages/python-orchestrator
       - ./.reposynth_cache:/app/.reposynth_cache
+      - ./worker_packs:/app/worker_packs
     depends_on:
       postgres:
         condition: service_healthy

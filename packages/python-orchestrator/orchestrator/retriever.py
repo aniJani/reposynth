@@ -1,163 +1,172 @@
-"""
-Simple retrieval module for selecting relevant context from name_registry.
-
-This is the MINIMAL FIX to reduce token usage from 95K to ~5K.
-No fancy embeddings, no graph traversal - just dead simple keyword matching.
-"""
-
 import json
-from typing import Dict, List, Any
+import sys
+import numpy as np
 from pathlib import Path
+from typing import List, Dict, Any, Optional
 
-
+# --- 1. Core Keyword Search Logic ---
 def retrieve_relevant_symbols(query: str, name_registry: Dict[str, Any], max_items: int = 5) -> List[Dict[str, Any]]:
     """
-    Dead simple keyword-based retrieval.
-
-    Args:
-        query: The question/prompt from the user
-        name_registry: The full name registry dict
-        max_items: Maximum number of symbols to return
-
-    Returns:
-        List of relevant symbol dicts with their metadata
-
-    Example:
-        query = "What does ArraySchema inherit from?"
-        -> Returns top 5 symbols matching "ArraySchema" or "inherit"
+    Scans file paths and symbol names for keyword matches.
     """
     query_lower = query.lower()
-    query_words = set(query_lower.split())
-
+    # Split by spaces to get keywords
+    query_words = [w for w in query_lower.split() if len(w) > 2] # Ignore small words
+    
     matches = []
+    seen_files = set()
+
     for symbol_fqn, symbol_data in name_registry.items():
-        # Extract symbol name from FQN (file:name format)
-        symbol_name = symbol_fqn.split(':')[-1].lower()
-
-        # Simple scoring: count how many query words appear in symbol name
+        file_path = symbol_data.get('file_path', '')
+        symbol_name = symbol_data.get('name', '').lower()
+        
         score = 0
+        
+        # Check for matches
         for word in query_words:
-            if word in symbol_name:
-                score += 2  # Exact word match
-            elif word in symbol_fqn.lower():
-                score += 1  # Match in file path
-
+            if word in file_path.lower(): score += 3  # File name match is high value
+            if word in symbol_name: score += 2        # Function name match
+            
         if score > 0:
-            # Include all symbol data plus the FQN
-            match_data = {"fqn": symbol_fqn, **symbol_data}
-            matches.append((score, match_data))
+            # We want to return files, so we deduplicate by file path
+            if file_path not in seen_files:
+                matches.append((score, symbol_data))
+                seen_files.add(file_path)
 
-    # Sort by score (descending) and return top-k
+    # Sort by score descending
     matches.sort(reverse=True, key=lambda x: x[0])
-    return [match[1] for match in matches[:max_items]]
+    return [m[1] for m in matches[:max_items]]
 
+# --- 2. AI Semantic Search Logic ---
+_EMBEDDING_MODEL = None
 
-def retrieve_with_relationships(query: str, name_registry: Dict[str, Any], max_items: int = 5) -> Dict[str, Any]:
+def get_model():
+    global _EMBEDDING_MODEL
+    if _EMBEDDING_MODEL is None:
+        try:
+            from sentence_transformers import SentenceTransformer
+            # Use a small, fast model
+            _EMBEDDING_MODEL = SentenceTransformer('all-MiniLM-L6-v2')
+        except ImportError:
+            print("Warning: sentence-transformers not installed.", file=sys.stderr)
+            return None
+        except Exception as e:
+            print(f"Warning: Failed to load AI model: {e}", file=sys.stderr)
+            return None
+    return _EMBEDDING_MODEL
+
+def semantic_search(query: str, pack_dir: Path, max_items: int = 5):
+    index_path = pack_dir / "vectors.faiss"
+    ids_path = pack_dir / "vector_ids.json"
+    registry_path = pack_dir / "name_registry.json"
+
+    if not (index_path.exists() and ids_path.exists()): return []
+
+    try:
+        import faiss
+        model = get_model()
+        if not model: return []
+        
+        index = faiss.read_index(str(index_path))
+        with open(ids_path, 'r') as f: id_map = json.load(f)
+        with open(registry_path, 'r') as f: registry = json.load(f)
+
+        vec = model.encode([query])
+        distances, indices = index.search(np.array(vec).astype('float32'), max_items)
+        
+        results = []
+        seen = set()
+        for idx in indices[0]:
+            if str(idx) in id_map:
+                fqn = id_map[str(idx)]
+                if fqn in registry:
+                    data = registry[fqn]
+                    fpath = data.get('file_path')
+                    if fpath and fpath not in seen:
+                        results.append(data)
+                        seen.add(fpath)
+        return results
+    except Exception as e:
+        print(f"Semantic search error: {e}", file=sys.stderr)
+        return []
+
+# --- 3. The Panic Fallback (New!) ---
+def get_fallback_files(name_registry: Dict[str, Any], max_items: int = 5) -> List[Dict[str, Any]]:
     """
-    Enhanced retrieval that also pulls in related symbols.
-
-    If query asks about inheritance/exports, automatically include related info.
-
-    Args:
-        query: The question/prompt
-        name_registry: Full registry
-        max_items: Max symbols to return
-
-    Returns:
-        Dict with 'primary_matches' and 'related_symbols'
+    If search finds nothing, return the most important files 
+    (usually index, main, schema, etc.)
     """
-    query_lower = query.lower()
+    important_keywords = ['index', 'main', 'app', 'schema', 'types', 'server']
+    results = []
+    seen = set()
+    
+    # First pass: look for important filenames
+    for fqn, data in name_registry.items():
+        fpath = data.get('file_path', '')
+        if fpath in seen: continue
+        
+        for kw in important_keywords:
+            if kw in fpath.lower():
+                results.append(data)
+                seen.add(fpath)
+                break
+        if len(results) >= max_items: return results
 
-    # Get primary matches
-    primary = retrieve_relevant_symbols(query, name_registry, max_items)
+    # Second pass: just take the first few files
+    for fqn, data in name_registry.items():
+        fpath = data.get('file_path', '')
+        if fpath not in seen:
+            results.append(data)
+            seen.add(fpath)
+        if len(results) >= max_items: return results
+        
+    return results
 
-    related = []
+# --- 4. The Main Hybrid Search Function ---
+def hybrid_search(query: str, pack_dir: Path, max_items: int = 5, registry: Optional[Dict[str, Any]] = None):
+    print(f"DEBUG: Searching for '{query}'", file=sys.stderr)
+    
+    # Load Registry if not provided
+    if registry is None:
+        try:
+            # If pack_dir is a file (e.g. pack.json), we can't load registry from it as a directory
+            # This handles the case where caller didn't pass registry but passed a file path
+            if pack_dir.is_file() and pack_dir.suffix == '.json':
+                with open(pack_dir, 'r') as f:
+                    data = json.load(f)
+                    registry = data.get('name_registry', {})
+            else:
+                with open(pack_dir / "name_registry.json", 'r') as f:
+                    registry = json.load(f)
+        except Exception as e:
+            print(f"DEBUG: Failed to load registry: {e}", file=sys.stderr)
+            return [] # Cannot search without registry
 
-    # If query asks about inheritance, include parent classes
-    if any(word in query_lower for word in ['inherit', 'extends', 'base', 'parent']):
-        for symbol in primary:
-            if 'inherits_from' in symbol and symbol['inherits_from']:
-                # Find parent class definitions
-                for parent_name in symbol['inherits_from']:
-                    for fqn, data in name_registry.items():
-                        if fqn.endswith(f":{parent_name}"):
-                            related.append({"fqn": fqn, **data})
-                            break
+    # 1. Try Keyword Search
+    results = retrieve_relevant_symbols(query, registry, max_items)
+    print(f"DEBUG: Keywords found {len(results)}", file=sys.stderr)
+    
+    # 2. Try Semantic Search (Add to results if valid)
+    # Only possible if pack_dir is a directory containing vectors
+    if pack_dir and pack_dir.is_dir():
+        try:
+            semantic = semantic_search(query, pack_dir, max_items)
+            print(f"DEBUG: Semantic found {len(semantic)}", file=sys.stderr)
+            
+            # Merge semantic results (deduplicated)
+            seen_paths = set(r['file_path'] for r in results)
+            for item in semantic:
+                if item['file_path'] not in seen_paths:
+                    results.append(item)
+                    seen_paths.add(item['file_path'])
+        except Exception as e:
+            print(f"DEBUG: Semantic failed {e}", file=sys.stderr)
+    else:
+        print("DEBUG: Skipping semantic search (pack_dir is not a directory)", file=sys.stderr)
 
-    # If query asks about exports, include export info
-    if any(word in query_lower for word in ['export', 'exported', 'from', 'where']):
-        for symbol in primary:
-            if 'exported_from' in symbol and symbol['exported_from']:
-                # Export info is already in the symbol, no need to fetch more
-                pass
+    # 3. PANIC MODE: If still 0 results, force fallback
+    if len(results) == 0:
+        print("DEBUG: No results found. Using fallback.", file=sys.stderr)
+        results = get_fallback_files(registry, max_items)
 
-    return {
-        "primary_matches": primary,
-        "related_symbols": related
-    }
-
-
-def format_context_for_llm(matches: List[Dict[str, Any]], include_code: bool = False) -> str:
-    """
-    Format retrieved symbols into a compact string for LLM context.
-
-    Args:
-        matches: List of symbol dicts from retrieve_relevant_symbols
-        include_code: Whether to include full source code (expensive!)
-
-    Returns:
-        Formatted string ready to append to LLM prompt
-    """
-    lines = []
-    lines.append(f"# Relevant Code Symbols ({len(matches)} items)\n")
-
-    for i, symbol in enumerate(matches, 1):
-        lines.append(f"\n## {i}. {symbol.get('fqn', 'Unknown')}")
-        lines.append(f"- **Kind**: {symbol.get('kind', 'unknown')}")
-        lines.append(f"- **File**: {symbol.get('file_path', 'unknown')}")
-        lines.append(f"- **Public**: {symbol.get('is_public', False)}")
-
-        if 'inherits_from' in symbol and symbol['inherits_from']:
-            lines.append(f"- **Inherits From**: {', '.join(symbol['inherits_from'])}")
-
-        if 'exported_from' in symbol and symbol['exported_from']:
-            lines.append(f"- **Exported From**: {', '.join(symbol['exported_from'])}")
-
-        if include_code and 'start_byte' in symbol and 'end_byte' in symbol:
-            lines.append(f"- **Location**: bytes {symbol['start_byte']}-{symbol['end_byte']}")
-
-    return "\n".join(lines)
-
-
-def load_and_retrieve(query: str, pack_dir: str, max_items: int = 5) -> str:
-    """
-    Convenience function to load name_registry and retrieve in one step.
-
-    Args:
-        query: The question
-        pack_dir: Path to pack directory containing name_registry.json
-        max_items: Max symbols to return
-
-    Returns:
-        Formatted context string ready for LLM
-    """
-    pack_path = Path(pack_dir)
-    registry_path = pack_path / "name_registry.json"
-
-    if not registry_path.exists():
-        raise FileNotFoundError(f"name_registry.json not found at {registry_path}")
-
-    with open(registry_path, 'r', encoding='utf-8') as f:
-        name_registry = json.load(f)
-
-    matches = retrieve_relevant_symbols(query, name_registry, max_items)
-    return format_context_for_llm(matches)
-
-
-# Example usage:
-if __name__ == "__main__":
-    # Test the retrieval function
-    query = "What does ArraySchema inherit from?"
-    context = load_and_retrieve(query, "../../pack", max_items=5)
-    print(context)
-    print(f"\n\nEstimated tokens: ~{len(context.split()) * 1.3:.0f}")
+    return results[:max_items]

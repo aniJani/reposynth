@@ -86,7 +86,7 @@ export function ConfiguratorPanel() {
           {[
             { value: 'zip', label: 'ZIP Archive', description: 'Complete package' },
             { value: 'markdown', label: 'Markdown', description: 'Human-readable document' },
-            { value: 'json', label: 'JSON', description: 'Machine-readable data' }
+            { value: 'toon', label: 'TOON', description: 'Token-Optimized Object Notation' }
           ].map((format) => (
             <button
               key={format.value}

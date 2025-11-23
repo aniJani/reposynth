@@ -271,14 +271,16 @@ class Pipeline:
                 continue
 
             try:
+                # newline='' is CRITICAL for Windows/Docker compatibility
+                # It stops Python from shrinking \r\n to \n
                 with open(ast_file, "r", encoding="utf-8") as f:
                     ast_nodes = [json.loads(line) for line in f]
 
                 relative_path = str(original_file.relative_to(self.repo_path))
 
-                # Read with newline='' to preserve original line endings (CRLF on Windows)
-                # This ensures byte positions from AST match the source text
-                with open(original_file, "r", encoding="utf-8", newline='') as f:
+                # Read as bytes to ensure byte positions from AST match the source text
+                # especially when multi-byte characters are present
+                with open(original_file, "rb") as f:
                     source_code = f.read()
 
                 adapter = get_adapter(original_file)
@@ -505,7 +507,8 @@ class Pipeline:
             try:
                 with open(ast_file, "r", encoding="utf-8") as f:
                     ast_nodes = [json.loads(line) for line in f]
-                with open(original_file, "r", encoding="utf-8", newline='') as f:
+                # Read as bytes to ensure byte positions from AST match the source text
+                with open(original_file, "rb") as f:
                     source_code = f.read()
 
                 # Pass definitions for context
@@ -571,13 +574,13 @@ class Pipeline:
         for file_path_str, apis in files_with_apis.items():
             try:
                 full_path = self.repo_path / file_path_str
-                with open(full_path, "r", encoding="utf-8", newline='') as f:
+                with open(full_path, "rb") as f:
                     source_code = f.read()
 
                 # Extract the actual code span for each API
                 api_details = []
                 for api in apis:
-                    span_code = source_code[api["start_byte"]:api["end_byte"]]
+                    span_code = source_code[api["start_byte"]:api["end_byte"]].decode('utf-8')
                     api_details.append({
                         "name": api["name"],
                         "fqn": api["fqn"],
@@ -589,7 +592,7 @@ class Pipeline:
 
                 source_spans[file_path_str] = {
                     "file_path": file_path_str,
-                    "full_source": source_code,
+                    "full_source": source_code.decode('utf-8'),
                     "public_apis": api_details
                 }
 
@@ -721,11 +724,11 @@ class Pipeline:
             if data.get("is_public", False):
                 file_path = self.repo_path / data["file_path"]
                 try:
-                    with open(file_path, "r", encoding="utf-8", newline='') as f:
+                    with open(file_path, "rb") as f:
                         source_code = f.read()
 
                     # Create a snippet for embedding (e.g., function signature)
-                    snippet = source_code[data["start_byte"] : data["end_byte"]].split(
+                    snippet = source_code[data["start_byte"] : data["end_byte"]].decode('utf-8').split(
                         "\n"
                     )[0]
                     public_apis[fqn] = snippet
@@ -965,11 +968,11 @@ class Pipeline:
             for fqn, data in self.name_registry.items():
                 if data["file_path"] == path and data.get("is_public", False):
                     try:
-                        with open(self.repo_path / path, "r", encoding="utf-8", newline='') as f:
+                        with open(self.repo_path / path, "rb") as f:
                             source_code = f.read()
 
                         # Extract the signature properly
-                        snippet = source_code[data["start_byte"] : data["end_byte"]]
+                        snippet = source_code[data["start_byte"] : data["end_byte"]].decode('utf-8')
                         lines = snippet.split("\n")
 
                         # Find the definition line (skip decorators)
@@ -1091,6 +1094,36 @@ class Pipeline:
 
         # 5. Create pack format based on mode
         pack_mode = config.get("pack_mode", "semantic")
+        
+        # ALWAYS generate TOON pack (it's efficient and requested)
+        try:
+            from .toon_formatter import generate_toon_blueprint, convert_source_to_toon
+            
+            # Generate base structure
+            toon_content = generate_toon_blueprint(self.name_registry, self.import_graph)
+            
+            # Add source code if available
+            if source_spans:
+                toon_content += "\n" + convert_source_to_toon(source_spans)
+                
+            with open(self.output_path / "pack.toon", "w", encoding="utf-8") as f:
+                f.write(toon_content)
+            print("✓ Generated pack.toon (TOON v2 format)")
+            
+            # Also generate a single JSON pack for compatibility/ease of use
+            full_json_pack = {
+                "manifest": manifest,
+                "name_registry": self.name_registry,
+                "import_graph": self.import_graph,
+                "variable_registry": self.variable_registry,
+                "source_files": source_spans # Include source!
+            }
+            with open(self.output_path / "pack.json", "w", encoding="utf-8") as f:
+                json.dump(full_json_pack, f, indent=2)
+            print("✓ Generated pack.json (Single-file JSON format)")
+            
+        except Exception as e:
+            print(f"Warning: Failed to generate TOON/JSON packs: {e}", file=sys.stderr)
 
         if pack_mode == "semantic":
             # Semantic mode: Keep files as-is (lightweight, human-readable)

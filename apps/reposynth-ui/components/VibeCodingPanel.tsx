@@ -1,9 +1,10 @@
+
 // components/VibeCodingPanel.tsx
 'use client';
 
 import { useStore } from '@/lib/store';
-import { generateVibePrompt } from '@/lib/api';
-import { useState } from 'react';
+import { generateVibePrompt, getJobFiles } from '@/lib/api';
+import { useState, useEffect } from 'react';
 import {
   Sparkles,
   Loader2,
@@ -34,6 +35,27 @@ export function VibeCodingPanel() {
 
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fileList, setFileList] = useState<{ files: string[]; roots: string[] }>({
+    files: [],
+    roots: [],
+  });
+  const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+
+  useEffect(() => {
+    if (vibeMode === 'bundle' && currentJob?.id) {
+      setIsLoadingFiles(true);
+      getJobFiles(currentJob.id)
+        .then((data) => {
+          setFileList(data);
+          // Auto-select first root if available and no entry point set
+          if (data.roots.length > 0 && !vibeEntryPoint) {
+            setVibeEntryPoint(data.roots[0]);
+          }
+        })
+        .catch((err) => console.error('Failed to load files:', err))
+        .finally(() => setIsLoadingFiles(false));
+    }
+  }, [vibeMode, currentJob?.id, setVibeEntryPoint, vibeEntryPoint]);
 
   const handleGeneratePrompt = async () => {
     if (!currentJob || currentJob.status !== 'completed') {
@@ -54,7 +76,7 @@ export function VibeCodingPanel() {
 
     setIsGeneratingPrompt(true);
     setError(null);
-    setVibePrompt(null);
+    setVibePrompt('');
 
     try {
       const response = await generateVibePrompt({
@@ -206,13 +228,36 @@ export function VibeCodingPanel() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Entry Point File
                 </label>
-                <input
-                  type="text"
-                  value={vibeEntryPoint}
-                  onChange={(e) => setVibeEntryPoint(e.target.value)}
-                  placeholder="e.g., src/auth/AuthService.ts"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
+                {isLoadingFiles ? (
+                  <div className="flex items-center gap-2 text-gray-500 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading file list...
+                  </div>
+                ) : (
+                  <select
+                    value={vibeEntryPoint}
+                    onChange={(e) => setVibeEntryPoint(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                  >
+                    <option value="">Select a file...</option>
+                    {fileList.roots.length > 0 && (
+                      <optgroup label="⭐ Suggested Entry Points">
+                        {fileList.roots.map((f) => (
+                          <option key={f} value={f}>
+                            {f}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    <optgroup label="All Files">
+                      {fileList.files.map((f) => (
+                        <option key={f} value={f}>
+                          {f}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+                )}
                 <p className="text-sm text-gray-500 mt-2">
                   The starting point for dependency traversal
                 </p>
@@ -222,9 +267,15 @@ export function VibeCodingPanel() {
             {/* Generate Button */}
             <button
               onClick={handleGeneratePrompt}
-              disabled={isGeneratingPrompt || !currentJob || currentJob.status !== 'completed'}
+              disabled={
+                isGeneratingPrompt ||
+                !currentJob ||
+                currentJob.status !== 'completed'
+              }
               className={`w-full px-6 py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center gap-3 ${
-                isGeneratingPrompt || !currentJob || currentJob.status !== 'completed'
+                isGeneratingPrompt ||
+                !currentJob ||
+                currentJob.status !== 'completed'
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg hover:shadow-xl'
               }`}
@@ -297,7 +348,7 @@ export function VibeCodingPanel() {
                 <textarea
                   value={vibePrompt}
                   readOnly
-                  className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm resize-none focus:outline-none"
+                  className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm text-gray-900 resize-none focus:outline-none"
                 />
                 {vibeMetadata && (
                   <div className="mt-3 p-4 bg-gray-100 rounded-lg">

@@ -11,11 +11,12 @@ Supports three compression modes:
 import json
 import zipfile
 import sqlite3
+import sys
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 
 from .toon_formatter import generate_toon_blueprint, estimate_tokens, summarize_toon
-from .retriever import retrieve_relevant_symbols
+from .retriever import retrieve_relevant_symbols, hybrid_search
 
 
 class PromptEngine:
@@ -23,25 +24,39 @@ class PromptEngine:
     Assembles LLM-optimized prompts from RepoSynth pack artifacts.
     """
 
-    def __init__(self, pack_path: Path):
+    def __init__(self, pack_path: Path, repo_url: Optional[str] = None):
         """
         Initialize the prompt engine with a pack directory or ZIP file.
 
         Args:
             pack_path: Path to pack directory or ZIP file
+            repo_url: Optional URL of the repository (for fallback source reading)
         """
         self.pack_path = Path(pack_path)
         self.is_zip = pack_path.suffix == '.zip'
+        self.is_json = pack_path.suffix == '.json'
+        self.repo_url = repo_url
         self.temp_extract_dir = None
 
         # Load artifacts
         self._load_artifacts()
 
     def _load_artifacts(self):
-        """Load JSON artifacts from pack directory or ZIP file."""
+        """Load artifacts from pack directory or ZIP file."""
         if self.is_zip:
             self._extract_zip()
-            work_dir = self.temp_extract_dir / "pack"
+            # Check if 'pack' folder exists inside the extracted zip
+            if (self.temp_extract_dir / "pack").exists():
+                work_dir = self.temp_extract_dir / "pack"
+            else:
+                work_dir = self.temp_extract_dir
+        elif self.is_json:
+            # Load from single JSON file
+            self._load_from_json()
+            return
+        elif self.pack_path.suffix == '.toon':
+            self._load_from_toon()
+            return
         else:
             work_dir = self.pack_path
 
@@ -51,14 +66,21 @@ class PromptEngine:
             with open(registry_path, 'r', encoding='utf-8') as f:
                 self.name_registry = json.load(f)
         else:
+            print(f"Warning: name_registry.json not found at {registry_path}", file=sys.stderr)
             self.name_registry = {}
 
         # Load import_graph.json
         graph_path = work_dir / "import_graph.json"
         if graph_path.exists():
-            with open(graph_path, 'r', encoding='utf-8') as f:
-                self.import_graph = json.load(f)
+            try:
+                with open(graph_path, 'r', encoding='utf-8') as f:
+                    raw_graph = json.load(f)
+                    self.import_graph = self._normalize_graph(raw_graph)
+            except Exception as e:
+                print(f"Error loading import_graph.json: {e}", file=sys.stderr)
+                self.import_graph = {}
         else:
+            print(f"Warning: import_graph.json not found at {graph_path}", file=sys.stderr)
             self.import_graph = {}
 
         # Load variable_registry.json (optional)
@@ -71,6 +93,100 @@ class PromptEngine:
 
         # Store work directory for file reading
         self.work_dir = work_dir
+
+    def _load_from_json(self):
+        """Load artifacts from a single JSON pack file."""
+        with open(self.pack_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        
+        self.name_registry = data.get('name_registry', {})
+        self.import_graph = self._normalize_graph(data.get('import_graph', {}))
+        self.variable_registry = data.get('variable_registry', {})
+        
+        # Store source files if available
+        self.source_files = data.get('source_files', {})
+        
+        # For JSON packs, we don't have a work_dir with files
+        # We might need to handle source code differently if it's not in the JSON
+        self.work_dir = None
+        self.json_data = data
+
+    def _load_from_toon(self):
+        """Load artifacts from a TOON pack file."""
+        with open(self.pack_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            
+        # Simple parsing of TOON format
+        # This is a basic parser, a full parser would be more robust
+        self.name_registry = {}
+        self.import_graph = {}
+        self.source_files = {}
+        
+        # Parse symbols
+        import re
+        # symbols[count]{headers}:
+        #   row1
+        symbol_section = re.search(r'symbols\[\d+\]\{([^}]+)\}:\n((?:  .*\n)+)', content)
+        if symbol_section:
+            headers = symbol_section.group(1).split(',')
+            body = symbol_section.group(2)
+            for line in body.strip().split('\n'):
+                parts = line.strip().split(',')
+                if len(parts) >= 3:
+                    name = parts[0]
+                    kind = parts[1]
+                    file_path = parts[2]
+                    fqn = f"{file_path}:{name}"
+                    self.name_registry[fqn] = {
+                        "name": name,
+                        "kind": kind,
+                        "file_path": file_path,
+                        "is_public": parts[3] == "yes" if len(parts) > 3 else False
+                    }
+
+        # Parse dependencies
+        dep_section = re.search(r'dependencies\[\d+\]\{([^}]+)\}:\n((?:  .*\n)+)', content)
+        if dep_section:
+            body = dep_section.group(2)
+            for line in body.strip().split('\n'):
+                parts = line.strip().split(',')
+                if len(parts) >= 2:
+                    source = parts[0]
+                    target = parts[1]
+                    if source not in self.import_graph: self.import_graph[source] = []
+                    self.import_graph[source].append(target)
+
+        # Parse source code
+        # Try Markdown format first (v2.1)
+        # ### File: path/to/file.ts
+        # ```lang
+        # content
+        # ```
+        source_pattern_md = r'### File: ([^\n]+)\n```[^\n]*\n(.*?)\n```'
+        found_md = False
+        for match in re.finditer(source_pattern_md, content, re.DOTALL):
+            found_md = True
+            file_path = match.group(1).strip()
+            source_code = match.group(2)
+            self.source_files[file_path] = {
+                "full_source": source_code
+            }
+            
+        # Fallback to legacy format (v2.0)
+        # source[count]{file,lang}:
+        #   file,lang
+        #   content
+        #   @@@
+        if not found_md:
+            source_pattern_legacy = r'  ([^,]+),([^\n]+)\n(.*?)\n  @@@'
+            for match in re.finditer(source_pattern_legacy, content, re.DOTALL):
+                file_path = match.group(1).strip()
+                source_code = match.group(3)
+                self.source_files[file_path] = {
+                    "full_source": source_code
+                }
+            
+        self.work_dir = None
 
     def _extract_zip(self):
         """Extract ZIP file to temporary directory."""
@@ -142,8 +258,10 @@ class PromptEngine:
         # Start with blueprint
         toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph)
 
-        # Use retriever to find relevant symbols
-        matches = retrieve_relevant_symbols(query, self.name_registry, max_items=max_files * 3)
+        # Use hybrid_search to find relevant symbols/files
+        # Pass pack_path (if it's a dir) or work_dir
+        search_dir = self.work_dir if self.work_dir else self.pack_path
+        matches = hybrid_search(query, search_dir, max_items=max_files, registry=self.name_registry)
 
         # Deduplicate files
         relevant_files = []
@@ -204,8 +322,10 @@ class PromptEngine:
         # Start with blueprint
         toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph)
 
-        # Traverse dependency graph from entry point
-        bundled_files = self._traverse_dependencies(entry_point, max_depth)
+        # Traverse dependency graph from entry point using helper
+        # Note: max_depth is ignored by get_recursive_dependencies for now as it does full traversal
+        # We can slice it if needed, but user asked for recursive traversal
+        bundled_files = get_recursive_dependencies(self.import_graph, entry_point)
 
         # Assemble prompt
         prompt_parts = []
@@ -219,8 +339,8 @@ class PromptEngine:
         prompt_parts.append(f"Entry Point: {entry_point}\n")
         prompt_parts.append(f"Dependencies: {len(bundled_files) - 1}\n\n")
         for i, file_path in enumerate(bundled_files):
-            indent = "  " * (min(i, max_depth))
-            prompt_parts.append(f"{indent}- {file_path}\n")
+            # Simple list for now since recursive helper flattens it
+            prompt_parts.append(f"- {file_path}\n")
         prompt_parts.append("\n")
 
         # Add source code for all bundled files
@@ -260,24 +380,82 @@ class PromptEngine:
         Returns:
             Source code string or None if not found
         """
-        # Try to read from spans.zip first
-        spans_zip_path = self.work_dir / "spans.zip"
-        if spans_zip_path.exists():
-            try:
-                with zipfile.ZipFile(spans_zip_path, 'r') as zf:
-                    # spans.zip contains JSON with source code
-                    spans_json = zf.read('source_spans.json').decode('utf-8')
-                    spans_data = json.loads(spans_json)
+        # Check if we have source files loaded from JSON or TOON
+        if hasattr(self, 'source_files') and self.source_files:
+            if file_path in self.source_files:
+                # Handle both direct string (TOON) and dict (JSON) formats
+                data = self.source_files[file_path]
+                if isinstance(data, dict):
+                    return data.get('full_source', '')
+                return str(data)
+            
+            # If not found in loaded source files, return placeholder
+            # return f"// Source code for {file_path} not available in this pack.\n"
 
-                    # Find the file in spans data
-                    for file_data in spans_data:
-                        if file_data.get('file_path') == file_path:
-                            return file_data.get('source_code', '')
-            except Exception:
-                pass
+        # If we loaded from JSON, we might not have source code
+        # if self.is_json:
+        #    return f"// Source code for {file_path} not available in JSON pack mode. Use ZIP pack for full source access.\n"
+
+        # Try to read from spans.zip
+        if self.work_dir:
+            spans_zip_path = self.work_dir / "spans.zip"
+            if spans_zip_path.exists():
+                try:
+                    with zipfile.ZipFile(spans_zip_path, 'r') as zf:
+                        # Try reading file directly from zip (new format)
+                        try:
+                            with zf.open(file_path) as f:
+                                return f.read().decode('utf-8', errors='replace')
+                        except KeyError:
+                            # Fallback to old format (source_spans.json)
+                            try:
+                                spans_json = zf.read('source_spans.json').decode('utf-8')
+                                spans_data = json.loads(spans_json)
+                                for file_data in spans_data:
+                                    if file_data.get('file_path') == file_path:
+                                        return file_data.get('source_code', '')
+                            except KeyError:
+                                pass
+                except Exception:
+                    pass
 
         # Fallback: try to read from repoBrief or other sources
         # For now, return placeholder
+        # If reading from extracted pack or temp_repo
+        if self.work_dir:
+            # Try to find the file in temp_repos if we are in a dev environment
+            # This is a hack for local testing when pack doesn't have source
+            project_root = self.work_dir.parent.parent # Assuming work_dir is temp/pack
+            
+            # Try to guess repo name from path or use self.repo_url
+            repo_name = None
+            if self.repo_url:
+                repo_name = self.repo_url.split('/')[-1].replace('.git', '')
+            
+            # If we can't determine repo name, try to find any folder in temp_repos that contains this file
+            temp_repos = project_root / "temp_repos"
+            if temp_repos.exists():
+                # If we have a repo name, check that specific folder
+                if repo_name:
+                    local_path = temp_repos / repo_name / file_path
+                    if local_path.exists():
+                        try:
+                            with open(local_path, "r", encoding="utf-8", newline='') as f:
+                                return f.read()
+                        except Exception:
+                            pass
+                
+                # Fallback: check all folders in temp_repos
+                for repo_dir in temp_repos.iterdir():
+                    if repo_dir.is_dir():
+                        local_path = repo_dir / file_path
+                        if local_path.exists():
+                            try:
+                                with open(local_path, "r", encoding="utf-8", newline='') as f:
+                                    return f.read()
+                            except Exception:
+                                pass
+
         return f"// Source code for {file_path} not available in this pack mode\n"
 
     def _detect_language(self, file_path: str) -> str:
@@ -301,7 +479,7 @@ class PromptEngine:
 
     def _traverse_dependencies(self, entry_point: str, max_depth: int) -> List[str]:
         """
-        Traverse import graph to collect all dependencies.
+        Traverse import graph from entry point to collect all dependencies.
 
         Args:
             entry_point: Starting file
@@ -327,6 +505,66 @@ class PromptEngine:
         dfs(entry_point, 0)
         return result
 
+    def _normalize_graph(self, graph: Dict[str, Any]) -> Dict[str, List[str]]:
+        """Ensure graph is in adjacency list format."""
+        if isinstance(graph, dict) and "edges" in graph:
+            # Convert Node/Edge format to Adjacency List
+            adj = {}
+            for edge in graph["edges"]:
+                source = edge["source"]
+                target = edge["target"]
+                if source not in adj: adj[source] = []
+                adj[source].append(target)
+            return adj
+        return graph
+
+
+# --- Helper: Suggest Entry Points ---
+def suggest_entry_points(graph: dict) -> List[str]:
+    # Handle Node/Edge format
+    if "edges" in graph:
+        all_files = set()
+        imported = set()
+        for edge in graph["edges"]:
+            all_files.add(edge["source"])
+            all_files.add(edge["target"])
+            imported.add(edge["target"])
+        roots = list(all_files - imported)
+        return sorted(roots, key=lambda f: (0 if 'index' in f or 'main' in f else 1, f))
+
+    # Handle Adjacency List format
+    all_files = set(graph.keys())
+    imported = set()
+    for targets in graph.values():
+        if isinstance(targets, list):
+            for target in targets:
+                imported.add(target)
+        elif isinstance(targets, str):
+             imported.add(targets)
+             
+    roots = list(all_files - imported)
+    
+    # Sort with preference for index/main/app
+    return sorted(roots, key=lambda f: (0 if 'index' in f or 'main' in f else 1, f))
+
+
+# --- Helper: Recursive Bundle ---
+def get_recursive_dependencies(graph: dict, entry_file: str, visited=None) -> List[str]:
+    if visited is None: visited = set()
+    if entry_file in visited: return []
+    visited.add(entry_file)
+    
+    results = [entry_file]
+    
+    targets = graph.get(entry_file, [])
+    # Normalize targets to list
+    if not isinstance(targets, list):
+        targets = [targets] if targets else []
+        
+    for child in targets:
+        results.extend(get_recursive_dependencies(graph, child, visited))
+    return results
+
 
 def generate_vibe_prompt(
     pack_path: str,
@@ -334,7 +572,8 @@ def generate_vibe_prompt(
     query: Optional[str] = None,
     entry_point: Optional[str] = None,
     max_files: int = 5,
-    max_depth: int = 3
+    max_depth: int = 3,
+    repo_url: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Convenience function to generate a vibe coding prompt.
@@ -346,6 +585,7 @@ def generate_vibe_prompt(
         entry_point: Entry point file path (required for "bundle" mode)
         max_files: Max files to include in focus mode
         max_depth: Max dependency depth in bundle mode
+        repo_url: Optional URL of the repository (for fallback source reading)
 
     Returns:
         Dict with 'prompt' and 'metadata'
@@ -353,7 +593,7 @@ def generate_vibe_prompt(
     Raises:
         ValueError: If required parameters are missing
     """
-    engine = PromptEngine(Path(pack_path))
+    engine = PromptEngine(Path(pack_path), repo_url=repo_url)
 
     try:
         if mode == "blueprint":

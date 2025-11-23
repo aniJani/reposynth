@@ -260,7 +260,7 @@ class JobConfiguration(BaseModel):
     @classmethod
     def validate_output_format(cls, v: str) -> str:
         """Validate output format."""
-        valid_formats = ['zip', 'markdown', 'json']
+        valid_formats = ['zip', 'markdown', 'json', 'toon']
         if v not in valid_formats:
             raise ValueError(f"Invalid output_format '{v}'. Must be one of: {', '.join(valid_formats)}")
         return v

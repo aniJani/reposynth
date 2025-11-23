@@ -1,48 +1,48 @@
 # Ignore Python cache files
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-*.egg-info/
-dist/
-build/
+**/__pycache__/
+**/*.py[cod]
+**/*$py.class
+**/*.so
+**/.Python
+**/*.egg-info/
+**/dist/
+**/build/
 
 # Ignore virtual environments
-.venv/
-venv/
-ENV/
-env/
+**/.venv/
+**/venv/
+**/ENV/
+**/env/
 
 # Ignore IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+**/.vscode/
+**/.idea/
+**/*.swp
+**/*.swo
+**/*~
 
 # Ignore git
-.git/
-.gitignore
+**/.git/
+**/.gitignore
 
 # Ignore local data
-temp_repos/
-pack/
-worker_packs/
-.reposynth_cache/
-*.sqlite
-*.db
-*.log
+**/temp_repos/
+**/pack/
+**/worker_packs/
+**/.reposynth_cache/
+**/*.sqlite
+**/*.db
+**/*.log
 
 # Ignore test files
-tests/
-test/
-*.test.py
-pytest_cache/
+**/tests/
+**/test/
+**/*.test.py
+**/pytest_cache/
 
 # Ignore documentation (keep only essential)
 docs/
-*.md
+**/*.md
 !README.md
 
 # Ignore OS files
@@ -51,7 +51,14 @@ Thumbs.db
 desktop.ini
 
 # Ignore large dependencies (install fresh in container)
-node_modules/
+**/node_modules/
+**/target/
+
+# Ignore apps (frontend)
+apps/
+
+# Ignore zip files
+*.zip
 
 # Keep only necessary files
 !packages/

@@ -56,6 +56,8 @@ class LanguageAdapter(ABC):
         return root_node
 
     def _get_node_text(self, node, source_code):
+        if isinstance(source_code, bytes):
+            return source_code[node.start_byte : node.end_byte].decode('utf-8')
         return source_code[node.start_byte : node.end_byte]
 
     def _find_first_descendant_by_kind_bfs(self, node: AstNode, kind: str):
@@ -334,30 +336,42 @@ class JavaScriptAdapter(LanguageAdapter):
         return definitions
 
     def get_imports(self, ast_nodes, source_code):
-        imports, root = [], self._build_tree(ast_nodes)
+        imports = []
+        root = self._build_tree(ast_nodes)
         if not root:
             return []
 
         def find_imports(node):
-            # Find `require('module')`
-            if node.kind == "call_expression":
-                # Check if the function being called is an identifier named 'require'
-                func_node = node.children[0]
-                if func_node.kind == 'identifier' and self._get_node_text(func_node, source_code) == "require":
-                    # The argument is usually the first child of 'arguments'
-                    args_node = next((c for c in node.children if c.kind == 'arguments'), None)
-                    if args_node:
-                        string_node = self._find_first_descendant_by_kind_bfs(args_node, "string")
-                        if string_node:
-                            # Remove quotes from the module path
-                            imports.append(self._get_node_text(string_node, source_code)[1:-1])
-            
-            # Find `import ... from 'module'`
+            # 1. Standard imports: import ... from 'foo'
             if node.kind == "import_statement":
                 source_node = self._find_first_descendant_by_kind_bfs(node, "string")
                 if source_node:
-                    imports.append(self._get_node_text(source_node, source_code)[1:-1])
+                    # Strip quotes ("foo" -> foo)
+                    raw = self._get_node_text(source_node, source_code)
+                    imports.append(raw.strip("'\"`"))
             
+            # 2. Re-exports: export ... from 'foo'
+            elif node.kind == "export_statement":
+                # Look for the string source directly
+                source_node = self._find_first_descendant_by_kind_bfs(node, "string")
+                if source_node:
+                    raw = self._get_node_text(source_node, source_code)
+                    imports.append(raw.strip("'\"`"))
+
+            # 3. Dynamic imports / require: import('foo')
+            elif node.kind == "call_expression":
+                func_node = node.children[0] if node.children else None
+                if func_node:
+                    name = self._get_node_text(func_node, source_code)
+                    if name in ["require", "import"]:
+                        # Arguments are usually in an 'arguments' node
+                        args = next((c for c in node.children if c.kind == "arguments"), None)
+                        if args:
+                            str_node = self._find_first_descendant_by_kind_bfs(args, "string")
+                            if str_node:
+                                raw = self._get_node_text(str_node, source_code)
+                                imports.append(raw.strip("'\"`"))
+
             for child in node.children:
                 find_imports(child)
 
@@ -573,15 +587,42 @@ class TypeScriptAdapter(LanguageAdapter):
         return definitions
 
     def get_imports(self, ast_nodes, source_code):
-        imports, root = [], self._build_tree(ast_nodes)
+        imports = []
+        root = self._build_tree(ast_nodes)
         if not root:
             return []
 
         def find_imports(node):
+            # 1. Standard imports: import ... from 'foo'
             if node.kind == "import_statement":
                 source_node = self._find_first_descendant_by_kind_bfs(node, "string")
                 if source_node:
-                    imports.append(self._get_node_text(source_node, source_code)[1:-1])
+                    # Strip quotes ("foo" -> foo)
+                    raw = self._get_node_text(source_node, source_code)
+                    imports.append(raw.strip("'\"`"))
+            
+            # 2. Re-exports: export ... from 'foo'
+            elif node.kind == "export_statement":
+                # Look for the string source directly
+                source_node = self._find_first_descendant_by_kind_bfs(node, "string")
+                if source_node:
+                    raw = self._get_node_text(source_node, source_code)
+                    imports.append(raw.strip("'\"`"))
+
+            # 3. Dynamic imports / require: import('foo')
+            elif node.kind == "call_expression":
+                func_node = node.children[0] if node.children else None
+                if func_node:
+                    name = self._get_node_text(func_node, source_code)
+                    if name in ["require", "import"]:
+                        # Arguments are usually in an 'arguments' node
+                        args = next((c for c in node.children if c.kind == "arguments"), None)
+                        if args:
+                            str_node = self._find_first_descendant_by_kind_bfs(args, "string")
+                            if str_node:
+                                raw = self._get_node_text(str_node, source_code)
+                                imports.append(raw.strip("'\"`"))
+
             for child in node.children:
                 find_imports(child)
 

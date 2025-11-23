@@ -38,12 +38,16 @@ AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
 
 # Initialize S3 client
-s3_client = boto3.client(
-    "s3",
-    endpoint_url=AWS_ENDPOINT_URL,
-    aws_access_key_id=AWS_ACCESS_KEY_ID,
-    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-)
+try:
+    s3_client = boto3.client(
+        "s3",
+        endpoint_url=AWS_ENDPOINT_URL,
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    )
+except Exception as e:
+    print(f"Warning: Failed to initialize S3 client: {e}", file=sys.stderr)
+    s3_client = None
 
 
 def update_job_status(job_id: str, status: str, **kwargs):
@@ -792,6 +796,64 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
             pack_path.write_text(json_content, encoding='utf-8')
             content_type = "application/json"
             
+        elif output_format == "toon":
+            # For hybrid/full modes, extract the ZIP first to read its contents
+            if mode in ["hybrid", "full"]:
+                # Find the created ZIP file
+                existing_zip = list(worker_root.glob("reposynth_*.zip"))
+                if existing_zip:
+                    zip_path = existing_zip[0]
+                    # Extract to a temp directory for reading
+                    extract_dir = worker_root / "extracted_pack"
+                    extract_dir.mkdir(exist_ok=True)
+                    
+                    print(f"📦 Extracting {zip_path.name} for TOON retrieval...")
+                    with zipfile.ZipFile(zip_path, 'r') as zf:
+                        # We only need pack.toon if it exists
+                        try:
+                            zf.extract("pack/pack.toon", extract_dir)
+                        except KeyError:
+                            # Fallback: extract everything if path is different
+                            zf.extractall(extract_dir)
+                    
+                    # Point to the extracted pack directory
+                    if (extract_dir / "pack").exists():
+                        output_pack_dir = extract_dir / "pack"
+                    else:
+                        output_pack_dir = extract_dir
+
+            # Retrieve TOON output
+            print(f"📄 Retrieving TOON output...")
+            toon_path = output_pack_dir / "pack.toon"
+            
+            if toon_path.exists():
+                toon_content = toon_path.read_text(encoding='utf-8')
+            else:
+                # Fallback: Generate it if missing
+                print("Warning: pack.toon not found, generating on the fly...")
+                try:
+                    from orchestrator.toon_formatter import generate_toon_blueprint, convert_source_to_toon
+                    
+                    # Load registry and graph
+                    registry = json.loads((output_pack_dir / "name_registry.json").read_text(encoding='utf-8'))
+                    graph = json.loads((output_pack_dir / "import_graph.json").read_text(encoding='utf-8'))
+                    
+                    toon_content = generate_toon_blueprint(registry, graph)
+                    
+                    # Try to add source if available
+                    source_spans_path = output_pack_dir / "source_spans.json"
+                    if source_spans_path.exists():
+                        source_spans = json.loads(source_spans_path.read_text(encoding='utf-8'))
+                        toon_content += "\n" + convert_source_to_toon(source_spans)
+                        
+                except Exception as e:
+                    toon_content = f"Error generating TOON format: {str(e)}"
+            
+            pack_filename = f"reposynth_{repo_name}_{mode}_{job_id}.toon"
+            pack_path = worker_root / pack_filename
+            pack_path.write_text(toon_content, encoding='utf-8')
+            content_type = "text/plain"
+
         else:  # zip format (default)
             pack_filename = f"reposynth_{repo_name}_{mode}_{job_id}.zip"
             pack_path = worker_root / pack_filename
@@ -826,41 +888,55 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
         pack_size = pack_path.stat().st_size
         print(f"✓ Pack created: {pack_path.name} ({pack_size / 1024 / 1024:.2f} MB)")
         
-        # Step 5: Upload to S3 with appropriate content type
+        # Step 5: Upload to S3 or use local storage
         s3_key = f"{job_id}/{pack_filename}"
+        result_url = None
         
-        try:
-            print(f"Uploading {pack_path.name} to S3 bucket {S3_BUCKET}...")
-            
-            # Set content type and disposition based on format
-            extra_args = {"ContentType": content_type}
-            
-            # For markdown and JSON, allow inline viewing in browser
-            # For ZIP, force download
-            if output_format in ["markdown", "json"]:
-                extra_args["ContentDisposition"] = "inline"
-            else:
-                extra_args["ContentDisposition"] = f'attachment; filename="{pack_filename}"'
-            
-            # Upload file with metadata
-            s3_client.upload_file(
-                str(pack_path),
-                S3_BUCKET,
-                s3_key,
-                ExtraArgs=extra_args
-            )
-            
-            # Generate public URL
-            if AWS_ENDPOINT_URL:
-                external_url = AWS_ENDPOINT_URL.replace("minio:9000", "localhost:9000")
-                result_url = f"{external_url}/{S3_BUCKET}/{s3_key}"
-            else:
-                result_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{s3_key}"
-            
-            print(f"✓ Uploaded to: {result_url}")
-            
-        except Exception as e:
-            raise RuntimeError(f"S3 upload failed: {e}")
+        # Try S3 upload first
+        if s3_client:
+            try:
+                print(f"Uploading {pack_path.name} to S3 bucket {S3_BUCKET}...")
+                
+                # Set content type and disposition based on format
+                extra_args = {"ContentType": content_type}
+                
+                # For markdown, JSON, and TOON, allow inline viewing in browser
+                # For ZIP, force download
+                if output_format in ["markdown", "json", "toon"]:
+                    extra_args["ContentDisposition"] = "inline"
+                else:
+                    extra_args["ContentDisposition"] = f'attachment; filename="{pack_filename}"'
+                
+                # Upload file with metadata
+                s3_client.upload_file(
+                    str(pack_path),
+                    S3_BUCKET,
+                    s3_key,
+                    ExtraArgs=extra_args
+                )
+                
+                # Generate public URL
+                if AWS_ENDPOINT_URL:
+                    external_url = AWS_ENDPOINT_URL.replace("minio:9000", "localhost:9000")
+                    result_url = f"{external_url}/{S3_BUCKET}/{s3_key}"
+                else:
+                    result_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{s3_key}"
+                
+                print(f"✓ Uploaded to: {result_url}")
+                
+            except Exception as e:
+                print(f"Warning: S3 upload failed: {e}", file=sys.stderr)
+                # Fallback to local URL
+        
+        # If S3 upload failed or client not available, use local URL
+        if not result_url:
+            # Construct local URL served by API
+            # API mounts /app/worker_packs at /packs
+            # URL format: http://localhost:8000/packs/<job_id>/<filename>
+            # Note: This assumes API is accessible at localhost:8000
+            api_base = os.environ.get("API_PUBLIC_URL", "http://localhost:8000")
+            result_url = f"{api_base}/packs/{job_id}/{pack_filename}"
+            print(f"✓ Using local storage URL: {result_url}")
         
         # Step 6: Mark job as completed
         update_job_status(
