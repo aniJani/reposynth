@@ -83,6 +83,12 @@ For more information, visit: https://github.com/aniJani/reposynth
         help="Maximum number of dependency files to include in blast-radius mode (default: 50)."
     )
 
+    parser.add_argument(
+        "--use-keyword-search",
+        action="store_true",
+        help="Use keyword-based search instead of semantic search for blast-radius mode. Semantic search is used by default if embeddings are available."
+    )
+
     # --- Fine-grained Feature Toggles ---
     parser.add_argument(
         "--with-parsing",
@@ -141,6 +147,23 @@ For more information, visit: https://github.com/aniJani/reposynth
 
     args = parser.parse_args()
 
+    # --- Validate Input Parameters ---
+    # Validate max_shockwave_files
+    if hasattr(args, 'max_shockwave_files') and args.max_shockwave_files is not None:
+        if args.max_shockwave_files < 1:
+            parser.error("--max-shockwave-files must be at least 1")
+        if args.max_shockwave_files > 500:
+            parser.error("--max-shockwave-files cannot exceed 500 (would generate excessive tokens)")
+
+    # Validate query for blast-radius mode
+    if args.mode == "blast-radius":
+        if not args.query:
+            parser.error("--query is required for blast-radius mode. Example: --query 'login authentication'")
+        if not args.query.strip():
+            parser.error("--query cannot be empty or whitespace only. Provide a meaningful search term.")
+        if len(args.query) > 500:
+            parser.error("--query is too long (max 500 characters). Please shorten your query.")
+
     # --- Construct the Configuration Dictionary ---
     # Start with mode-based defaults
     if args.mode == "semantic":
@@ -178,22 +201,23 @@ For more information, visit: https://github.com/aniJani/reposynth
         }
     elif args.mode == "blast-radius":
         # Blast Radius Mode: Minimal stages needed for smart context generation
-        if not args.query:
-            print("FATAL: --query is required for blast-radius mode", file=sys.stderr)
-            print("Example: python -m orchestrator --mode blast-radius --query 'login authentication'", file=sys.stderr)
-            sys.exit(1)
+        # Note: Query validation is done earlier in the validation section
+
+        # Use semantic search by default unless keyword search is explicitly requested
+        use_semantic = not args.use_keyword_search
 
         config = {
             "run_parsing": True,           # Need AST for skeleton generation
             "build_graphs": True,          # Need import_graph and name_registry
             "run_analysis": True,          # Need complexity data for scoring
-            "run_embeddings": False,       # Not needed for blast-radius
+            "run_embeddings": use_semantic,  # Enable embeddings for semantic search
             "run_security_scans": False,   # Not needed for blast-radius
             "build_variable_registry": False,  # Not needed for blast-radius
             "store_spans": False,          # Not needed for blast-radius
             "pack_mode": "blast-radius",
             "query": args.query,
             "max_shockwave_files": args.max_shockwave_files,
+            "use_semantic_search": use_semantic,  # Pass to blast_radius calculation
         }
     else:  # Default to semantic for safety
         config = {

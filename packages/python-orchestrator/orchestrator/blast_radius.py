@@ -11,9 +11,13 @@ hallucinations or token budget explosions.
 """
 
 import json
+import logging
 from pathlib import Path
-from typing import Dict, Set, List, Tuple, Any
+from typing import Dict, Set, List, Tuple, Any, Optional
 from collections import defaultdict
+
+# Set up logging
+logger = logging.getLogger(__name__)
 
 
 def load_ast_for_file(pack_dir: Path, file_path: str) -> List[Dict[str, Any]]:
@@ -21,21 +25,32 @@ def load_ast_for_file(pack_dir: Path, file_path: str) -> List[Dict[str, Any]]:
     Load the parsed AST for a specific file from ast_raw/*.jsonl
 
     Returns a list of AST nodes in the same format as the JSONL file.
+    Returns empty list if file not found or parsing fails.
     """
-    # Convert file path to AST filename (e.g., "orchestrator/api.py" -> "orchestrator_api_py.jsonl")
-    ast_filename = file_path.replace('/', '_').replace('\\', '_').replace('.', '_') + '.jsonl'
-    ast_file = pack_dir / "ast_raw" / ast_filename
+    try:
+        # Convert file path to AST filename (e.g., "orchestrator/api.py" -> "orchestrator_api_py.jsonl")
+        ast_filename = file_path.replace('/', '_').replace('\\', '_').replace('.', '_') + '.jsonl'
+        ast_file = pack_dir / "ast_raw" / ast_filename
 
-    if not ast_file.exists():
+        if not ast_file.exists():
+            logger.debug(f"AST file not found: {ast_file}")
+            return []
+
+        nodes = []
+        with open(ast_file, 'r', encoding='utf-8', errors='replace') as f:
+            for line_num, line in enumerate(f, 1):
+                if line.strip():
+                    try:
+                        nodes.append(json.loads(line))
+                    except json.JSONDecodeError as e:
+                        logger.warning(f"Failed to parse JSON at {ast_file}:{line_num}: {e}")
+                        continue
+
+        return nodes
+
+    except Exception as e:
+        logger.error(f"Error loading AST for {file_path}: {e}", exc_info=True)
         return []
-
-    nodes = []
-    with open(ast_file, 'r', encoding='utf-8') as f:
-        for line in f:
-            if line.strip():
-                nodes.append(json.loads(line))
-
-    return nodes
 
 
 def build_ast_tree(nodes: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
@@ -44,16 +59,28 @@ def build_ast_tree(nodes: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
 
     Returns a dict mapping node_id -> node_with_children_expanded
     """
-    tree = {}
-    for node in nodes:
-        tree[node['id']] = node
+    try:
+        tree = {}
+        for node in nodes:
+            if 'id' not in node:
+                logger.warning(f"AST node missing 'id' field: {node}")
+                continue
+            tree[node['id']] = node
 
-    # Expand children references
-    for node_id, node in tree.items():
-        if 'children' in node:
-            node['children_nodes'] = [tree[child_id] for child_id in node.get('children', []) if child_id in tree]
+        # Expand children references
+        for node_id, node in tree.items():
+            if 'children' in node:
+                node['children_nodes'] = [
+                    tree[child_id]
+                    for child_id in node.get('children', [])
+                    if child_id in tree
+                ]
 
-    return tree
+        return tree
+
+    except Exception as e:
+        logger.error(f"Error building AST tree: {e}", exc_info=True)
+        return {}
 
 
 def extract_source_span(source_code: str, start_byte: int, end_byte: int) -> str:
@@ -76,18 +103,26 @@ def generate_skeleton_from_ast(
     - Exports
 
     Implementation uses Tree-sitter AST for precision.
+    Returns original source or error message if skeleton generation fails.
     """
-    if not ast_nodes:
-        # Fallback to original source if no AST available
-        return source_code
+    try:
+        if not ast_nodes:
+            # Fallback to original source if no AST available
+            logger.debug("No AST nodes available, returning original source")
+            return source_code
 
-    tree = build_ast_tree(ast_nodes)
-    root = tree.get(0)
+        tree = build_ast_tree(ast_nodes)
+        root = tree.get(0)
 
-    if not root:
-        return source_code
+        if not root:
+            logger.warning("AST tree has no root node, returning original source")
+            return source_code
 
-    skeleton_parts = []
+        skeleton_parts = []
+
+    except Exception as e:
+        logger.error(f"Error initializing skeleton generation: {e}", exc_info=True)
+        return f"# Error generating skeleton: {e}\n\n{source_code}"
 
     def should_keep_node_fully(node: Dict[str, Any]) -> bool:
         """Determine if a node should be kept with full content."""
@@ -192,26 +227,32 @@ def generate_skeleton_from_ast(
             for child in node.get('children_nodes', []):
                 traverse_node(child, indent)
 
-    # Start traversal from root
-    traverse_node(root)
+    try:
+        # Start traversal from root
+        traverse_node(root)
 
-    # Sort by byte position and join
-    skeleton_parts.sort(key=lambda x: x[0])
-    skeleton = '\n\n'.join(part[1] for part in skeleton_parts)
-
-    # If skeleton is empty, include imports at minimum
-    if not skeleton.strip():
-        # Extract just import statements as fallback
-        for node in ast_nodes:
-            if node.get('kind', '') in ['import_statement', 'import_from_statement']:
-                start = node.get('start_byte', 0)
-                end = node.get('end_byte', 0)
-                skeleton_parts.append((start, source_code[start:end]))
-
+        # Sort by byte position and join
         skeleton_parts.sort(key=lambda x: x[0])
-        skeleton = '\n'.join(part[1] for part in skeleton_parts)
+        skeleton = '\n\n'.join(part[1] for part in skeleton_parts)
 
-    return skeleton if skeleton.strip() else "# No public interfaces found"
+        # If skeleton is empty, include imports at minimum
+        if not skeleton.strip():
+            # Extract just import statements as fallback
+            for node in ast_nodes:
+                if node.get('kind', '') in ['import_statement', 'import_from_statement']:
+                    start = node.get('start_byte', 0)
+                    end = node.get('end_byte', 0)
+                    if 0 <= start < len(source_code) and 0 <= end <= len(source_code):
+                        skeleton_parts.append((start, source_code[start:end]))
+
+            skeleton_parts.sort(key=lambda x: x[0])
+            skeleton = '\n'.join(part[1] for part in skeleton_parts)
+
+        return skeleton if skeleton.strip() else "# No public interfaces found"
+
+    except Exception as e:
+        logger.error(f"Error during skeleton traversal: {e}", exc_info=True)
+        return f"# Error generating skeleton: {e}\n\n{source_code}"
 
 
 def calculate_file_scores(
@@ -318,32 +359,56 @@ def traverse_dependencies(
 
 
 def get_file_content(repo_path: Path, file_rel_path: str) -> str:
-    """Safely read file content."""
-    full_path = repo_path / file_rel_path
-    if full_path.exists():
-        try:
-            return full_path.read_text(encoding='utf-8', errors='replace')
-        except Exception as e:
-            return f"# Error reading file: {e}"
-    return "# File not found"
+    """
+    Safely read file content with comprehensive error handling.
+
+    Returns file content or error message if reading fails.
+    """
+    try:
+        full_path = repo_path / file_rel_path
+
+        if not full_path.exists():
+            logger.warning(f"File not found: {full_path}")
+            return f"# File not found: {file_rel_path}"
+
+        if not full_path.is_file():
+            logger.warning(f"Path is not a file: {full_path}")
+            return f"# Not a file: {file_rel_path}"
+
+        # Try reading with UTF-8, replace errors
+        content = full_path.read_text(encoding='utf-8', errors='replace')
+        return content
+
+    except PermissionError as e:
+        logger.error(f"Permission denied reading {file_rel_path}: {e}")
+        return f"# Permission denied: {file_rel_path}"
+    except OSError as e:
+        logger.error(f"OS error reading {file_rel_path}: {e}")
+        return f"# Error reading file: {e}"
+    except Exception as e:
+        logger.error(f"Unexpected error reading {file_rel_path}: {e}", exc_info=True)
+        return f"# Error reading file: {e}"
 
 
 def load_complexity_data(pack_dir: Path) -> Dict[str, int]:
     """
     Load complexity data from analysis.sqlite.
 
-    Returns dict mapping file_path -> max_complexity
+    Returns dict mapping file_path -> max_complexity.
+    Returns empty dict if database doesn't exist or loading fails.
     """
     import sqlite3
 
     db_path = pack_dir / "analysis.sqlite"
+
     if not db_path.exists():
+        logger.debug(f"Complexity database not found at {db_path}")
         return {}
 
     complexity_by_file = {}
 
     try:
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(str(db_path))
         cursor = conn.cursor()
 
         # Get max complexity per file
@@ -355,11 +420,16 @@ def load_complexity_data(pack_dir: Path) -> Dict[str, int]:
 
         for row in cursor.fetchall():
             file_path, max_complexity = row
-            complexity_by_file[file_path] = max_complexity
+            if max_complexity is not None:
+                complexity_by_file[file_path] = max_complexity
 
         conn.close()
+        logger.info(f"Loaded complexity data for {len(complexity_by_file)} files")
+
+    except sqlite3.Error as e:
+        logger.warning(f"SQLite error loading complexity data: {e}")
     except Exception as e:
-        print(f"⚠️  Warning: Could not load complexity data: {e}")
+        logger.error(f"Unexpected error loading complexity data: {e}", exc_info=True)
 
     return complexity_by_file
 
@@ -412,7 +482,8 @@ def calculate_blast_radius(
     repo_path: Path,
     pack_dir: Path,
     query: str,
-    max_shockwave_files: int = 50
+    max_shockwave_files: int = 50,
+    use_semantic_search: bool = True
 ) -> str:
     """
     Main entry point for Blast Radius Mode.
@@ -422,115 +493,208 @@ def calculate_blast_radius(
         pack_dir: Path to the pack directory (contains import_graph.json, etc.)
         query: User's query to find relevant files
         max_shockwave_files: Maximum number of dependency files to include
+        use_semantic_search: If True, use embeddings; if False, use keyword matching
 
     Returns:
         Markdown-formatted context ready for LLM consumption
     """
+    logger.info(f"💥 Computing Blast Radius for query: '{query}'")
     print(f"💥 Computing Blast Radius for query: '{query}'")
 
-    # 1. Load intelligence
-    import_graph_path = pack_dir / "import_graph.json"
-    name_registry_path = pack_dir / "name_registry.json"
+    # Validate inputs (defensive programming)
+    if not query or not query.strip():
+        error_msg = "Error: Query cannot be empty or whitespace only"
+        logger.error(error_msg)
+        return error_msg
 
-    if not import_graph_path.exists() or not name_registry_path.exists():
-        return "Error: import_graph.json or name_registry.json not found. Run with --build-graphs first."
+    if max_shockwave_files < 1:
+        error_msg = f"Error: max_shockwave_files must be at least 1 (got {max_shockwave_files})"
+        logger.error(error_msg)
+        return error_msg
 
-    with open(import_graph_path) as f:
-        import_graph = json.load(f)
+    try:
+        # 1. Load intelligence
+        import_graph_path = pack_dir / "import_graph.json"
+        name_registry_path = pack_dir / "name_registry.json"
 
-    with open(name_registry_path) as f:
-        name_registry = json.load(f)
+        if not import_graph_path.exists():
+            error_msg = f"Error: import_graph.json not found at {import_graph_path}. Run with --build-graphs first."
+            logger.error(error_msg)
+            return error_msg
 
-    # 2. Find the epicenter (seed files) using enhanced file-level retrieval
-    from .retriever import retrieve_relevant_files
+        if not name_registry_path.exists():
+            error_msg = f"Error: name_registry.json not found at {name_registry_path}. Run with --build-graphs first."
+            logger.error(error_msg)
+            return error_msg
 
-    ranked_files = retrieve_relevant_files(query, name_registry, max_files=10)
+        try:
+            with open(import_graph_path, 'r', encoding='utf-8') as f:
+                import_graph = json.load(f)
+        except json.JSONDecodeError as e:
+            error_msg = f"Error: Invalid JSON in import_graph.json: {e}"
+            logger.error(error_msg)
+            return error_msg
+        except Exception as e:
+            error_msg = f"Error loading import_graph.json: {e}"
+            logger.error(error_msg, exc_info=True)
+            return error_msg
 
-    if not ranked_files:
-        return f"No files found matching query: '{query}'. Try a different search term."
+        try:
+            with open(name_registry_path, 'r', encoding='utf-8') as f:
+                name_registry = json.load(f)
+        except json.JSONDecodeError as e:
+            error_msg = f"Error: Invalid JSON in name_registry.json: {e}"
+            logger.error(error_msg)
+            return error_msg
+        except Exception as e:
+            error_msg = f"Error loading name_registry.json: {e}"
+            logger.error(error_msg, exc_info=True)
+            return error_msg
 
-    epicenter_files = set(f['file_path'] for f in ranked_files)
+        logger.info(f"Loaded {len(import_graph)} files from import graph")
+        logger.info(f"Loaded {len(name_registry)} symbols from name registry")
 
-    print(f"🎯 Epicenter detected: {len(epicenter_files)} files")
-    for file_data in ranked_files:
-        file_path = file_data['file_path']
-        score = file_data['score']
-        match_count = file_data['match_count']
-        print(f"   • {file_path} (score: {score}, {match_count} matching symbols)")
+        # 2. Find the epicenter (seed files) using semantic or keyword search
+        try:
+            if use_semantic_search:
+                from .retriever import retrieve_relevant_files_semantic
+                logger.info("Using semantic search with embeddings")
+                ranked_files = retrieve_relevant_files_semantic(
+                    query, pack_dir, name_registry, max_files=10, fallback_to_keyword=True
+                )
+            else:
+                from .retriever import retrieve_relevant_files
+                logger.info("Using keyword-based search")
+                ranked_files = retrieve_relevant_files(query, name_registry, max_files=10)
 
-    # 3. Load complexity data for scoring
-    complexity_data = load_complexity_data(pack_dir)
+        except Exception as e:
+            logger.error(f"Error during file retrieval: {e}", exc_info=True)
+            # Fallback to keyword search
+            from .retriever import retrieve_relevant_files
+            logger.info("Falling back to keyword-based search due to error")
+            ranked_files = retrieve_relevant_files(query, name_registry, max_files=10)
 
-    # 4. Calculate file scores
-    file_scores = calculate_file_scores(import_graph, complexity_data)
+        if not ranked_files:
+            error_msg = f"No files found matching query: '{query}'. Try a different search term."
+            logger.warning(error_msg)
+            return error_msg
 
-    # 5. Traverse dependencies with smart pruning
-    shockwave_files = traverse_dependencies(
-        epicenter_files,
-        import_graph,
-        file_scores,
-        max_files=max_shockwave_files
-    )
+        epicenter_files = set(f['file_path'] for f in ranked_files)
 
-    print(f"📡 Blast Radius: {len(shockwave_files)} dependency files")
+        logger.info(f"🎯 Epicenter detected: {len(epicenter_files)} files")
+        print(f"🎯 Epicenter detected: {len(epicenter_files)} files")
+        for file_data in ranked_files:
+            file_path = file_data['file_path']
+            score = file_data['score']
+            match_count = file_data['match_count']
+            print(f"   • {file_path} (score: {score:.2f}, {match_count} matching symbols)")
 
-    # 6. Generate the output
-    output = []
+    except Exception as e:
+        error_msg = f"Fatal error during blast radius initialization: {e}"
+        logger.error(error_msg, exc_info=True)
+        return f"Error: {error_msg}"
 
-    # Header
-    output.append(f"# 🚀 VibeCode Context: {query}\n")
-    output.append(f"**Epicenter:** {len(epicenter_files)} files (Full Source)")
-    output.append(f"**Blast Radius:** {len(shockwave_files)} files (Interfaces Only)")
-    output.append(f"**Total Context:** {len(epicenter_files) + len(shockwave_files)} files\n")
+    try:
+        # 3. Load complexity data for scoring
+        complexity_data = load_complexity_data(pack_dir)
 
-    # Dependency map
-    dep_map = generate_dependency_map(epicenter_files, shockwave_files, import_graph)
-    output.append(dep_map)
+        # 4. Calculate file scores
+        file_scores = calculate_file_scores(import_graph, complexity_data)
 
-    # System instructions
-    output.append("\n---\n")
-    output.append("## 🛑 System Instructions\n")
-    output.append("You are coding in **Blast Radius** mode. You have:\n")
-    output.append("- **Full source code** for PRIMARY FILES (these are being modified)")
-    output.append("- **Skeleton interfaces** for CONTEXT FILES (read-only dependencies)\n")
-    output.append("**Rules:**")
-    output.append("- USE the skeleton interfaces to verify method signatures and types")
-    output.append("- DO NOT hallucinate new methods on skeleton files")
-    output.append("- DO NOT modify CONTEXT FILES (they're read-only)")
-    output.append("- ONLY modify PRIMARY FILES\n")
+        # 5. Traverse dependencies with smart pruning
+        shockwave_files = traverse_dependencies(
+            epicenter_files,
+            import_graph,
+            file_scores,
+            max_files=max_shockwave_files
+        )
 
-    # Primary files (full source)
-    output.append("\n---\n")
-    output.append("## 🟢 PRIMARY FILES (Full Source)\n")
-    output.append("These are the files you should modify to complete the task.\n")
+        logger.info(f"📡 Blast Radius: {len(shockwave_files)} dependency files")
+        print(f"📡 Blast Radius: {len(shockwave_files)} dependency files")
 
-    for rel_path in sorted(epicenter_files):
-        content = get_file_content(repo_path, rel_path)
-        ext = Path(rel_path).suffix.replace('.', '') or 'txt'
+    except Exception as e:
+        error_msg = f"Error during dependency analysis: {e}"
+        logger.error(error_msg, exc_info=True)
+        return f"Error: {error_msg}"
 
-        output.append(f"\n### File: `{rel_path}`\n")
-        output.append(f"```{ext}")
-        output.append(content)
-        output.append("```\n")
+    try:
+        # 6. Generate the output
+        output = []
 
-    # Context files (skeletons)
-    if shockwave_files:
+        # Header
+        output.append(f"# 🚀 VibeCode Context: {query}\n")
+        output.append(f"**Epicenter:** {len(epicenter_files)} files (Full Source)")
+        output.append(f"**Blast Radius:** {len(shockwave_files)} files (Interfaces Only)")
+        output.append(f"**Total Context:** {len(epicenter_files) + len(shockwave_files)} files\n")
+
+        # Dependency map
+        try:
+            dep_map = generate_dependency_map(epicenter_files, shockwave_files, import_graph)
+            output.append(dep_map)
+        except Exception as e:
+            logger.warning(f"Error generating dependency map: {e}")
+            output.append("# Dependency map generation failed\n")
+
+        # System instructions
         output.append("\n---\n")
-        output.append("## 🟡 CONTEXT FILES (Read-Only Interfaces)\n")
-        output.append("These files are dependencies. Use them to understand types and interfaces.\n")
-        output.append("**DO NOT modify these files.** They are shown as skeletons (signatures only).\n")
+        output.append("## 🛑 System Instructions\n")
+        output.append("You are coding in **Blast Radius** mode. You have:\n")
+        output.append("- **Full source code** for PRIMARY FILES (these are being modified)")
+        output.append("- **Skeleton interfaces** for CONTEXT FILES (read-only dependencies)\n")
+        output.append("**Rules:**")
+        output.append("- USE the skeleton interfaces to verify method signatures and types")
+        output.append("- DO NOT hallucinate new methods on skeleton files")
+        output.append("- DO NOT modify CONTEXT FILES (they're read-only)")
+        output.append("- ONLY modify PRIMARY FILES\n")
 
-        for rel_path in sorted(shockwave_files):
-            content = get_file_content(repo_path, rel_path)
-            ext = Path(rel_path).suffix.replace('.', '') or 'txt'
+        # Primary files (full source)
+        output.append("\n---\n")
+        output.append("## 🟢 PRIMARY FILES (Full Source)\n")
+        output.append("These are the files you should modify to complete the task.\n")
 
-            # Generate skeleton using AST
-            ast_nodes = load_ast_for_file(pack_dir, rel_path)
-            skeleton = generate_skeleton_from_ast(ast_nodes, content, ext)
+        for rel_path in sorted(epicenter_files):
+            try:
+                content = get_file_content(repo_path, rel_path)
+                ext = Path(rel_path).suffix.replace('.', '') or 'txt'
 
-            output.append(f"\n### File: `{rel_path}`\n")
-            output.append(f"```{ext}")
-            output.append(skeleton)
-            output.append("```\n")
+                output.append(f"\n### File: `{rel_path}`\n")
+                output.append(f"```{ext}")
+                output.append(content)
+                output.append("```\n")
+            except Exception as e:
+                logger.error(f"Error processing epicenter file {rel_path}: {e}")
+                output.append(f"\n### File: `{rel_path}`\n")
+                output.append(f"```\n# Error loading file: {e}\n```\n")
 
-    return '\n'.join(output)
+        # Context files (skeletons)
+        if shockwave_files:
+            output.append("\n---\n")
+            output.append("## 🟡 CONTEXT FILES (Read-Only Interfaces)\n")
+            output.append("These files are dependencies. Use them to understand types and interfaces.\n")
+            output.append("**DO NOT modify these files.** They are shown as skeletons (signatures only).\n")
+
+            for rel_path in sorted(shockwave_files):
+                try:
+                    content = get_file_content(repo_path, rel_path)
+                    ext = Path(rel_path).suffix.replace('.', '') or 'txt'
+
+                    # Generate skeleton using AST
+                    ast_nodes = load_ast_for_file(pack_dir, rel_path)
+                    skeleton = generate_skeleton_from_ast(ast_nodes, content, ext)
+
+                    output.append(f"\n### File: `{rel_path}`\n")
+                    output.append(f"```{ext}")
+                    output.append(skeleton)
+                    output.append("```\n")
+                except Exception as e:
+                    logger.error(f"Error processing shockwave file {rel_path}: {e}")
+                    output.append(f"\n### File: `{rel_path}`\n")
+                    output.append(f"```\n# Error loading file: {e}\n```\n")
+
+        logger.info("Blast radius calculation completed successfully")
+        return '\n'.join(output)
+
+    except Exception as e:
+        error_msg = f"Error generating output: {e}"
+        logger.error(error_msg, exc_info=True)
+        return f"Error: {error_msg}"

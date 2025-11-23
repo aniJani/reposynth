@@ -133,11 +133,14 @@ class Pipeline:
             from .blast_radius import calculate_blast_radius
 
             max_shockwave = config.get("max_shockwave_files", 50)
+            use_semantic_search = config.get("use_semantic_search", True)
+
             context_md = calculate_blast_radius(
                 self.repo_path,
                 self.output_path,
                 query,
-                max_shockwave_files=max_shockwave
+                max_shockwave_files=max_shockwave,
+                use_semantic_search=use_semantic_search
             )
 
             # Save the output

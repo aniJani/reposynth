@@ -1,14 +1,46 @@
 """
-Simple retrieval module for selecting relevant context from name_registry.
+Retrieval module for selecting relevant context from name_registry.
 
-This is the MINIMAL FIX to reduce token usage from 95K to ~5K.
-No fancy embeddings, no graph traversal - just dead simple keyword matching.
+Supports both keyword-based and semantic search using embeddings.
 """
 
 import json
-from typing import Dict, List, Any, Tuple
+import logging
+from typing import Dict, List, Any, Tuple, Optional
 from pathlib import Path
 from collections import defaultdict
+
+# Set up logging
+logger = logging.getLogger(__name__)
+
+# Module-level cache for embedding model (loaded once per process)
+_EMBEDDING_MODEL_CACHE = None
+
+
+def _get_embedding_model():
+    """
+    Get cached embedding model (loads once per process).
+
+    This significantly improves performance for repeated semantic searches:
+    - First call: ~5-10 seconds (loads model from disk)
+    - Subsequent calls: <1ms (returns cached model)
+
+    Returns:
+        SentenceTransformer: Cached embedding model instance
+    """
+    global _EMBEDDING_MODEL_CACHE
+
+    if _EMBEDDING_MODEL_CACHE is None:
+        logger.info("Loading embedding model (one-time initialization)...")
+        try:
+            from sentence_transformers import SentenceTransformer
+            _EMBEDDING_MODEL_CACHE = SentenceTransformer("all-MiniLM-L6-v2")
+            logger.info("✓ Embedding model loaded and cached")
+        except Exception as e:
+            logger.error(f"Failed to load embedding model: {e}", exc_info=True)
+            raise
+
+    return _EMBEDDING_MODEL_CACHE
 
 
 def retrieve_relevant_symbols(query: str, name_registry: Dict[str, Any], max_items: int = 5) -> List[Dict[str, Any]]:
@@ -210,6 +242,156 @@ def format_context_for_llm(matches: List[Dict[str, Any]], include_code: bool = F
     return "\n".join(lines)
 
 
+def retrieve_relevant_files_semantic(
+    query: str,
+    pack_dir: Path,
+    name_registry: Dict[str, Any],
+    max_files: int = 10,
+    fallback_to_keyword: bool = True
+) -> List[Dict[str, Any]]:
+    """
+    Enhanced retrieval using semantic search with embeddings.
+
+    Uses FAISS vector similarity search to find files matching the query semantically.
+    Falls back to keyword search if embeddings are not available.
+
+    Args:
+        query: Natural language query (e.g., "add google oauth to login")
+        pack_dir: Path to pack directory containing vectors.faiss and vector_ids.json
+        name_registry: Full name registry
+        max_files: Maximum number of files to return
+        fallback_to_keyword: If True, fall back to keyword search when embeddings unavailable
+
+    Returns:
+        List of dicts with file metadata and scores
+        [{"file_path": "auth/service.py", "score": 0.95, "matching_symbols": [...]}, ...]
+
+    Raises:
+        FileNotFoundError: If pack_dir doesn't exist and fallback is disabled
+        ImportError: If required libraries (faiss, sentence-transformers) are missing
+    """
+    try:
+        import faiss
+        import numpy as np
+        from sentence_transformers import SentenceTransformer
+    except ImportError as e:
+        error_msg = f"Missing required library for semantic search: {e}"
+        logger.warning(error_msg)
+        if fallback_to_keyword:
+            logger.info("Falling back to keyword-based search")
+            return retrieve_relevant_files(query, name_registry, max_files)
+        raise ImportError(f"{error_msg}. Install with: pip install faiss-cpu sentence-transformers")
+
+    pack_path = Path(pack_dir) if not isinstance(pack_dir, Path) else pack_dir
+
+    # Check if pack directory exists
+    if not pack_path.exists():
+        error_msg = f"Pack directory not found: {pack_path}"
+        logger.error(error_msg)
+        if fallback_to_keyword:
+            logger.info("Falling back to keyword-based search")
+            return retrieve_relevant_files(query, name_registry, max_files)
+        raise FileNotFoundError(error_msg)
+
+    vectors_path = pack_path / "vectors.faiss"
+    vector_ids_path = pack_path / "vector_ids.json"
+
+    # Check if embeddings exist
+    if not vectors_path.exists() or not vector_ids_path.exists():
+        error_msg = f"Embeddings not found at {pack_path}. Run pipeline with embeddings enabled first."
+        logger.warning(error_msg)
+        if fallback_to_keyword:
+            logger.info("Falling back to keyword-based search")
+            return retrieve_relevant_files(query, name_registry, max_files)
+        raise FileNotFoundError(error_msg)
+
+    try:
+        # Load FAISS index
+        logger.info(f"Loading FAISS index from {vectors_path}")
+        index = faiss.read_index(str(vectors_path))
+
+        # Load ID mapping
+        with open(vector_ids_path, 'r', encoding='utf-8') as f:
+            id_to_fqn = json.load(f)
+
+        # Convert string keys to integers (JSON keys are always strings)
+        id_to_fqn = {int(k): v for k, v in id_to_fqn.items()}
+
+    except Exception as e:
+        error_msg = f"Failed to load embeddings: {e}"
+        logger.error(error_msg, exc_info=True)
+        if fallback_to_keyword:
+            logger.info("Falling back to keyword-based search")
+            return retrieve_relevant_files(query, name_registry, max_files)
+        raise RuntimeError(error_msg) from e
+
+    try:
+        # Get cached embedding model (fast on subsequent calls)
+        model = _get_embedding_model()
+
+        logger.info(f"Generating embedding for query: '{query}'")
+        query_embedding = model.encode([query])[0]
+        query_embedding = np.array([query_embedding], dtype=np.float32)
+
+        # Search for similar vectors
+        # k = number of nearest neighbors to find (get more than needed for file aggregation)
+        k = min(len(id_to_fqn), max_files * 5)  # Get 5x more symbols than files needed
+        distances, indices = index.search(query_embedding, k)
+
+    except Exception as e:
+        error_msg = f"Failed to perform semantic search: {e}"
+        logger.error(error_msg, exc_info=True)
+        if fallback_to_keyword:
+            logger.info("Falling back to keyword-based search")
+            return retrieve_relevant_files(query, name_registry, max_files)
+        raise RuntimeError(error_msg) from e
+
+    # Aggregate results at file level
+    file_data = defaultdict(lambda: {"score": 0.0, "symbols": [], "distances": []})
+
+    for idx, distance in zip(indices[0], distances[0]):
+        # Get FQN for this vector
+        fqn = id_to_fqn.get(idx)
+        if not fqn or fqn not in name_registry:
+            continue
+
+        symbol_info = name_registry[fqn]
+        file_path = symbol_info.get('file_path', '')
+        if not file_path:
+            continue
+
+        # Convert L2 distance to similarity score (lower distance = higher similarity)
+        # Normalize to 0-1 range where 1 is most similar
+        similarity = 1 / (1 + distance)
+
+        file_data[file_path]["score"] += similarity
+        file_data[file_path]["distances"].append(float(distance))
+        file_data[file_path]["symbols"].append({
+            "name": fqn.split(':')[-1],
+            "fqn": fqn,
+            "similarity": float(similarity),
+            "distance": float(distance),
+            **symbol_info
+        })
+
+    # Convert to ranked list
+    ranked_files = []
+    for file_path, data in file_data.items():
+        ranked_files.append({
+            "file_path": file_path,
+            "score": data["score"],
+            "matching_symbols": data["symbols"],
+            "match_count": len(data["symbols"]),
+            "avg_distance": sum(data["distances"]) / len(data["distances"]) if data["distances"] else float('inf')
+        })
+
+    # Sort by aggregate score (descending)
+    ranked_files.sort(reverse=True, key=lambda x: x["score"])
+
+    logger.info(f"Found {len(ranked_files)} files matching query (returning top {max_files})")
+    return ranked_files[:max_files]
+
+
 def load_and_retrieve(query: str, pack_dir: str, max_items: int = 5) -> str:
     """
     Convenience function to load name_registry and retrieve in one step.
@@ -221,18 +403,32 @@ def load_and_retrieve(query: str, pack_dir: str, max_items: int = 5) -> str:
 
     Returns:
         Formatted context string ready for LLM
+
+    Raises:
+        FileNotFoundError: If name_registry.json doesn't exist
+        json.JSONDecodeError: If name_registry.json is invalid JSON
     """
-    pack_path = Path(pack_dir)
-    registry_path = pack_path / "name_registry.json"
+    try:
+        pack_path = Path(pack_dir)
+        registry_path = pack_path / "name_registry.json"
 
-    if not registry_path.exists():
-        raise FileNotFoundError(f"name_registry.json not found at {registry_path}")
+        if not registry_path.exists():
+            error_msg = f"name_registry.json not found at {registry_path}"
+            logger.error(error_msg)
+            raise FileNotFoundError(error_msg)
 
-    with open(registry_path, 'r', encoding='utf-8') as f:
-        name_registry = json.load(f)
+        with open(registry_path, 'r', encoding='utf-8') as f:
+            name_registry = json.load(f)
 
-    matches = retrieve_relevant_symbols(query, name_registry, max_items)
-    return format_context_for_llm(matches)
+        matches = retrieve_relevant_symbols(query, name_registry, max_items)
+        return format_context_for_llm(matches)
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in name_registry.json: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Error in load_and_retrieve: {e}", exc_info=True)
+        raise
 
 
 # Example usage:
