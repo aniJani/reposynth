@@ -220,7 +220,11 @@ class JobConfiguration(BaseModel):
     """Frontend job configuration for Week 9 UI."""
     mode: str = Field(
         default="semantic",
-        description="Analysis mode: semantic, hybrid, or full"
+        description="Analysis mode: semantic, hybrid, full, or vibecode"
+    )
+    query: Optional[str] = Field(
+        default=None,
+        description="Query for VibeCode mode"
     )
     enable_ast: bool = Field(
         default=True,
@@ -251,7 +255,7 @@ class JobConfiguration(BaseModel):
     @classmethod
     def validate_mode(cls, v: str) -> str:
         """Validate analysis mode."""
-        valid_modes = ['semantic', 'hybrid', 'full']
+        valid_modes = ['semantic', 'hybrid', 'full', 'vibecode']
         if v not in valid_modes:
             raise ValueError(f"Invalid mode '{v}'. Must be one of: {', '.join(valid_modes)}")
         return v

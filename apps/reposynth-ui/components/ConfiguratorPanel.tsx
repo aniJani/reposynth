@@ -55,8 +55,8 @@ export function ConfiguratorPanel() {
         <label className="block text-sm font-medium text-gray-700 mb-3">
           Analysis Mode
         </label>
-        <div className="grid grid-cols-3 gap-3">
-          {['semantic', 'hybrid', 'full'].map((mode) => (
+        <div className="grid grid-cols-4 gap-3">
+          {['semantic', 'hybrid', 'full', 'vibecode'].map((mode) => (
             <button
               key={mode}
               onClick={() => setConfig({ mode: mode as any })}
@@ -66,16 +66,36 @@ export function ConfiguratorPanel() {
                   : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
               }`}
             >
-              <div className="font-medium capitalize">{mode}</div>
+              <div className="font-medium capitalize">{mode === 'vibecode' ? 'Vibe Code' : mode}</div>
               <div className="text-xs mt-1" style={{ color: config.mode === mode ? '#1d4ed8' : '#6b7280' }}>
                 {mode === 'semantic' && '~30s'}
                 {mode === 'hybrid' && '~60s'}
                 {mode === 'full' && '~120s'}
+                {mode === 'vibecode' && '~45s'}
               </div>
             </button>
           ))}
         </div>
       </div>
+
+      {/* Vibe Code Query */}
+      {config.mode === 'vibecode' && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Focus Query
+          </label>
+          <textarea
+            value={config.query || ''}
+            onChange={(e) => setConfig({ query: e.target.value })}
+            placeholder="Describe what you want to work on (e.g., 'Fix the login bug in auth.ts')"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            rows={3}
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Vibe Code mode generates a focused context based on your query using blast radius analysis.
+          </p>
+        </div>
+      )}
 
       {/* Output Format */}
       <div className="mb-6">

@@ -711,6 +711,19 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                 "build_variable_registry": True,
                 "store_spans": True,
             })
+        elif mode == "vibecode":
+            # VibeCode mode - focused context generation
+            pipeline_config.update({
+                "run_parsing": True,
+                "build_graphs": True,
+                "run_analysis": False,
+                "run_embeddings": True,
+                "run_security_scans": False,
+                "build_variable_registry": False,
+                "store_spans": False,
+                "pack_mode": "blast-radius",
+                "query": config.get("query", "")
+            })
         else:
             raise ValueError(f"Invalid mode: {mode}")
         
@@ -733,7 +746,19 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
         repo_name = cloned_repo_path.name
         output_format = config.get("output_format", "zip")
         
-        if output_format == "markdown":
+        if mode == "vibecode":
+            # VibeCode always outputs a markdown file
+            vibecode_file = output_pack_dir / "vibecode_prompt.md"
+            if vibecode_file.exists():
+                pack_filename = f"vibecode_{repo_name}_{job_id}.md"
+                pack_path = worker_root / pack_filename
+                shutil.copy(vibecode_file, pack_path)
+                content_type = "text/markdown"
+                output_format = "markdown"  # Force markdown for upload handling
+            else:
+                raise RuntimeError("VibeCode pipeline failed to generate output file")
+
+        elif output_format == "markdown":
             # For hybrid/full modes, extract the ZIP first to read its contents
             if mode in ["hybrid", "full"]:
                 # Find the created ZIP file

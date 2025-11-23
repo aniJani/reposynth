@@ -334,7 +334,8 @@ async def estimate_from_config(request: ConfiguratorEstimateRequest):
     base_estimates = {
         "semantic": {"tokens": 50000, "time": 30},
         "hybrid": {"tokens": 100000, "time": 60},
-        "full": {"tokens": 200000, "time": 120}
+        "full": {"tokens": 200000, "time": 120},
+        "vibecode": {"tokens": 75000, "time": 45}
     }
     
     estimate = base_estimates.get(config.mode, base_estimates["semantic"])
@@ -422,10 +423,10 @@ async def create_job(
     mode = config.mode
     
     # Validate mode
-    if mode not in ["semantic", "hybrid", "full"]:
+    if mode not in ["semantic", "hybrid", "full", "vibecode"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid mode '{mode}'. Must be 'semantic', 'hybrid', or 'full'."
+            detail=f"Invalid mode '{mode}'. Must be 'semantic', 'hybrid', 'full', or 'vibecode'."
         )
     
     # Validate URL format
