@@ -26,7 +26,7 @@ export function SubmitButton() {
 
     try {
       const response = await createJob({ repo_url: repoUrl, config });
-      
+
       // Set initial job status
       setCurrentJob({
         id: response.job_id,
@@ -50,22 +50,19 @@ export function SubmitButton() {
     <button
       onClick={handleSubmit}
       disabled={isDisabled}
-      className={`w-full max-w-4xl mx-auto px-6 py-4 rounded-lg font-semibold text-lg transition-all flex items-center justify-center gap-3 ${
+      className={`flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-md h-12 px-5 text-base font-bold leading-normal tracking-[0.015em] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-950 font-display ${
         isDisabled
-          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-          : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
+          ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed opacity-50'
+          : 'bg-primary text-zinc-950 hover:bg-teal-400 focus:ring-primary'
       }`}
     >
       {isSubmitting ? (
         <>
-          <Loader2 className="h-6 w-6 animate-spin" />
-          Submitting...
+          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+          <span className="truncate">Submitting...</span>
         </>
       ) : (
-        <>
-          <Rocket className="h-6 w-6" />
-          Generate Pack
-        </>
+        <span className="truncate">Submit Analysis Job</span>
       )}
     </button>
   );

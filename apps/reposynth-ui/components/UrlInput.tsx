@@ -2,32 +2,28 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { Github } from 'lucide-react';
 
 export function UrlInput() {
   const { repoUrl, setRepoUrl } = useStore();
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <label htmlFor="repo-url" className="block text-sm font-medium text-gray-700 mb-2">
-        GitHub Repository URL
-      </label>
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Github className="h-5 w-5 text-gray-400" />
+    <div className="w-full">
+      <label htmlFor="repo-url" className="flex flex-col">
+        <p className="text-zinc-400 text-sm font-mono leading-normal pb-2 px-1">
+          [UrlInput]
+        </p>
+        <div className="relative flex items-center group">
+          <span className="absolute left-4 text-zinc-400 select-none">&gt;</span>
+          <input
+            type="text"
+            id="repo-url"
+            value={repoUrl}
+            onChange={(e) => setRepoUrl(e.target.value)}
+            placeholder="e.g., https://github.com/facebook/react"
+            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-md text-zinc-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-950 focus:ring-primary border border-zinc-800 bg-zinc-900 h-12 placeholder:text-zinc-600 pl-8 pr-4 text-base font-normal leading-normal transition-colors hover:border-zinc-700"
+          />
         </div>
-        <input
-          type="text"
-          id="repo-url"
-          value={repoUrl}
-          onChange={(e) => setRepoUrl(e.target.value)}
-          placeholder="https://github.com/username/repository"
-          className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base text-gray-900 bg-white placeholder-gray-400"
-        />
-      </div>
-      <p className="mt-2 text-sm text-gray-500">
-        Enter a public GitHub repository URL to analyze
-      </p>
+      </label>
     </div>
   );
 }

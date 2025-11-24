@@ -4,14 +4,7 @@
 import { useStore } from '@/lib/store';
 import { useEffect } from 'react';
 import { getJobStatus } from '@/lib/api';
-import {
-  CheckCircle,
-  Clock,
-  Loader2,
-  XCircle,
-  Download,
-  ExternalLink,
-} from 'lucide-react';
+import { Download, ExternalLink } from 'lucide-react';
 
 export function JobStatusDisplay() {
   const { currentJob, setCurrentJob } = useStore();
@@ -35,134 +28,118 @@ export function JobStatusDisplay() {
   }, [currentJob, setCurrentJob]);
 
   if (!currentJob) {
-    return null;
+    return (
+      <div className="w-full space-y-2 p-4 border border-zinc-800 rounded-md bg-zinc-900/50">
+        <p className="text-zinc-400 text-sm font-mono">[JobStatusDisplay]</p>
+        <div className="flex items-center justify-center h-24 text-zinc-600">
+          <span>Live job status will appear here after submission.</span>
+        </div>
+      </div>
+    );
   }
 
-  const getStatusIcon = () => {
-    switch (currentJob.status) {
+  const getStatusColor = (status: string) => {
+    switch (status) {
       case 'pending':
-        return <Clock className="h-6 w-6 text-yellow-500" />;
+        return 'text-yellow-400';
       case 'processing':
-        return <Loader2 className="h-6 w-6 text-blue-500 animate-spin" />;
+        return 'text-blue-400 animate-pulse';
       case 'completed':
-        return <CheckCircle className="h-6 w-6 text-green-500" />;
+        return 'text-green-400';
       case 'failed':
-        return <XCircle className="h-6 w-6 text-red-500" />;
-    }
-  };
-
-  const getStatusColor = () => {
-    switch (currentJob.status) {
-      case 'pending':
-        return 'border-yellow-200 bg-yellow-50';
-      case 'processing':
-        return 'border-blue-200 bg-blue-50';
-      case 'completed':
-        return 'border-green-200 bg-green-50';
-      case 'failed':
-        return 'border-red-200 bg-red-50';
+        return 'text-red-400';
+      default:
+        return 'text-zinc-400';
     }
   };
 
   return (
-    <div className={`w-full max-w-4xl mx-auto border rounded-lg p-6 ${getStatusColor()}`}>
-      <div className="flex items-start gap-4">
-        <div className="flex-shrink-0">{getStatusIcon()}</div>
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 capitalize">
-              {currentJob.status}
-            </h3>
-            <span className="text-sm text-gray-500">
-              Job ID: {currentJob.id.slice(0, 8)}
-            </span>
-          </div>
+    <div className="w-full space-y-2 p-4 border border-zinc-800 rounded-md bg-zinc-900/50">
+      <p className="text-zinc-400 text-sm font-mono">[JobStatusDisplay]</p>
 
-          <p className="text-sm text-gray-600 mb-3">
-            {currentJob.repo_url}
-          </p>
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 font-mono text-base mt-2">
+        <div className="space-y-4">
+          {/* Pending/Waiting state */}
+          {currentJob.status === 'pending' && (
+            <div className="flex items-start gap-4">
+              <span className="text-yellow-400 mt-0.5">&gt;</span>
+              <p className="text-yellow-400">WAITING_FOR_WORKER...</p>
+            </div>
+          )}
 
+          {/* Processing state */}
           {currentJob.status === 'processing' && (
-            <div className="flex items-center gap-2 text-sm text-blue-700">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Analyzing repository...</span>
-            </div>
+            <>
+              <div className="flex items-start gap-4">
+                <span className="text-green-400 mt-0.5">&gt;</span>
+                <p className="text-green-400">WORKER_ACQUIRED</p>
+              </div>
+              <div className="flex items-start gap-4">
+                <span className="text-blue-400 mt-0.5">&gt;</span>
+                <p className="text-blue-400 animate-pulse">ANALYZING_REPOSITORY...</p>
+              </div>
+            </>
           )}
 
-          {currentJob.status === 'completed' && currentJob.result_url && (
-            <div className="flex gap-3">
-              {/* Determine output format from URL extension */}
-              {currentJob.result_url.endsWith('.md') || currentJob.result_url.endsWith('.json') ? (
-                <>
-                  <a
-                    href={currentJob.result_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    View in Browser
-                  </a>
-                  <button
-                    onClick={() => {
-                      // Force download by creating a temporary link
-                      fetch(currentJob.result_url!)
-                        .then(res => res.blob())
-                        .then(blob => {
-                          const url = window.URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = currentJob.result_url!.split('/').pop() || 'download';
-                          document.body.appendChild(a);
-                          a.click();
-                          window.URL.revokeObjectURL(url);
-                          document.body.removeChild(a);
-                        });
-                    }}
-                    className="inline-flex items-center gap-2 px-4 py-2 border border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-colors"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download File
-                  </button>
-                </>
-              ) : (
-                <>
-                  <a
-                    href={currentJob.result_url}
-                    download
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <Download className="h-4 w-4" />
-                    Download Pack
-                  </a>
-                  <a
-                    href={currentJob.result_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 border border-green-600 text-green-700 rounded-lg hover:bg-green-50 transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    View in Browser
-                  </a>
-                </>
-              )}
-            </div>
+          {/* Completed state */}
+          {currentJob.status === 'completed' && (
+            <>
+              <div className="flex items-start gap-4">
+                <span className="text-green-400 mt-0.5">&gt;</span>
+                <p className="text-green-400">ANALYSIS_COMPLETE</p>
+              </div>
+              <div className="flex items-start gap-4">
+                <span className="text-green-400 mt-0.5">&gt;</span>
+                <div className="flex-1">
+                  <p className="text-green-400 mb-2">SUCCESS</p>
+                  {currentJob.processing_time_seconds && (
+                    <p className="text-zinc-400 text-sm mb-4">
+                      Completed in {Math.round(currentJob.processing_time_seconds)}s
+                    </p>
+                  )}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <a
+                      href={currentJob.result_url}
+                      download
+                      className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-neon-purple text-zinc-50 text-sm font-bold leading-normal hover:bg-violet-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-neon-purple font-display"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      <span className="truncate">Download Pack</span>
+                    </a>
+                    <a
+                      href={currentJob.result_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-cyber-blue text-zinc-50 text-sm font-bold leading-normal hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 focus:ring-cyber-blue font-display"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      <span className="truncate">View in Browser</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </>
           )}
 
-          {currentJob.status === 'completed' && currentJob.processing_time_seconds && (
-            <p className="text-sm text-gray-600 mt-2">
-              Completed in {Math.round(currentJob.processing_time_seconds)}s
-            </p>
-          )}
-
-          {currentJob.status === 'failed' && currentJob.error_message && (
-            <div className="mt-2 p-3 bg-red-100 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700 font-medium">Error:</p>
-              <p className="text-sm text-red-600 mt-1">
-                {currentJob.error_message}
-              </p>
-            </div>
+          {/* Failed state */}
+          {currentJob.status === 'failed' && (
+            <>
+              <div className="flex items-start gap-4">
+                <span className="text-yellow-400 mt-0.5">&gt;</span>
+                <p className="text-yellow-400">WORKER_STARTED</p>
+              </div>
+              <div className="flex items-start gap-4">
+                <span className="text-red-400 mt-0.5">&gt;</span>
+                <div className="flex-1">
+                  <p className="text-red-400 mb-2">FATAL_ERROR</p>
+                  {currentJob.error_message && (
+                    <div className="bg-zinc-800 border border-zinc-700 rounded-md p-4 text-red-300 text-sm overflow-x-auto">
+                      <pre><code>{currentJob.error_message}</code></pre>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
