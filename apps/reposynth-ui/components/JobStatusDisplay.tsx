@@ -2,12 +2,23 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { getJobStatus } from '@/lib/api';
-import { Download, ExternalLink } from 'lucide-react';
+import { Download, ExternalLink, Copy, Check } from 'lucide-react';
+import { copyToClipboard } from '@/lib/utils';
 
 export function JobStatusDisplay() {
   const { currentJob, setCurrentJob } = useStore();
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyJobId = async () => {
+    if (!currentJob) return;
+    const success = await copyToClipboard(currentJob.id);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   // Poll for job status updates
   useEffect(() => {
@@ -28,14 +39,7 @@ export function JobStatusDisplay() {
   }, [currentJob, setCurrentJob]);
 
   if (!currentJob) {
-    return (
-      <div className="w-full space-y-2 p-4 border border-zinc-800 rounded-md bg-zinc-900/50">
-        <p className="text-zinc-400 text-sm font-mono">[JobStatusDisplay]</p>
-        <div className="flex items-center justify-center h-24 text-zinc-600">
-          <span>Live job status will appear here after submission.</span>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const getStatusColor = (status: string) => {
@@ -54,8 +58,27 @@ export function JobStatusDisplay() {
   };
 
   return (
-    <div className="w-full space-y-2 p-4 border border-zinc-800 rounded-md bg-zinc-900/50">
-      <p className="text-zinc-400 text-sm font-mono">[JobStatusDisplay]</p>
+    <div className="w-full space-y-2 p-4 border border-zinc-800 rounded-lg bg-zinc-900 shadow-2xl backdrop-blur-sm">
+      <div className="flex items-center justify-between">
+        <p className="text-zinc-400 text-sm font-mono">[JobStatusDisplay]</p>
+        <button
+          onClick={handleCopyJobId}
+          className="flex items-center gap-1 px-2 py-1 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 rounded transition-colors"
+          title="Click to copy Job ID"
+        >
+          {copied ? (
+            <>
+              <Check className="h-3 w-3" />
+              <span>Copied!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="h-3 w-3" />
+              <span>ID: {currentJob.id.slice(0, 8)}...</span>
+            </>
+          )}
+        </button>
+      </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-6 font-mono text-base mt-2">
         <div className="space-y-4">

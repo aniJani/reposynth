@@ -1,34 +1,62 @@
+'use client';
+
 import { UrlInput } from '@/components/UrlInput';
 import { ConfiguratorPanel } from '@/components/ConfiguratorPanel';
 import { EstimatorDisplay } from '@/components/EstimatorDisplay';
 import { SubmitButton } from '@/components/SubmitButton';
 import { JobStatusDisplay } from '@/components/JobStatusDisplay';
-import { VibeCodingPanel } from '@/components/VibeCodingPanel';
-import { Database } from 'lucide-react';
+import { VibeStationDrawer } from '@/components/VibeStationDrawer';
+import { Database, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { useStore } from '@/lib/store';
 
 export default function Home() {
+  const [isVibeDrawerOpen, setIsVibeDrawerOpen] = useState(false);
+  const { currentJob, repoUrl } = useStore();
+
+  const showVibeButton = currentJob?.status === 'completed';
+  const showConfiguration = repoUrl.trim().length > 0;
+
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-      <div className="flex h-full grow flex-col">
-        <div className="flex flex-1 justify-center items-start p-4 md:p-8">
-          <div className="flex flex-col w-full max-w-5xl flex-1">
-            {/* Header */}
-            <header className="flex flex-col items-center justify-center text-center py-10">
-              <div className="flex items-center gap-3">
-                <Database className="text-primary text-3xl h-8 w-8" />
-                <h1 className="text-zinc-200 text-3xl font-bold font-display tracking-tight">
-                  RepoSynth
-                </h1>
-              </div>
-              <p className="text-zinc-400 mt-2 text-base">
-                Repository Synthesis & LLM Context Engine
-              </p>
-            </header>
+      {/* Fixed Header - Top Left */}
+      <header className="fixed top-0 left-0 right-0 z-20 bg-zinc-950/80 backdrop-blur-md">
+        <div className="px-6 py-4">
+          <div className="flex items-center gap-3">
+            <Database className="text-primary h-6 w-6" />
+            <div>
+              <h1 className="text-lg font-bold font-display tracking-tight text-zinc-200">
+                RepoSynth
+              </h1>
+              <p className="text-xs text-zinc-500">Repository Synthesis & LLM Context Engine</p>
+            </div>
+          </div>
+        </div>
+      </header>
 
-            {/* Main Content */}
-            <main className="flex-grow flex flex-col items-center w-full space-y-8">
-              {/* URL Input */}
-              <div className="w-full space-y-2">
+      {/* Main Content */}
+      <main className="flex-1 pt-20">
+        {!showConfiguration ? (
+          /* Centered URL Input - Initial State */
+          <div className="flex items-center justify-center min-h-[calc(100vh-5rem)] px-4">
+            <div className="w-full max-w-2xl">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl md:text-5xl font-bold text-zinc-200 mb-4 font-display tracking-tight">
+                  Analyze a Repository
+                </h2>
+                <p className="text-zinc-400 text-lg">
+                  Enter a GitHub repository URL to begin
+                </p>
+              </div>
+              <UrlInput />
+            </div>
+          </div>
+        ) : (
+          /* Configuration Panels - After URL Entry */
+          <div className="max-w-5xl mx-auto px-4 md:px-8 pb-16">
+            <div className="space-y-8">
+              {/* URL Input - Compact */}
+              <div className="w-full">
                 <UrlInput />
               </div>
 
@@ -43,50 +71,54 @@ export default function Home() {
               </div>
 
               {/* Submit Button */}
-              <div className="w-full pt-2">
+              <div className="w-full pt-4">
                 <SubmitButton />
               </div>
-
-              {/* Job Status Display */}
-              <div className="w-full">
-                <JobStatusDisplay />
-              </div>
-
-              {/* Vibe Station */}
-              <div className="w-full">
-                <VibeCodingPanel />
-              </div>
-            </main>
-
-            {/* Footer */}
-            <footer className="flex flex-col gap-6 px-5 py-10 text-center mt-16">
-              <div className="flex flex-wrap items-center justify-center gap-6">
-                <a
-                  className="text-zinc-500 hover:text-zinc-300 transition-colors text-sm font-normal leading-normal min-w-40"
-                  href="#"
-                >
-                  Documentation
-                </a>
-                <a
-                  className="text-zinc-500 hover:text-zinc-300 transition-colors text-sm font-normal leading-normal min-w-40"
-                  href="#"
-                >
-                  About
-                </a>
-                <a
-                  className="text-zinc-500 hover:text-zinc-300 transition-colors text-sm font-normal leading-normal min-w-40"
-                  href="#"
-                >
-                  GitHub
-                </a>
-              </div>
-              <p className="text-zinc-600 text-sm font-normal leading-normal">
-                © 2024 RepoSynth. All rights reserved.
-              </p>
-            </footer>
+            </div>
           </div>
+        )}
+      </main>
+
+      {/* Footer - Minimal */}
+      <footer className="py-6 text-center border-t border-zinc-800/50 bg-zinc-950/50">
+        <div className="flex items-center justify-center gap-6 text-xs text-zinc-600">
+          <a href="#" className="hover:text-zinc-400 transition-colors">
+            Documentation
+          </a>
+          <span>•</span>
+          <a href="#" className="hover:text-zinc-400 transition-colors">
+            About
+          </a>
+          <span>•</span>
+          <a href="#" className="hover:text-zinc-400 transition-colors">
+            GitHub
+          </a>
         </div>
-      </div>
+      </footer>
+
+      {/* Fixed Job Status Display - Bottom Left */}
+      {currentJob && (
+        <div className="fixed bottom-8 left-8 w-full max-w-2xl z-30">
+          <JobStatusDisplay />
+        </div>
+      )}
+
+      {/* Floating Vibe Station Button */}
+      {showVibeButton && (
+        <button
+          onClick={() => setIsVibeDrawerOpen(true)}
+          className="fixed bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-neon-purple to-violet-600 text-white rounded-full shadow-2xl hover:shadow-neon-purple/50 hover:scale-105 transition-all font-bold text-base z-30 glow-purple"
+        >
+          <Sparkles className="h-5 w-5" />
+          <span>Vibe Station</span>
+        </button>
+      )}
+
+      {/* Vibe Station Drawer */}
+      <VibeStationDrawer
+        isOpen={isVibeDrawerOpen}
+        onClose={() => setIsVibeDrawerOpen(false)}
+      />
     </div>
   );
 }

@@ -53,7 +53,7 @@ export function SubmitButton() {
       className={`flex min-w-[84px] w-full cursor-pointer items-center justify-center overflow-hidden rounded-md h-12 px-5 text-base font-bold leading-normal tracking-[0.015em] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-950 font-display ${
         isDisabled
           ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed opacity-50'
-          : 'bg-primary text-zinc-950 hover:bg-teal-400 focus:ring-primary'
+          : 'bg-teal-600 text-white hover:bg-teal-500 focus:ring-teal-600'
       }`}
     >
       {isSubmitting ? (
@@ -62,7 +62,10 @@ export function SubmitButton() {
           <span className="truncate">Submitting...</span>
         </>
       ) : (
-        <span className="truncate">Submit Analysis Job</span>
+        <>
+          <Rocket className="h-5 w-5 mr-2" />
+          <span className="truncate">Submit Analysis Job</span>
+        </>
       )}
     </button>
   );

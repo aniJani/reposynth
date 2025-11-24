@@ -61,9 +61,58 @@ export function ConfiguratorPanel() {
     { key: 'enable_embeddings', label: 'Embeddings', icon: Brain },
   ] as const;
 
+  // Configuration presets
+  const presets = {
+    quickScan: {
+      mode: 'semantic' as const,
+      enable_ast: true,
+      enable_imports: false,
+      enable_complexity: false,
+      enable_security: false,
+      enable_embeddings: true,
+      output_format: 'markdown' as const,
+    },
+    balanced: {
+      mode: 'hybrid' as const,
+      enable_ast: true,
+      enable_imports: true,
+      enable_complexity: true,
+      enable_security: false,
+      enable_embeddings: true,
+      output_format: 'zip' as const,
+    },
+    deepDive: {
+      mode: 'full' as const,
+      enable_ast: true,
+      enable_imports: true,
+      enable_complexity: true,
+      enable_security: true,
+      enable_embeddings: true,
+      output_format: 'zip' as const,
+    },
+  };
+
+  const applyPreset = (preset: keyof typeof presets) => {
+    setConfig(presets[preset]);
+  };
+
   return (
     <div className="w-full space-y-2 p-4 border border-zinc-800 rounded-md bg-zinc-900/50">
-      <p className="text-zinc-400 text-sm font-mono">[ConfiguratorPanel]</p>
+      <div className="flex items-center justify-between">
+        <p className="text-zinc-400 text-sm font-mono">[ConfiguratorPanel]</p>
+
+        {/* Presets Dropdown */}
+        <select
+          onChange={(e) => e.target.value && applyPreset(e.target.value as keyof typeof presets)}
+          className="text-xs bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-zinc-300 focus:ring-2 focus:ring-primary focus:border-primary"
+          defaultValue=""
+        >
+          <option value="" disabled>Quick Presets</option>
+          <option value="quickScan">Quick Scan</option>
+          <option value="balanced">Balanced</option>
+          <option value="deepDive">Deep Dive</option>
+        </select>
+      </div>
 
       <div className="w-full space-y-8 pt-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
