@@ -1,12 +1,20 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-display',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+});
 
 export const metadata: Metadata = {
-  title: 'RepoSynth - AI-Powered Repository Analysis',
-  description: 'Generate comprehensive documentation packs for any GitHub repository',
+  title: 'RepoSynth - Repository Synthesis & LLM Context Engine',
+  description: 'AI-Powered Repository Analysis and Documentation Generation',
 };
 
 export default function RootLayout({
@@ -15,8 +23,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className="dark">
+      <body className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} font-mono bg-zinc-950 text-zinc-200`}>
+        {children}
+      </body>
     </html>
   );
 }

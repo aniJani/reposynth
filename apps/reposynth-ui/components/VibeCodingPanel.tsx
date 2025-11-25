@@ -1,20 +1,10 @@
-
 // components/VibeCodingPanel.tsx
 'use client';
 
 import { useStore } from '@/lib/store';
 import { generateVibePrompt, getJobFiles } from '@/lib/api';
 import { useState, useEffect } from 'react';
-import {
-  Sparkles,
-  Loader2,
-  Copy,
-  CheckCircle,
-  Search,
-  FileCode,
-  Layout,
-  AlertCircle,
-} from 'lucide-react';
+import { Sparkles, Loader2, Copy, CheckCircle, PlayCircle, AlertCircle } from 'lucide-react';
 
 export function VibeCodingPanel() {
   const {
@@ -73,7 +63,6 @@ export function VibeCodingPanel() {
       return;
     }
 
-    // Validate mode-specific requirements
     if (vibeMode === 'focus' && !vibeQuery.trim()) {
       setError('Please enter a query for Focus mode');
       return;
@@ -127,101 +116,58 @@ export function VibeCodingPanel() {
     }
   };
 
-  const getModeIcon = (mode: string) => {
-    switch (mode) {
-      case 'blueprint':
-        return <Layout className="h-5 w-5" />;
-      case 'focus':
-        return <Search className="h-5 w-5" />;
-      case 'bundle':
-        return <FileCode className="h-5 w-5" />;
-    }
-  };
-
-  const getModeDescription = (mode: string) => {
-    switch (mode) {
-      case 'blueprint':
-        return 'Structure only (5-10K tokens) - Architecture overview without source code';
-      case 'focus':
-        return 'Structure + relevant files (20-50K tokens) - Query-based file selection';
-      case 'bundle':
-        return 'Structure + dependency slice (50-200K+ tokens) - Complete dependency tree';
-    }
-  };
-
-  const formatTokenCount = (count: number) => {
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`;
-    }
-    return count.toString();
-  };
-
   return (
-    <div className="w-full max-w-7xl mx-auto">
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="w-full space-y-2 p-4 border border-zinc-800 rounded-md bg-zinc-900/50">
+      <p className="text-zinc-400 text-sm font-mono">[VibeCodingPanel]</p>
+
+      <div className="w-full bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden mt-2">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Sparkles className="h-6 w-6 text-white" />
-            <div>
-              <h2 className="text-xl font-bold text-white">Vibe Station</h2>
-              <p className="text-sm text-purple-100">
-                Generate LLM-optimized prompts from your analysis pack
-              </p>
+        <header className="px-4 py-3 border-b border-zinc-800">
+          <h1 className="text-zinc-400 text-sm tracking-wider font-mono">
+            VIBE_STATION // PROMPT_ENGINE
+          </h1>
+        </header>
+
+        <div className="flex flex-col md:flex-row">
+          {/* Left Panel - Configuration */}
+          <div className="w-full md:w-1/2 p-4 border-b md:border-b-0 md:border-r border-zinc-800">
+            {/* Mode Tabs */}
+            <div className="flex border-b border-zinc-800 -mx-4 px-4">
+              {(['blueprint', 'focus', 'bundle'] as const).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setVibeMode(mode)}
+                  className={`px-4 py-2 text-sm transition-colors ${
+                    vibeMode === mode
+                      ? 'border-b-2 border-cyber-blue text-white bg-zinc-800/50'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                </button>
+              ))}
             </div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-          {/* Left Column: Configuration */}
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Compression Mode
-              </h3>
-
-              {/* Mode Selection */}
-              <div className="space-y-3">
-                {(['blueprint', 'focus', 'bundle'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setVibeMode(mode)}
-                    className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
-                      vibeMode === mode
-                        ? 'border-purple-600 bg-purple-50'
-                        : 'border-gray-200 hover:border-purple-300 bg-white'
-                    }`}
+            <div className="space-y-6 pt-4">
+              {/* Focus Mode - Query */}
+              {vibeMode === 'focus' && (
+                <div>
+                  <label
+                    className="text-zinc-400 text-xs font-semibold tracking-wider"
+                    htmlFor="query-textarea"
                   >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`flex-shrink-0 mt-0.5 ${
-                          vibeMode === mode ? 'text-purple-600' : 'text-gray-400'
-                        }`}
-                      >
-                        {getModeIcon(mode)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`font-semibold capitalize ${
-                              vibeMode === mode ? 'text-purple-900' : 'text-gray-900'
-                            }`}
-                          >
-                            {mode} Mode
-                          </span>
-                          {vibeMode === mode && (
-                            <CheckCircle className="h-4 w-4 text-purple-600" />
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 mt-1">
-                          {getModeDescription(mode)}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
+                    FOCUS_MODE // QUERY
+                  </label>
+                  <textarea
+                    id="query-textarea"
+                    value={vibeQuery}
+                    onChange={(e) => setVibeQuery(e.target.value)}
+                    placeholder="e.g., 'Analyze the component structure and data flow...'"
+                    className="mt-2 form-textarea w-full resize-none bg-zinc-950 border border-zinc-800 rounded-md p-3 text-zinc-300 placeholder:text-zinc-600 focus:ring-2 focus:ring-cyber-blue focus:border-cyber-blue transition-colors"
+                    rows={5}
+                  />
+                </div>
+              )}
 
             {/* Mode-Specific Inputs */}
             {vibeMode === 'focus' && (
@@ -355,100 +301,104 @@ export function VibeCodingPanel() {
                   Generate Prompt
                 </>
               )}
-            </button>
 
-            {!currentJob || currentJob.status !== 'completed' ? (
-              <div className="flex items-start gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-blue-700">
-                  Complete a job first to use the Vibe Station. Submit a repository for
-                  analysis above.
-                </p>
-              </div>
-            ) : null}
+              {/* Generate Button */}
+              <button
+                onClick={handleGeneratePrompt}
+                disabled={isGeneratingPrompt || !currentJob || currentJob.status !== 'completed'}
+                className={`w-full flex items-center justify-center h-10 px-4 font-bold text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 ${
+                  isGeneratingPrompt || !currentJob || currentJob.status !== 'completed'
+                    ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
+                    : 'bg-neon-purple text-white hover:bg-violet-600 focus:ring-neon-purple'
+                }`}
+              >
+                <PlayCircle className="h-4 w-4 mr-2" style={{ fontVariationSettings: "'wght' 600" }} />
+                {isGeneratingPrompt ? 'GENERATING...' : 'GENERATE PROMPT'}
+              </button>
 
-            {error && (
-              <div className="flex items-start gap-2 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
+              {/* Info/Error Messages */}
+              {(!currentJob || currentJob.status !== 'completed') && (
+                <div className="flex items-start gap-2 p-4 bg-blue-900/20 border border-blue-400/20 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-blue-400">
+                    Complete a job first to use the Vibe Station. Submit a repository for analysis
+                    above.
+                  </p>
+                </div>
+              )}
+
+              {error && (
+                <div className="flex items-start gap-2 p-4 bg-red-900/50 border border-red-400/20 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-400">{error}</p>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Right Column: Output */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Output</h3>
-              {vibePrompt && vibeMetadata && (
-                <div className="flex items-center gap-4">
-                  <div className="text-sm text-gray-600">
-                    <span className="font-semibold">
-                      {formatTokenCount(vibeMetadata.token_estimate)}
-                    </span>{' '}
-                    tokens
+          {/* Right Panel - Output */}
+          <div className="w-full md:w-1/2 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-zinc-400 text-xs font-semibold tracking-wider">
+                OUTPUT // GENERATED_PROMPT
+              </label>
+              {vibePrompt && (
+                <button
+                  onClick={handleCopyPrompt}
+                  className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 transition-colors"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCircle className="h-3 w-3" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3 w-3" />
+                      Copy
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+
+            <div className="bg-zinc-950 border border-zinc-800 rounded-md h-[296px] overflow-auto">
+              {vibePrompt ? (
+                <div className="flex p-3">
+                  <div className="text-right text-zinc-600 select-none pr-4 font-mono text-sm">
+                    {vibePrompt.split('\n').map((_, i) => (
+                      <div key={i}>{i + 1}</div>
+                    ))}
                   </div>
-                  <button
-                    onClick={handleCopyPrompt}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle className="h-4 w-4" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-4 w-4" />
-                        Copy to Clipboard
-                      </>
-                    )}
-                  </button>
+                  <pre className="text-zinc-300 text-sm whitespace-pre-wrap flex-1">
+                    <code>{vibePrompt}</code>
+                  </pre>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-zinc-600">
+                  <p className="text-sm">Output will appear here after generation...</p>
                 </div>
               )}
             </div>
 
-            {vibePrompt ? (
-              <div className="relative">
-                <textarea
-                  value={vibePrompt}
-                  readOnly
-                  className="w-full h-[500px] px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm text-gray-900 resize-none focus:outline-none"
-                />
-                {vibeMetadata && (
-                  <div className="mt-3 p-4 bg-gray-100 rounded-lg">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                      Metadata
-                    </h4>
-                    <div className="space-y-1 text-sm text-gray-600">
-                      <p>
-                        <span className="font-medium">Mode:</span> {vibeMetadata.mode}
-                      </p>
-                      <p>
-                        <span className="font-medium">Tokens:</span>{' '}
-                        {vibeMetadata.token_estimate.toLocaleString()}
-                      </p>
-                      {vibeMetadata.files_included !== undefined && (
-                        <p>
-                          <span className="font-medium">Files:</span>{' '}
-                          {vibeMetadata.files_included}
-                        </p>
-                      )}
-                      {vibeMetadata.description && (
-                        <p className="text-gray-500 italic">{vibeMetadata.description}</p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="h-[500px] border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                <div className="text-center px-6">
-                  <Sparkles className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 font-medium">No prompt generated yet</p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    Select a mode and click "Generate Prompt" to create your LLM-optimized
-                    context
+            {vibeMetadata && (
+              <div className="mt-3 p-3 bg-zinc-900 border border-zinc-800 rounded-md">
+                <p className="text-zinc-400 text-xs font-semibold tracking-wider mb-2">
+                  METADATA
+                </p>
+                <div className="space-y-1 text-xs text-zinc-300">
+                  <p>
+                    <span className="text-zinc-500">Mode:</span> {vibeMetadata.mode}
                   </p>
+                  <p>
+                    <span className="text-zinc-500">Tokens:</span>{' '}
+                    {vibeMetadata.token_estimate.toLocaleString()}
+                  </p>
+                  {vibeMetadata.files_included !== undefined && (
+                    <p>
+                      <span className="text-zinc-500">Files:</span> {vibeMetadata.files_included}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
