@@ -10,6 +10,7 @@ import sys
 import sqlite3
 import datetime
 import hashlib
+import shutil
 
 
 # Third-party imports
@@ -41,30 +42,43 @@ class Pipeline:
         self.daemon_path = daemon_path
         self.config = config or {}
 
-        self.cache_dir = self.repo_path / ".re SUSY_cache"
-        self.cache_dir.mkdir(exist_ok=True)
+        # Store cache in a persistent location (project root) instead of inside the repo
+        # This prevents cache loss when temp repos are deleted
+        project_root = Path(output_path).parent  # output_path is <root>/pack, so parent is root
+        repo_name = self.repo_path.name
+        self.cache_dir = project_root / ".reposynth_cache" / repo_name
 
         self.output_path.mkdir(exist_ok=True)
-        self.db_path = self.output_path / "analysis.sqlite"
-        if self.db_path.exists():
-            self.db_path.unlink()  # Delete the old database file
-        self.variable_registry = defaultdict(list)
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
         self.ast_dir = self.output_path / "ast_raw"
-        if self.ast_dir.exists():
-            import shutil
-
-            shutil.rmtree(self.ast_dir)  # Recursively delete the old ast_raw directory
         self.ast_dir.mkdir(exist_ok=True)
+        self.db_path = self.output_path / "analysis.sqlite"
 
+        # These will be populated by the pipeline stages
         self.name_registry = {}
         self.import_graph = {}
-        self.db_conn = sqlite3.connect(
-            self.db_path
-        )  # Connect to the now-guaranteed-fresh path
-        self._init_db()
+        self.variable_registry = defaultdict(list)
+        self.definitions_by_file = defaultdict(list)
+        self.top_level_statements = defaultdict(list)  # NEW: Track executable statements
 
-    def _init_db(self):
-        cursor = self.db_conn.cursor()
+        # Current commit hash for caching
+        self.commit_hash = None
+
+    def _get_cache_key(self, stage_name: str, inputs: dict) -> str:
+        """Generate a cache key for a pipeline stage based on its inputs."""
+        cache_data = {
+            "stage": stage_name,
+            "commit": self.commit_hash,
+            "inputs": inputs
+        }
+        cache_str = json.dumps(cache_data, sort_keys=True)
+        return hashlib.sha256(cache_str.encode()).hexdigest()
+
+    def _init_db(self, db_conn):
+        """Initializes the database schema on a given connection."""
+        # CORRECT: Use the passed-in db_conn, not self.db_conn
+        cursor = db_conn.cursor()
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS complexity (
@@ -76,31 +90,35 @@ class Pipeline:
             )
         """
         )
-        self.db_conn.commit()
+        db_conn.commit()
 
     def run(self, config: dict):
         # Determine the commit hash for caching
-        commit_hash = self._get_commit_hash()
-        
+        self.commit_hash = self._get_commit_hash()
+
         if config.get("run_parsing"):
             print("--- Running Stage 1: Parsing Repository ---")
-            self.run_parsing(commit_hash=commit_hash)
-        
+            self.run_parsing(commit_hash=self.commit_hash)
+
         if config.get("build_graphs"):
             print("\n--- Running Stage 2: Building Graphs & Name Registry ---")
-            self.build_graphs_and_registry()
-        
+            self.build_graphs_and_registry(config=config)
+
         if config.get("build_variable_registry"):
             print("\n--- Running Stage 2.5 (Hybrid): Building Variable Registry ---")
-            self.build_variable_registry()
+            self.build_variable_registry(config=config)
 
         if config.get("run_analysis"):
             print("\n--- Running Stage 3: Static Analysis ---")
-            self.run_static_analysis()
+            self.run_static_analysis(config=config)
 
         if config.get("run_embeddings"):
             print("\n--- Running Stage 4: Generating Embeddings ---")
-            self.generate_embeddings()
+            self.generate_embeddings(config=config)
+
+        if config.get("run_security_scans"):
+            print("\n--- Running Stage 4.5: Security Scanning ---")
+            self.run_security_scans(config=config)
 
         print("\n--- Running Stage 5: Assembling Final Pack ---")
         self.assemble_pack(config=config)
@@ -159,7 +177,7 @@ class Pipeline:
             if files_to_parse:
                 # This method now needs to be modified to only parse a subset of files
                 # And to not create the manifest itself.
-                client.parse_files(files_to_parse, output_dir=str(self.ast_dir))
+                client.parse_files(files_to_parse, output_dir=str(self.ast_dir), repo_path=self.repo_path)
 
             # Create the manifest based on ALL files, not just parsed ones
             ast_manifest = {}
@@ -180,8 +198,10 @@ class Pipeline:
         finally:
             client.shutdown()
 
-    def build_graphs_and_registry(self):
-        self.definitions_by_file = defaultdict(list)
+    def build_graphs_and_registry(self, config: dict = None):
+        config = config or {}
+
+        # Check cache first
         manifest_path = self.ast_dir / "ast_manifest.json"
         if not manifest_path.exists():
             print(
@@ -193,9 +213,55 @@ class Pipeline:
                 json.dump({}, f, indent=2)
             with open(self.output_path / "import_graph.json", "w") as f:
                 json.dump({}, f, indent=2)
+            self.name_registry = {}
+            self.import_graph = {}
+            self.definitions_by_file = defaultdict(list)
             return
+
         with open(manifest_path, "r", encoding="utf-8") as f:
             ast_manifest = json.load(f)
+
+        # Create cache key based on AST files
+        manifest_hash = hashlib.sha256(json.dumps(ast_manifest, sort_keys=True).encode()).hexdigest()
+        cache_key = self._get_cache_key("build_graphs", {"manifest_hash": manifest_hash})
+
+        cache_name_registry = self.cache_dir / f"name_registry_{cache_key}.json"
+        cache_import_graph = self.cache_dir / f"import_graph_{cache_key}.json"
+        cache_definitions = self.cache_dir / f"definitions_{cache_key}.json"
+        cache_top_level_statements = self.cache_dir / f"top_level_statements_{cache_key}.json"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_name_registry.exists() and cache_import_graph.exists():
+            print("⚡ CACHE HIT: Loading graphs from cache...")
+            with open(cache_name_registry, "r") as f:
+                self.name_registry = json.load(f)
+            with open(cache_import_graph, "r") as f:
+                self.import_graph = json.load(f)
+            if cache_definitions.exists():
+                with open(cache_definitions, "r") as f:
+                    defs_dict = json.load(f)
+                    self.definitions_by_file = defaultdict(list, defs_dict)
+            else:
+                self.definitions_by_file = defaultdict(list)
+
+            if cache_top_level_statements.exists():
+                with open(cache_top_level_statements, "r") as f:
+                    stmts_dict = json.load(f)
+                    self.top_level_statements = defaultdict(list, stmts_dict)
+            else:
+                self.top_level_statements = defaultdict(list)
+
+            # Also copy to output directory
+            shutil.copy(cache_name_registry, self.output_path / "name_registry.json")
+            shutil.copy(cache_import_graph, self.output_path / "import_graph.json")
+            if cache_top_level_statements.exists():
+                shutil.copy(cache_top_level_statements, self.output_path / "top_level_statements.json")
+            print("✓ Graphs loaded from cache (instant)")
+            return
+
+        # Cache miss - build from scratch
+        self.definitions_by_file = defaultdict(list)
+        self.top_level_statements = defaultdict(list)
 
         for ast_filename, original_filepath_str in ast_manifest.items():
             ast_file = self.ast_dir / ast_filename
@@ -205,12 +271,16 @@ class Pipeline:
                 continue
 
             try:
+                # newline='' is CRITICAL for Windows/Docker compatibility
+                # It stops Python from shrinking \r\n to \n
                 with open(ast_file, "r", encoding="utf-8") as f:
                     ast_nodes = [json.loads(line) for line in f]
 
                 relative_path = str(original_file.relative_to(self.repo_path))
 
-                with open(original_file, "r", encoding="utf-8") as f:
+                # Read as bytes to ensure byte positions from AST match the source text
+                # especially when multi-byte characters are present
+                with open(original_file, "rb") as f:
                     source_code = f.read()
 
                 adapter = get_adapter(original_file)
@@ -234,43 +304,126 @@ class Pipeline:
                 current_dir = original_file.parent
 
                 for imp in raw_imports:
-                    # Skip built-in/third-party library imports for now
-                    if not imp.startswith("."):
-                        continue
-
                     try:
-                        resolved_path = (current_dir / imp).resolve()
-                        # Check if the resolved path is within our repo
-                        if self.repo_path in resolved_path.parents:
-                            # Try to find a file with .ts, .js, .py extensions
+                        # Handle relative imports (e.g., ".schemas", "..utils")
+                        if imp.startswith("."):
+                            # Count leading dots and strip them
+                            num_dots = len(imp) - len(imp.lstrip('.'))
+                            module_name = imp.lstrip('.')
+
+                            # Determine the base directory
+                            # . = current directory, .. = parent, ... = grandparent, etc.
+                            base_dir = current_dir
+                            for _ in range(num_dots - 1):
+                                base_dir = base_dir.parent
+
+                            # Resolve to the target file/directory
+                            if module_name:
+                                target = base_dir / module_name
+                            else:
+                                # Just dots like "." or ".." - refers to __init__.py
+                                target = base_dir
+
+                            # Check if the target is within our repo
+                            if self.repo_path in target.parents or target == self.repo_path:
+                                # Try to find a file with .ts, .js, .py extensions
+                                found = False
+                                for ext in [".py", ".ts", ".js", ".tsx", ".jsx"]:
+                                    file_path = target.with_suffix(ext)
+                                    if file_path.exists():
+                                        try:
+                                            resolved_imports.append(str(file_path.relative_to(self.repo_path)))
+                                            found = True
+                                            break
+                                        except ValueError:
+                                            continue
+
+                                # Try as a package (with __init__.py)
+                                if not found:
+                                    init_path = target / "__init__.py"
+                                    if init_path.exists():
+                                        try:
+                                            resolved_imports.append(str(init_path.relative_to(self.repo_path)))
+                                        except ValueError:
+                                            continue
+                        else:
+                            # Handle absolute imports (e.g., "orchestrator.parser_client")
+                            # We need to search for the module in the repository
+                            module_parts = imp.split(".")
+                            module_filename = module_parts[-1]  # Last part is the module name
+
+                            # Directories to exclude from import resolution
+                            exclude_dirs = {".venv", "venv", "node_modules", ".git", "__pycache__", "build", "dist", ".tox", ".pytest_cache"}
+
+                            # Search for files matching the module name
                             found = False
-                            for ext in [".ts", ".js", ".py", ".tsx", ".jsx"]:
-                                if (
-                                    resolved_path.parent / f"{resolved_path.name}{ext}"
-                                ).exists():
-                                    resolved_imports.append(
-                                        str(
-                                            (
-                                                resolved_path.parent
-                                                / f"{resolved_path.name}{ext}"
-                                            ).relative_to(self.repo_path)
-                                        )
-                                    )
-                                    found = True
+                            for ext in [".py", ".ts", ".js", ".tsx", ".jsx"]:
+                                # Use glob to find all files with this name
+                                pattern = f"**/{module_filename}{ext}"
+                                matching_files = list(self.repo_path.glob(pattern))
+
+                                # Filter out excluded directories
+                                matching_files = [
+                                    f for f in matching_files
+                                    if not any(excluded in f.parts for excluded in exclude_dirs)
+                                ]
+
+                                # Try to find the most likely match based on the full module path
+                                for match in matching_files:
+                                    try:
+                                        rel_path = match.relative_to(self.repo_path)
+                                        # Check if the module path matches the file path structure
+                                        # For "orchestrator.parser_client", look for files ending with "orchestrator/parser_client.py"
+                                        expected_suffix = "/".join(module_parts) + ext
+                                        if str(rel_path).replace("\\", "/").endswith(expected_suffix):
+                                            resolved_imports.append(str(rel_path))
+                                            found = True
+                                            break
+                                    except ValueError:
+                                        continue
+
+                                if found:
                                     break
-                            if not found and (resolved_path / "__init__.py").exists():
-                                resolved_imports.append(
-                                    str(
-                                        (resolved_path / "__init__.py").relative_to(
-                                            self.repo_path
-                                        )
-                                    )
-                                )
+
+                            # Try as a package (with __init__.py)
+                            if not found:
+                                pattern = f"**/{module_filename}/__init__.py"
+                                matching_files = list(self.repo_path.glob(pattern))
+
+                                # Filter out excluded directories
+                                matching_files = [
+                                    f for f in matching_files
+                                    if not any(excluded in f.parts for excluded in exclude_dirs)
+                                ]
+
+                                for match in matching_files:
+                                    try:
+                                        rel_path = match.relative_to(self.repo_path)
+                                        # Verify it matches the module structure
+                                        path_parts = str(rel_path).replace("\\", "/").split("/")
+                                        # Remove __init__.py from the end
+                                        path_parts = path_parts[:-1]
+                                        # Check if the module parts appear in order at the end of the path
+                                        if len(path_parts) >= len(module_parts):
+                                            if path_parts[-len(module_parts):] == module_parts:
+                                                resolved_imports.append(str(rel_path))
+                                                break
+                                    except ValueError:
+                                        continue
 
                     except Exception:
                         continue  # Ignore resolution errors
 
                 self.import_graph[relative_path] = resolved_imports
+
+                # NEW: Capture top-level executable statements
+                try:
+                    top_level_stmts = adapter.get_top_level_statements(ast_nodes, source_code)
+                    if top_level_stmts:
+                        self.top_level_statements[relative_path] = top_level_stmts
+                except Exception as stmt_error:
+                    # Don't fail the whole pipeline if statement extraction fails
+                    print(f"Warning: Failed to extract top-level statements for {relative_path}: {stmt_error}", file=sys.stderr)
 
             except Exception as e:
                 print(
@@ -282,20 +435,62 @@ class Pipeline:
             json.dump(self.name_registry, f, indent=2)
         with open(self.output_path / "import_graph.json", "w") as f:
             json.dump(self.import_graph, f, indent=2)
+        with open(self.output_path / "top_level_statements.json", "w") as f:
+            json.dump(dict(self.top_level_statements), f, indent=2)
+
+        # Save to cache for next run
+        if not config.get("no_cache"):
+            with open(cache_name_registry, "w") as f:
+                json.dump(self.name_registry, f, indent=2)
+            with open(cache_import_graph, "w") as f:
+                json.dump(self.import_graph, f, indent=2)
+            with open(cache_definitions, "w") as f:
+                json.dump(dict(self.definitions_by_file), f, indent=2)
+            with open(cache_top_level_statements, "w") as f:
+                json.dump(dict(self.top_level_statements), f, indent=2)
 
         print("Finished building graphs and name registry.")
+        if self.top_level_statements:
+            print(f"Captured {sum(len(stmts) for stmts in self.top_level_statements.values())} top-level statements across {len(self.top_level_statements)} files.")
 
-    def build_variable_registry(self):
+    def build_variable_registry(self, config: dict = None):
+        config = config or {}
+
         manifest_path = self.ast_dir / "ast_manifest.json"
         if not manifest_path.exists():
             print(
                 "Warning: ast_manifest.json not found. Skipping variable registry.",
                 file=sys.stderr,
             )
+            self.variable_registry = defaultdict(list)
             return
 
         with open(manifest_path, "r", encoding="utf-8") as f:
             ast_manifest = json.load(f)
+
+        # Create cache key based on AST manifest + definitions
+        manifest_hash = hashlib.sha256(json.dumps(ast_manifest, sort_keys=True).encode()).hexdigest()
+        definitions_hash = hashlib.sha256(json.dumps(dict(self.definitions_by_file), sort_keys=True).encode()).hexdigest()
+        cache_key = self._get_cache_key("variable_registry", {
+            "manifest_hash": manifest_hash,
+            "definitions_hash": definitions_hash
+        })
+
+        cache_variable_registry = self.cache_dir / f"variable_registry_{cache_key}.json"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_variable_registry.exists():
+            print("⚡ CACHE HIT: Loading variable registry from cache...")
+            with open(cache_variable_registry, "r") as f:
+                var_dict = json.load(f)
+                self.variable_registry = defaultdict(list, var_dict)
+            # Also copy to output directory
+            shutil.copy(cache_variable_registry, self.output_path / "variable_registry.json")
+            print("✓ Variable registry loaded from cache (instant)")
+            return
+
+        # Cache miss - build from scratch
+        self.variable_registry = defaultdict(list)
 
         for ast_filename, original_filepath_str in ast_manifest.items():
             ast_file = self.ast_dir / ast_filename
@@ -312,7 +507,8 @@ class Pipeline:
             try:
                 with open(ast_file, "r", encoding="utf-8") as f:
                     ast_nodes = [json.loads(line) for line in f]
-                with open(original_file, "r", encoding="utf-8") as f:
+                # Read as bytes to ensure byte positions from AST match the source text
+                with open(original_file, "rb") as f:
                     source_code = f.read()
 
                 # Pass definitions for context
@@ -328,42 +524,99 @@ class Pipeline:
 
         with open(self.output_path / "variable_registry.json", "w") as f:
             json.dump(self.variable_registry, f, indent=2)
+
+        # Save to cache for next run
+        if not config.get("no_cache"):
+            with open(cache_variable_registry, "w") as f:
+                json.dump(dict(self.variable_registry), f, indent=2)
+
         print("Variable registry saved.")
 
     def store_spans(self):
-        zip_path = self.output_path / "spans.zip"
-        span_manifest = defaultdict(list)
-        files_to_include = set()
+        """
+        Creates a comprehensive JSON file containing source code for all public APIs.
+        The JSON includes the full source of each file plus extracted spans for each public API.
+        NOW INCLUDES: Exported types, interfaces, and enums from variable_registry!
+        """
+        json_path = self.output_path / "source_spans.json"
+        source_spans = {}
 
-        # Identify files and byte ranges for all public APIs
+        # Group public APIs by file
+        files_with_apis = defaultdict(list)
+
+        # Add items from name_registry (functions, classes, constants)
         for fqn, data in self.name_registry.items():
             if data.get("is_public", False):
-                file_path = data["file_path"]
-                files_to_include.add(file_path)
-                span_manifest[file_path].append([data["start_byte"], data["end_byte"]])
+                files_with_apis[data["file_path"]].append({
+                    "fqn": fqn,
+                    "name": fqn.split(":")[-1],
+                    "kind": data["kind"],
+                    "start_byte": data["start_byte"],
+                    "end_byte": data["end_byte"]
+                })
 
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-            # Write the manifest to the zip
-            zf.writestr("manifest.json", json.dumps(span_manifest, indent=2))
+        # FIXED: Also add exported types/interfaces/enums from variable_registry
+        for file_path, variables in self.variable_registry.items():
+            for var in variables:
+                # Include variables with scope "export" and that have a "kind" field
+                if var.get("scope") == "export" and "kind" in var:
+                    # Create a FQN for this exported type
+                    fqn = f"{file_path}:{var['name']}"
+                    files_with_apis[file_path].append({
+                        "fqn": fqn,
+                        "name": var["name"],
+                        "kind": var.get("kind", "exported_variable"),
+                        "start_byte": var["start_byte"],
+                        "end_byte": var["end_byte"]
+                    })
 
-            # Add the raw source files to the zip
-            for file_path_str in files_to_include:
-                try:
-                    full_path = self.repo_path / file_path_str
-                    # The arcname is the path inside the zip file
-                    zf.write(full_path, arcname=file_path_str)
-                except FileNotFoundError:
-                    continue
+        # Build the complete source spans structure
+        for file_path_str, apis in files_with_apis.items():
+            try:
+                full_path = self.repo_path / file_path_str
+                with open(full_path, "rb") as f:
+                    source_code = f.read()
 
-        print(f"Spans and source files saved to {zip_path}")
+                # Extract the actual code span for each API
+                api_details = []
+                for api in apis:
+                    span_code = source_code[api["start_byte"]:api["end_byte"]].decode('utf-8')
+                    api_details.append({
+                        "name": api["name"],
+                        "fqn": api["fqn"],
+                        "kind": api["kind"],
+                        "start_byte": api["start_byte"],
+                        "end_byte": api["end_byte"],
+                        "span": span_code
+                    })
 
-    def run_static_analysis(self):
-        if self.db_path.exists():
-            self.db_path.unlink()
-        self.db_conn = sqlite3.connect(self.db_path)
-        self._init_db()
-        cursor = self.db_conn.cursor()
+                source_spans[file_path_str] = {
+                    "file_path": file_path_str,
+                    "full_source": source_code.decode('utf-8'),
+                    "public_apis": api_details
+                }
 
+            except FileNotFoundError:
+                print(f"Warning: Could not read file {file_path_str}", file=sys.stderr)
+                continue
+            except Exception as e:
+                print(f"Warning: Error processing {file_path_str}: {e}", file=sys.stderr)
+                continue
+
+        # Save the JSON file
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(source_spans, f, indent=2)
+
+        print(f"Source spans saved to {json_path}")
+        print(f"  - {len(source_spans)} files with public APIs")
+        print(f"  - {sum(len(v['public_apis']) for v in source_spans.values())} total public symbols")
+
+        return source_spans
+
+    def run_static_analysis(self, config: dict = None):
+        config = config or {}
+
+        # Determine files to analyze based on name_registry
         files_to_analyze = {}
         for fqn, data in self.name_registry.items():
             if "function" in data["kind"] or "method" in data["kind"]:
@@ -375,72 +628,107 @@ class Pipeline:
                     symbol_name = fqn.split(":")[-1]
                     files_to_analyze[file_path].append(symbol_name)
 
+        # Create cache key based on files to analyze
+        files_hash = hashlib.sha256(json.dumps(files_to_analyze, sort_keys=True).encode()).hexdigest()
+        cache_key = self._get_cache_key("static_analysis", {"files_hash": files_hash})
+
+        cache_db_path = self.cache_dir / f"analysis_{cache_key}.sqlite"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_db_path.exists():
+            print("⚡ CACHE HIT: Loading static analysis from cache...")
+            shutil.copy(cache_db_path, self.db_path)
+            print("✓ Static analysis loaded from cache (instant)")
+            return
+
+        # Cache miss - run analysis from scratch
+        if self.db_path.exists():
+            try:
+                self.db_path.unlink()
+            except OSError as e:
+                print(f"Warning: Could not delete old database file: {e}", file=sys.stderr)
+                return # Exit the stage if we can't clean up
+
+        # 2. Connect to the new, empty database and initialize schema.
+        db_conn = sqlite3.connect(self.db_path)
+        try:
+            self._init_db(db_conn)
+            cursor = db_conn.cursor()
+
         # Use Ruff via subprocess to check McCabe complexity
         # We select only the "mccabe" complexity checker (C901)
         # and set its max_complexity to 1 to report on every function.
 
-        print("Running static analysis with Ruff...")
-        for file_path_str, symbol_names in files_to_analyze.items():
-            file_path = self.repo_path / file_path_str
+            print("Running static analysis with Ruff...")
+            for file_path_str, symbol_names in files_to_analyze.items():
+                file_path = self.repo_path / file_path_str
 
-            try:
-                # Run Ruff with C901 (McCabe complexity) enabled and max complexity of 1
-                result = subprocess.run(
-                    [
-                        sys.executable,
-                        "-m",
-                        "ruff",
-                        "check",
-                        str(file_path),
-                        "--select",
-                        "C901",
-                        "--config",
-                        f"mccabe.max-complexity=1",
-                        "--output-format",
-                        "json",
-                    ],
-                    capture_output=True,
-                    text=True,
-                )
+                try:
+                    # Run Ruff with C901 (McCabe complexity) enabled and max complexity of 1
+                    result = subprocess.run(
+                        [
+                            sys.executable,
+                            "-m",
+                            "ruff",
+                            "check",
+                            str(file_path),
+                            "--select",
+                            "C901",
+                            "--config",
+                            f"mccabe.max-complexity=1",
+                            "--output-format",
+                            "json",
+                        ],
+                        capture_output=True,
+                        text=True,
+                    )
 
-                # Parse JSON output from Ruff
-                if result.stdout:
-                    diagnostics = json.loads(result.stdout)
+                    # Parse JSON output from Ruff
+                    if result.stdout:
+                        diagnostics = json.loads(result.stdout)
 
-                    for diag in diagnostics:
-                        # Extract function name and complexity from the message
-                        message = diag.get("message", "")
-                        try:
-                            # Message format: "`function_name` is too complex (10)"
-                            func_name = message.split("`")[1]
-                            complexity = int(message.split("(")[-1].replace(")", ""))
+                        for diag in diagnostics:
+                            # Extract function name and complexity from the message
+                            message = diag.get("message", "")
+                            try:
+                                # Message format: "`function_name` is too complex (10)"
+                                func_name = message.split("`")[1]
+                                complexity = int(message.split("(")[-1].replace(")", ""))
 
-                            if func_name in symbol_names:
-                                cursor.execute(
-                                    "INSERT OR IGNORE INTO complexity (file_path, symbol_name, complexity) VALUES (?, ?, ?)",
-                                    (file_path_str, func_name, complexity),
-                                )
-                        except (IndexError, ValueError):
-                            continue
+                                if func_name in symbol_names:
+                                    cursor.execute(
+                                        "INSERT OR IGNORE INTO complexity (file_path, symbol_name, complexity) VALUES (?, ?, ?)",
+                                        (file_path_str, func_name, complexity),
+                                    )
+                            except (IndexError, ValueError):
+                                continue
 
-            except Exception as e:
-                print(f"Ruff analysis failed for {file_path_str}: {e}", file=sys.stderr)
+                except Exception as e:
+                    print(f"Ruff analysis failed for {file_path_str}: {e}", file=sys.stderr)
+        finally:
+            db_conn.commit()
+            db_conn.close()
 
-        self.db_conn.commit()
+        # Save to cache for next run
+        if not config.get("no_cache"):
+            shutil.copy(self.db_path, cache_db_path)
+
         print("Static analysis metrics saved to analysis.sqlite")
 
-    def generate_embeddings(self):
+    def generate_embeddings(self, config: dict = None):
+        config = config or {}
+
         # 1. Collect public APIs to embed
         public_apis = {}
         for fqn, data in self.name_registry.items():
             if data.get("is_public", False):
                 file_path = self.repo_path / data["file_path"]
                 try:
-                    with open(file_path, "r", encoding="utf-8") as f:
+                    with open(file_path, "rb") as f:
                         source_code = f.read()
 
                     # Create a snippet for embedding (e.g., function signature)
-                    snippet = source_code[data["start_byte"] : data["end_byte"]].split(
+                    snippet = source_code[data["start_byte"] : data["end_byte"]].decode('utf-8').split(
                         "\n"
                     )[0]
                     public_apis[fqn] = snippet
@@ -449,6 +737,21 @@ class Pipeline:
 
         if not public_apis:
             print("No public APIs found to embed. Skipping.")
+            return
+
+        # Create cache key based on public APIs
+        apis_hash = hashlib.sha256(json.dumps(public_apis, sort_keys=True).encode()).hexdigest()
+        cache_key = self._get_cache_key("embeddings", {"apis_hash": apis_hash})
+
+        cache_faiss_path = self.cache_dir / f"vectors_{cache_key}.faiss"
+        cache_ids_path = self.cache_dir / f"vector_ids_{cache_key}.json"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_faiss_path.exists() and cache_ids_path.exists():
+            print("⚡ CACHE HIT: Loading embeddings from cache (skipping expensive ML model)...")
+            shutil.copy(cache_faiss_path, self.output_path / "vectors.faiss")
+            shutil.copy(cache_ids_path, self.output_path / "vector_ids.json")
+            print("✓ Embeddings loaded from cache (instant - saved ~10 seconds)")
             return
 
         # 2. Load model and generate embeddings
@@ -475,11 +778,137 @@ class Pipeline:
         with open(self.output_path / "vector_ids.json", "w") as f:
             json.dump(id_map, f, indent=2)
 
+        # Save to cache for next run
+        if not config.get("no_cache"):
+            shutil.copy(self.output_path / "vectors.faiss", cache_faiss_path)
+            shutil.copy(self.output_path / "vector_ids.json", cache_ids_path)
+
         print("Embeddings and FAISS index saved successfully.")
 
+    def run_security_scans(self, config: dict = None):
+        """
+        Stage 4.5: Run security scans to detect potential vulnerabilities.
+        Uses detect-secrets to scan for hardcoded secrets, API keys, tokens, etc.
+        """
+        config = config or {}
+
+        # Create cache key based on commit hash
+        cache_key = self._get_cache_key("security_scans", {"commit": self.commit_hash})
+        cache_security_report = self.cache_dir / f"security_report_{cache_key}.json"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_security_report.exists():
+            print("⚡ CACHE HIT: Loading security scan results from cache...")
+            shutil.copy(cache_security_report, self.output_path / "security_report.json")
+            print("✓ Security scan results loaded from cache (instant)")
+            return
+
+        # Cache miss - run security scans
+        security_report = {
+            "scan_timestamp": datetime.datetime.utcnow().isoformat(),
+            "repository": str(self.repo_path),
+            "commit_hash": self.commit_hash,
+            "findings": []
+        }
+
+        print("Running security scans with detect-secrets...")
+
+        try:
+            # Run detect-secrets scan
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "detect_secrets",
+                    "scan",
+                    str(self.repo_path),
+                    "--baseline",
+                    "/dev/null",  # Don't use baseline file
+                ],
+                capture_output=True,
+                text=True,
+                timeout=300,  # 5 minute timeout
+            )
+
+            if result.stdout:
+                try:
+                    secrets_data = json.loads(result.stdout)
+
+                    # Parse detect-secrets output
+                    if "results" in secrets_data:
+                        for file_path, findings in secrets_data["results"].items():
+                            for finding in findings:
+                                # Make file path relative to repo
+                                try:
+                                    rel_path = Path(file_path).relative_to(self.repo_path)
+                                except (ValueError, Exception):
+                                    rel_path = file_path
+
+                                security_report["findings"].append({
+                                    "file_path": str(rel_path),
+                                    "line_number": finding.get("line_number", 0),
+                                    "type": finding.get("type", "unknown"),
+                                    "severity": "high" if "key" in finding.get("type", "").lower() else "medium",
+                                    "hashed_secret": finding.get("hashed_secret", ""),
+                                    "is_verified": finding.get("is_verified", False)
+                                })
+
+                    print(f"✓ Security scan completed. Found {len(security_report['findings'])} potential issues.")
+
+                except json.JSONDecodeError as e:
+                    print(f"Warning: Could not parse detect-secrets output: {e}", file=sys.stderr)
+                    security_report["scan_error"] = "Failed to parse scanner output"
+            else:
+                print("✓ Security scan completed. No issues found.")
+
+        except subprocess.TimeoutExpired:
+            print("Warning: Security scan timed out after 5 minutes.", file=sys.stderr)
+            security_report["scan_error"] = "Scan timed out"
+        except FileNotFoundError:
+            print("Warning: detect-secrets not found. Skipping security scan.", file=sys.stderr)
+            print("Install with: pip install detect-secrets", file=sys.stderr)
+            security_report["scan_error"] = "detect-secrets not installed"
+        except Exception as e:
+            print(f"Warning: Security scan failed: {e}", file=sys.stderr)
+            security_report["scan_error"] = str(e)
+
+        # Add scan summary
+        security_report["summary"] = {
+            "total_findings": len(security_report["findings"]),
+            "high_severity": sum(1 for f in security_report["findings"] if f.get("severity") == "high"),
+            "medium_severity": sum(1 for f in security_report["findings"] if f.get("severity") == "medium"),
+            "files_scanned": len(set(f["file_path"] for f in security_report["findings"]))
+        }
+
+        # Save the report
+        report_path = self.output_path / "security_report.json"
+        with open(report_path, "w", encoding="utf-8") as f:
+            json.dump(security_report, f, indent=2)
+
+        # Save to cache
+        if not config.get("no_cache"):
+            shutil.copy(report_path, cache_security_report)
+
+        print(f"Security report saved to: {report_path}")
+        if security_report["findings"]:
+            print(f"⚠️  Warning: Found {len(security_report['findings'])} potential security issues!")
+            print("   Review the security_report.json file for details.")
+
     def generate_deterministic_brief(self, top_n_modules=10, complexity_threshold=10):
-        print("Generating deterministic repo brief...")
+        hotspots = []
+        if self.db_path.exists():
+            db_conn = sqlite3.connect(self.db_path)
+            try:
+                cursor = db_conn.cursor()
+                cursor.execute("SELECT file_path, symbol_name, complexity FROM complexity WHERE complexity >= ? ORDER BY complexity DESC LIMIT 5", (complexity_threshold,))
+                hotspots = cursor.fetchall()
+            finally:
+                db_conn.close()
+        else:
+            print("Warning: analysis.sqlite not found. Skipping complexity hotspots.", file=sys.stderr)
+
         brief = []
+
 
         repo_name = self.repo_path.name
         brief.append(f"# Architectural Briefing: {repo_name}\n")
@@ -520,13 +949,6 @@ class Pipeline:
             brief.append("Could not determine key modules based on internal imports.")
         brief.append("\n---\n")
 
-        cursor = self.db_conn.cursor()
-        cursor.execute(
-            "SELECT file_path, symbol_name, complexity FROM complexity WHERE complexity >= ? ORDER BY complexity DESC LIMIT 5",
-            (complexity_threshold,),
-        )
-        hotspots = cursor.fetchall()
-
         if hotspots:
             brief.append("## Complexity Hotspots\n")
             brief.append(
@@ -546,12 +968,51 @@ class Pipeline:
             for fqn, data in self.name_registry.items():
                 if data["file_path"] == path and data.get("is_public", False):
                     try:
-                        with open(self.repo_path / path, "r", encoding="utf-8") as f:
+                        with open(self.repo_path / path, "rb") as f:
                             source_code = f.read()
-                        snippet = source_code[data["start_byte"] : data["end_byte"]]
-                        first_line = snippet.split("\n")[0].strip()
-                        if first_line:
-                            public_apis.append(f"`{first_line}`")
+
+                        # Extract the signature properly
+                        snippet = source_code[data["start_byte"] : data["end_byte"]].decode('utf-8')
+                        lines = snippet.split("\n")
+
+                        # Find the definition line (skip decorators)
+                        signature_lines = []
+                        in_signature = False
+                        for i, line in enumerate(lines[:20]):  # Check first 20 lines max
+                            stripped = line.strip()
+
+                            # Skip empty lines and comments
+                            if not stripped or stripped.startswith("#") or stripped.startswith("//"):
+                                continue
+
+                            # Skip decorators
+                            if stripped.startswith("@"):
+                                continue
+
+                            # Check if this is a definition line
+                            if not in_signature:
+                                if any(keyword in stripped for keyword in ["def ", "class ", "function ", "const ", "let ", "var ", "export function", "export class", "export const"]):
+                                    in_signature = True
+                                    signature_lines.append(stripped)
+                                    # Check if signature ends on this line
+                                    if stripped.endswith(":") or stripped.endswith("{") or stripped.endswith(";"):
+                                        break
+                                    continue
+                            else:
+                                # We're collecting a multi-line signature
+                                signature_lines.append(stripped)
+                                if stripped.endswith(":") or stripped.endswith("{") or stripped.endswith(";"):
+                                    break
+
+                        if signature_lines:
+                            signature = " ".join(signature_lines)
+                            # Remove trailing : or { for cleaner display
+                            if signature.endswith(":") or signature.endswith("{") or signature.endswith(";"):
+                                signature = signature[:-1].strip()
+                            # Truncate very long signatures
+                            if len(signature) > 120:
+                                signature = signature[:117] + "..."
+                            public_apis.append(f"`{signature}`")
                     except Exception:
                         continue
 
@@ -569,20 +1030,49 @@ class Pipeline:
 
     # --- NEW METHOD ---
     def assemble_pack(self, config: dict):
-        """Generates the final repoBrief.md and manifest.json."""
+        """
+        Generates the final pack in the appropriate format based on configuration.
+        - Semantic mode: Creates repoBrief.md and manifest.json (lightweight)
+        - Hybrid mode: Creates a complete .zip archive with all artifacts
+        - Full mode: Creates comprehensive .zip with all possible artifacts
+        """
 
-        # 1. Generate the brief
+        # 1. Generate the brief (always needed)
         brief_content = self.generate_deterministic_brief()
+
+        # 2. Store spans (now for ALL modes - creates source_spans.json)
+        source_spans = {}
+        if config.get("store_spans"):
+            source_spans = self.store_spans()
+
+        # 3. Append source code section to the brief if we have source spans
+        if source_spans:
+            brief_content += "\n\n---\n\n"
+            brief_content += "## Source Code for Public APIs\n\n"
+            brief_content += f"This section contains the full source code for all {sum(len(v['public_apis']) for v in source_spans.values())} public APIs across {len(source_spans)} files.\n\n"
+
+            for file_path, file_data in sorted(source_spans.items()):
+                brief_content += f"### File: `{file_path}`\n\n"
+
+                for api in file_data["public_apis"]:
+                    brief_content += f"#### {api['kind']}: `{api['name']}`\n\n"
+                    brief_content += f"**Fully Qualified Name:** `{api['fqn']}`\n\n"
+                    brief_content += f"**Location:** bytes {api['start_byte']}-{api['end_byte']}\n\n"
+                    brief_content += "```python\n" if file_path.endswith('.py') else "```typescript\n" if file_path.endswith(('.ts', '.tsx')) else "```javascript\n" if file_path.endswith(('.js', '.jsx')) else "```\n"
+                    brief_content += api['span']
+                    brief_content += "\n```\n\n"
+
+        # Write the complete brief with source code
         with open(self.output_path / "repoBrief.md", "w", encoding="utf-8") as f:
             f.write(brief_content)
-        if config.get("store_spans"):
-            self.store_spans()
 
-        # 2. Generate the manifest
+        # 4. Generate the manifest with checksums
         manifest = {
             "createdAt": datetime.datetime.utcnow().isoformat(),
             "repoPath": str(self.repo_path),
             "packVersion": "1.0",
+            "mode": config.get("pack_mode", "semantic"),
+            "commit_hash": self.commit_hash,
             "artifacts": {},
         }
 
@@ -596,7 +1086,107 @@ class Pipeline:
                     "sha256": file_hash,
                 }
 
+        # Save manifest
         with open(self.output_path / "manifest.json", "w") as f:
             json.dump(manifest, f, indent=2)
 
-        print("Final pack assembled with repoBrief.md and manifest.json.")
+        print("✓ Manifest and brief generated.")
+
+        # 5. Create pack format based on mode
+        pack_mode = config.get("pack_mode", "semantic")
+        
+        # ALWAYS generate TOON pack (it's efficient and requested)
+        try:
+            from .toon_formatter import generate_toon_blueprint, convert_source_to_toon
+            
+            # Generate base structure
+            toon_content = generate_toon_blueprint(self.name_registry, self.import_graph)
+            
+            # Add source code if available
+            if source_spans:
+                toon_content += "\n" + convert_source_to_toon(source_spans)
+                
+            with open(self.output_path / "pack.toon", "w", encoding="utf-8") as f:
+                f.write(toon_content)
+            print("✓ Generated pack.toon (TOON v2 format)")
+            
+            # Also generate a single JSON pack for compatibility/ease of use
+            full_json_pack = {
+                "manifest": manifest,
+                "name_registry": self.name_registry,
+                "import_graph": self.import_graph,
+                "variable_registry": self.variable_registry,
+                "source_files": source_spans # Include source!
+            }
+            with open(self.output_path / "pack.json", "w", encoding="utf-8") as f:
+                json.dump(full_json_pack, f, indent=2)
+            print("✓ Generated pack.json (Single-file JSON format)")
+            
+        except Exception as e:
+            print(f"Warning: Failed to generate TOON/JSON packs: {e}", file=sys.stderr)
+
+        if pack_mode == "semantic":
+            # Semantic mode: Keep files as-is (lightweight, human-readable)
+            print("✓ Semantic pack assembled (loose files format)")
+            print(f"   - Main summary: {self.output_path / 'repoBrief.md'}")
+            print(f"   - Artifacts: {len(manifest['artifacts'])} files")
+
+        elif pack_mode in ["hybrid", "full"]:
+            # Hybrid/Full mode: Create a comprehensive zip archive
+            pack_name = f"reposynth_{self.repo_path.name}_{pack_mode}.zip"
+            zip_path = self.output_path.parent / pack_name
+
+            print(f"Creating {pack_mode} pack archive: {pack_name}...")
+
+            with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+                # Add all artifacts from the pack directory
+                for artifact_path in self.output_path.glob("*"):
+                    if artifact_path.is_file():
+                        arcname = f"pack/{artifact_path.name}"
+                        zf.write(artifact_path, arcname=arcname)
+                        print(f"   ✓ Added: {artifact_path.name}")
+                    elif artifact_path.is_dir() and artifact_path.name == "ast_raw":
+                        # Include AST files in full mode
+                        for ast_file in artifact_path.glob("*"):
+                            if ast_file.is_file():
+                                arcname = f"pack/ast_raw/{ast_file.name}"
+                                zf.write(ast_file, arcname=arcname)
+                        print(f"   ✓ Added: ast_raw/ directory ({len(list(artifact_path.glob('*')))} files)")
+
+                # Add README to the zip
+                readme_content = f"""# RepoSynth {pack_mode.capitalize()} Pack
+
+Repository: {self.repo_path.name}
+Generated: {manifest['createdAt']}
+Commit: {self.commit_hash}
+Mode: {pack_mode}
+
+## Contents
+
+This archive contains a complete analysis pack for the repository.
+
+### Key Files:
+- **repoBrief.md**: Architectural summary and analysis (includes full source code for public APIs)
+- **manifest.json**: Artifact metadata and checksums
+- **name_registry.json**: Symbol definitions and locations
+- **import_graph.json**: Module dependency graph
+- **analysis.sqlite**: Complexity metrics database
+- **vectors.faiss**: Semantic embeddings index
+- **security_report.json**: Security scan results (if enabled)
+"""
+
+                if pack_mode == "hybrid":
+                    readme_content += "\n- **source_spans.json**: Source code spans for public APIs (JSON format)\n"
+                    readme_content += "- **variable_registry.json**: Variable tracking information\n"
+                elif pack_mode == "full":
+                    readme_content += "\n- **source_spans.json**: Source code spans for public APIs (JSON format)\n"
+                    readme_content += "- **variable_registry.json**: Variable tracking information\n"
+                    readme_content += "- **ast_raw/**: Raw AST files for all parsed sources\n"
+
+                zf.writestr("README.md", readme_content)
+
+            print(f"✓ {pack_mode.capitalize()} pack archive created: {zip_path}")
+            print(f"   Archive size: {zip_path.stat().st_size / 1024 / 1024:.2f} MB")
+            print(f"   Extract and review the repoBrief.md file for a summary.")
+
+        print("\n✓ Final pack assembly complete!")

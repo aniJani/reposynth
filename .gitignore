@@ -126,6 +126,12 @@ dist/
 repo.pkg/
 pack/
 
+# Week 7: Pack archives
+*.zip
+reposynth_*.zip
+test_hybrid/
+test_full/
+
 # Any cloned repositories for processing
 temp_repos/
 
@@ -150,4 +156,29 @@ temp_repos/
 # =============================================================================
 # Ignore local overrides for docker-compose
 docker-compose.override.yml
-/.re SUSY_cache
+
+# =============================================================================
+# RepoSynth Cache (Week 5 - Stage-level caching)
+# =============================================================================
+# Persistent cache directory for stage outputs
+.reposynth_cache/
+TROUBLESHOOTING_PORTS.md
+WEEK8_CHECKLIST.md
+WEEK8_INDEX.md
+WEEK8_INSTRUCTIONS.md
+WEEK8_MIGRATION.md
+WEEK8_PROGRESS.md
+WEEK8_QUICKREF.md
+WEEK8_SUMMARY.md
+WEEK8_TROUBLESHOOTING_LOG.md
+WEEK8_FIX_RUST_DAEMON.md
+WEEK8_BUILD_PROGRESS.md
+WEEK9_DATABASE_MIGRATION_FIX.md
+WEEK9_FRONTEND_COMPLETE.md
+WEEK9_INDEX.md
+WEEK9_INSTRUCTIONS.md
+WEEK9_QUICKSTART.md
+WEEK9_SETUP_COMPLETE.md
+WEEK9_SUMMARY.md
+WEEK9_TROUBLESHOOTING.md
+WEEK9_UI_IMPROVEMENTS.md

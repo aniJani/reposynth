@@ -5,15 +5,31 @@
 
 .DESCRIPTION
     A script to run the full RepoSynth pipeline on a remote Git repository.
+    Supports three analysis modes with different trade-offs:
+    - semantic: Lightweight analysis with AST, graphs, metrics, and embeddings (loose files)
+    - hybrid:   Adds variable registry and source spans, packaged as .zip archive
+    - full:     Complete analysis with all features and raw AST files in .zip archive
 
 .PARAMETER repo
     The Git repository URL to analyze
 
 .PARAMETER mode
-    The analysis mode: semantic or hybrid (default: semantic)
+    The analysis mode: semantic, hybrid, or full (default: semantic)
+
+.PARAMETER with-security-scans
+    Enable security vulnerability scanning
+
+.PARAMETER no-security-scans
+    Disable security scanning (overrides mode default)
+
+.EXAMPLE
+    .\run-pipeline.ps1 --repo https://github.com/expressjs/express --mode semantic
 
 .EXAMPLE
     .\run-pipeline.ps1 --repo https://github.com/expressjs/express --mode hybrid
+
+.EXAMPLE
+    .\run-pipeline.ps1 --repo https://github.com/expressjs/express --mode full --with-security-scans
 #>
 
 $ErrorActionPreference = "Stop"
@@ -22,8 +38,9 @@ Set-StrictMode -Version Latest
 # --- Default Configuration ---
 $GitUrl = ""
 $Mode = "semantic"
+$SecurityScans = ""
 
-# --- Parse bash-style arguments (--repo, --mode) ---
+# --- Parse bash-style arguments (--repo, --mode, --with-security-scans) ---
 for ($i = 0; $i -lt $args.Count; $i++) {
   switch ($args[$i]) {
     '--repo' {
@@ -34,8 +51,39 @@ for ($i = 0; $i -lt $args.Count; $i++) {
       if ($i + 1 -ge $args.Count) { throw "Error: Missing value for --mode" }
       $Mode = $args[++$i]
     }
+    '--with-security-scans' {
+      $SecurityScans = "--with-security-scans"
+    }
+    '--no-security-scans' {
+      $SecurityScans = "--no-with-security-scans"
+    }
+    '-h' {
+      Write-Host @"
+Usage: .\run-pipeline.ps1 --repo <git-url> [--mode <semantic|hybrid|full>] [--with-security-scans]
+
+Modes:
+  semantic: Lightweight analysis with AST, graphs, metrics, and embeddings
+  hybrid:   Adds variable registry and source spans (packaged as .zip)
+  full:     Complete analysis with all features including raw AST files
+
+Options:
+  --with-security-scans    Enable security vulnerability scanning
+  --no-security-scans      Disable security scanning (overrides mode default)
+  -h, --help              Show this help message
+
+Examples:
+  .\run-pipeline.ps1 --repo https://github.com/expressjs/express --mode semantic
+  .\run-pipeline.ps1 --repo https://github.com/expressjs/express --mode hybrid
+  .\run-pipeline.ps1 --repo https://github.com/expressjs/express --mode full
+"@
+      exit 0
+    }
+    '--help' {
+      & $MyInvocation.MyCommand.Path -h
+      exit 0
+    }
     default {
-      throw "Unknown parameter: $($args[$i])"
+      throw "Unknown parameter: $($args[$i]). Use -h or --help for usage information."
     }
   }
 }
@@ -43,12 +91,13 @@ for ($i = 0; $i -lt $args.Count; $i++) {
 # Validate required arguments
 if ([string]::IsNullOrWhiteSpace($GitUrl)) {
   Write-Host "Error: Repository URL is required."
-  Write-Host "Usage: .\run-pipeline.ps1 --repo <git-url> [--mode <semantic|hybrid>]"
+  Write-Host "Usage: .\run-pipeline.ps1 --repo <git-url> [--mode <semantic|hybrid|full>]"
+  Write-Host "Use -h or --help for more information."
   exit 1
 }
 
-if ($Mode -notin @("semantic", "hybrid")) {
-  throw "Error: Invalid mode '$Mode'. Please use 'semantic' or 'hybrid'."
+if ($Mode -notin @("semantic", "hybrid", "full")) {
+  throw "Error: Invalid mode '$Mode'. Please use 'semantic', 'hybrid', or 'full'."
 }
 
 # --- Configuration ---
@@ -102,12 +151,17 @@ Get-ChildItem -Path $clonePath -Recurse -File -Include *.ts,*.js,*.tsx,*.jsx,*.p
 Write-Host "Repository cloned to: $clonePath"
 
 # 2) Activate Virtual Environment & Run Pipeline
-Write-Host "[2/3] Running the analysis pipeline..."
+Write-Host "[2/3] Running the analysis pipeline (mode: $Mode)..."
 $activateScript = Join-Path $venvPath "Scripts\Activate.ps1"
 . $activateScript
 
 # Run pipeline with arguments directly (no environment variables needed)
-python -m $orchestratorPackage --repo "$clonePath" --mode "$Mode"
+$pipelineArgs = @("--repo", $clonePath, "--mode", $Mode)
+if ($SecurityScans) {
+  $pipelineArgs += $SecurityScans
+}
+
+python -m $orchestratorPackage @pipelineArgs
 $code = $LASTEXITCODE
 
 # Deactivate if available
@@ -120,11 +174,34 @@ Write-Host "Pipeline completed successfully."
 # 3) Locate Final Pack
 Write-Host "[3/3] Locating final pack..."
 $packDir = "pack"
+
 if (Test-Path $packDir) {
   Write-Host ""
   Write-Host "--- ✅ Pipeline Finished Successfully! ---"
-  Write-Host "The complete '$Mode' pack has been generated in the '$packDir' directory."
-  Write-Host "Main summary: $packDir\repoBrief.md"
+  Write-Host "The complete '$Mode' pack has been generated."
+
+  # Check for zip archive (hybrid/full modes)
+  if ($Mode -in @("hybrid", "full")) {
+    $zipFile = "reposynth_${repoName}_${Mode}.zip"
+    if (Test-Path $zipFile) {
+      $zipSize = (Get-Item $zipFile).Length / 1MB
+      Write-Host ""
+      Write-Host "📦 Archive created: $zipFile"
+      Write-Host "   Size: $($zipSize.ToString('0.00')) MB"
+      Write-Host ""
+      Write-Host "Extract the archive and review 'repoBrief.md' for a summary."
+    }
+  } else {
+    Write-Host "   Location: $packDir\"
+    Write-Host "   Main summary: $packDir\repoBrief.md"
+  }
+
+  # Display security scan results if available
+  $securityReport = Join-Path $packDir "security_report.json"
+  if (Test-Path $securityReport) {
+    Write-Host ""
+    Write-Host "🔒 Security scan completed. Review '$securityReport' for findings."
+  }
 } else {
   throw "Error: Output pack directory '$packDir' not found."
 }
