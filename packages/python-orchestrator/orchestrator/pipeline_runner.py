@@ -44,9 +44,16 @@ class Pipeline:
 
         # Store cache in a persistent location (project root) instead of inside the repo
         # This prevents cache loss when temp repos are deleted
-        project_root = Path(output_path).parent  # output_path is <root>/pack, so parent is root
         repo_name = self.repo_path.name
-        self.cache_dir = project_root / ".reposynth_cache" / repo_name
+        
+        # Use shared cache directory if available (mounted volume)
+        shared_cache = Path("/app/.reposynth_cache")
+        if shared_cache.exists():
+            self.cache_dir = shared_cache / repo_name
+        else:
+            # Fallback to job-local cache
+            project_root = Path(output_path).parent  # output_path is <root>/pack, so parent is root
+            self.cache_dir = project_root / ".reposynth_cache" / repo_name
 
         self.output_path.mkdir(exist_ok=True)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -263,6 +270,28 @@ class Pipeline:
         self.definitions_by_file = defaultdict(list)
         self.top_level_statements = defaultdict(list)
 
+        # NEW: Build file index for fast import resolution
+        # This avoids O(N*M) filesystem scans during import resolution
+        print("Building file index for import resolution...")
+        file_index = defaultdict(list)
+        exclude_dirs = {".venv", "venv", "node_modules", ".git", "__pycache__", "build", "dist", ".tox", ".pytest_cache"}
+        
+        # Walk the directory tree once
+        for file_path in self.repo_path.rglob("*"):
+            if file_path.is_file():
+                # Skip excluded directories
+                # Check if any part of the relative path is in exclude_dirs
+                try:
+                    rel_parts = file_path.relative_to(self.repo_path).parts
+                    if any(part in exclude_dirs for part in rel_parts):
+                        continue
+                except ValueError:
+                    continue
+                    
+                file_index[file_path.name].append(file_path)
+        
+        print(f"Indexed {sum(len(v) for v in file_index.values())} files.")
+
         for ast_filename, original_filepath_str in ast_manifest.items():
             ast_file = self.ast_dir / ast_filename
             original_file = Path(original_filepath_str)
@@ -352,21 +381,11 @@ class Pipeline:
                             module_parts = imp.split(".")
                             module_filename = module_parts[-1]  # Last part is the module name
 
-                            # Directories to exclude from import resolution
-                            exclude_dirs = {".venv", "venv", "node_modules", ".git", "__pycache__", "build", "dist", ".tox", ".pytest_cache"}
-
-                            # Search for files matching the module name
+                            # Search for files matching the module name using the pre-built index
                             found = False
                             for ext in [".py", ".ts", ".js", ".tsx", ".jsx"]:
-                                # Use glob to find all files with this name
-                                pattern = f"**/{module_filename}{ext}"
-                                matching_files = list(self.repo_path.glob(pattern))
-
-                                # Filter out excluded directories
-                                matching_files = [
-                                    f for f in matching_files
-                                    if not any(excluded in f.parts for excluded in exclude_dirs)
-                                ]
+                                target_filename = f"{module_filename}{ext}"
+                                matching_files = file_index.get(target_filename, [])
 
                                 # Try to find the most likely match based on the full module path
                                 for match in matching_files:
@@ -387,16 +406,10 @@ class Pipeline:
 
                             # Try as a package (with __init__.py)
                             if not found:
-                                pattern = f"**/{module_filename}/__init__.py"
-                                matching_files = list(self.repo_path.glob(pattern))
-
-                                # Filter out excluded directories
-                                matching_files = [
-                                    f for f in matching_files
-                                    if not any(excluded in f.parts for excluded in exclude_dirs)
-                                ]
-
-                                for match in matching_files:
+                                target_init = "__init__.py"
+                                init_files = file_index.get(target_init, [])
+                                
+                                for match in init_files:
                                     try:
                                         rel_path = match.relative_to(self.repo_path)
                                         # Verify it matches the module structure

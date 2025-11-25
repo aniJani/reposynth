@@ -31,18 +31,18 @@ except ImportError:
 # Performance benchmarks (calibrated from real runs)
 # These can be updated based on actual measurements
 BENCHMARKS = {
-    # Files processed per second
-    'parsing_files_per_sec': 100,
-    'graph_building_files_per_sec': 50,
-    'analysis_files_per_sec': 20,
+    # Files processed per second (Conservative estimates for large repos)
+    'parsing_files_per_sec': 50,      # Was 100
+    'graph_building_files_per_sec': 100, # Was 50 (Optimized with index)
+    'analysis_files_per_sec': 15,     # Was 20
 
     # Special operations
-    'embedding_apis_per_sec': 10,  # ML model is slow
-    'variable_registry_files_per_sec': 30,
+    'embedding_apis_per_sec': 5,      # Was 10 (ML model is slow)
+    'variable_registry_files_per_sec': 20, # Was 30
 
     # Fixed overhead (startup time)
-    'parsing_overhead_sec': 0.5,
-    'embedding_model_load_sec': 2.0,
+    'parsing_overhead_sec': 2.0,
+    'embedding_model_load_sec': 5.0,
 }
 
 

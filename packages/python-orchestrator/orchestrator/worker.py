@@ -659,7 +659,8 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
     worker_root = Path("/app/worker_packs") / job_id
     worker_root.mkdir(parents=True, exist_ok=True)
     
-    temp_repos = Path("/app/temp_repos")
+    # Use a job-specific temp directory for cloning to avoid collisions
+    temp_repos = worker_root / "temp_repos"
     temp_repos.mkdir(parents=True, exist_ok=True)
     
     cloned_repo_path = None

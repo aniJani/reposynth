@@ -726,10 +726,10 @@ async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session 
             detail="Query is required for 'focus' mode"
         )
 
-    if request.mode == "bundle" and not request.entry_point:
+    if request.mode == "bundle" and not request.entry_point and not request.query:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Entry point is required for 'bundle' mode"
+            detail="Entry point or query is required for 'bundle' mode"
         )
 
     try:

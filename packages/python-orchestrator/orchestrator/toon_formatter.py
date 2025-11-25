@@ -45,9 +45,9 @@ def format_table(name: str, headers: List[str], rows: List[List[str]]) -> str:
         clean_row = []
         for cell in row:
             s = str(cell).replace('\n', ' ').replace(',', ';')
-            # Truncate extremely long values to save tokens
-            if len(s) > 50:
-                s = s[:47] + "..."
+            # Truncate extremely long values to save tokens, but keep enough for long paths
+            if len(s) > 250:
+                s = s[:247] + "..."
             clean_row.append(s)
         clean_rows.append(clean_row)
 

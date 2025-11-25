@@ -308,17 +308,31 @@ class PromptEngine:
             }
         }
 
-    def generate_bundle(self, entry_point: str, max_depth: int = 3) -> Dict[str, Any]:
+    def generate_bundle(self, entry_point: Optional[str] = None, query: Optional[str] = None, max_depth: int = 3) -> Dict[str, Any]:
         """
         Generate Bundle Mode prompt (structure + dependency slice from entry point).
+        Supports "Focused Tree Mode" if query is provided instead of entry_point.
 
         Args:
             entry_point: Starting file path (e.g., "src/auth/AuthService.ts")
+            query: Search query to find entry point (if entry_point is None)
             max_depth: Maximum dependency depth to traverse
 
         Returns:
             Dict with 'prompt' (str) and 'metadata' (dict)
         """
+        # Resolve entry point from query if needed
+        if not entry_point and query:
+            search_dir = self.work_dir if self.work_dir else self.pack_path
+            matches = hybrid_search(query, search_dir, max_items=1, registry=self.name_registry)
+            if matches and matches[0].get('file_path'):
+                entry_point = matches[0]['file_path']
+            else:
+                raise ValueError(f"Could not find any file matching query: {query}")
+
+        if not entry_point:
+            raise ValueError("Either entry_point or query must be provided for bundle mode")
+
         # Start with blueprint
         toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph)
 
@@ -330,6 +344,9 @@ class PromptEngine:
         # Assemble prompt
         prompt_parts = []
         prompt_parts.append(f"# CODEBASE BUNDLE: {entry_point}\n\n")
+        if query:
+            prompt_parts.append(f"Query: {query}\n\n")
+            
         prompt_parts.append("## Structural Blueprint\n")
         prompt_parts.append(toon_structure)
         prompt_parts.append("\n")
@@ -363,6 +380,7 @@ class PromptEngine:
                 "mode": "bundle",
                 "token_estimate": estimate_tokens(prompt),
                 "entry_point": entry_point,
+                "query": query,
                 "files_included": len(bundled_files),
                 "file_list": bundled_files,
                 "max_depth": max_depth,
@@ -605,9 +623,9 @@ def generate_vibe_prompt(
             return engine.generate_focus(query, max_files)
 
         elif mode == "bundle":
-            if not entry_point:
-                raise ValueError("Entry point is required for bundle mode")
-            return engine.generate_bundle(entry_point, max_depth)
+            if not entry_point and not query:
+                raise ValueError("Entry point or query is required for bundle mode")
+            return engine.generate_bundle(entry_point=entry_point, query=query, max_depth=max_depth)
 
         else:
             raise ValueError(f"Invalid mode: {mode}. Must be 'blueprint', 'focus', or 'bundle'")

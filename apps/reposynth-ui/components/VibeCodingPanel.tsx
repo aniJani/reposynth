@@ -40,22 +40,32 @@ export function VibeCodingPanel() {
     roots: [],
   });
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [bundleSubMode, setBundleSubMode] = useState<'file' | 'search'>('file');
 
+  // Reset file list when job changes
+  useEffect(() => {
+    setFileList({ files: [], roots: [] });
+  }, [currentJob?.id]);
+
+  // Fetch files when in bundle mode (only if not already loaded)
   useEffect(() => {
     if (vibeMode === 'bundle' && currentJob?.id) {
-      setIsLoadingFiles(true);
-      getJobFiles(currentJob.id)
-        .then((data) => {
-          setFileList(data);
-          // Auto-select first root if available and no entry point set
-          if (data.roots.length > 0 && !vibeEntryPoint) {
-            setVibeEntryPoint(data.roots[0]);
-          }
-        })
-        .catch((err) => console.error('Failed to load files:', err))
-        .finally(() => setIsLoadingFiles(false));
+      // Only fetch if we don't have files yet to avoid re-fetching on sub-mode switch
+      if (fileList.files.length === 0) {
+        setIsLoadingFiles(true);
+        getJobFiles(currentJob.id)
+          .then((data) => {
+            setFileList(data);
+            // Auto-select first root if available and no entry point set
+            if (data.roots.length > 0 && !vibeEntryPoint) {
+              setVibeEntryPoint(data.roots[0]);
+            }
+          })
+          .catch((err) => console.error('Failed to load files:', err))
+          .finally(() => setIsLoadingFiles(false));
+      }
     }
-  }, [vibeMode, currentJob?.id, setVibeEntryPoint, vibeEntryPoint]);
+  }, [vibeMode, currentJob?.id, fileList.files.length, vibeEntryPoint, setVibeEntryPoint]);
 
   const handleGeneratePrompt = async () => {
     if (!currentJob || currentJob.status !== 'completed') {
@@ -69,9 +79,15 @@ export function VibeCodingPanel() {
       return;
     }
 
-    if (vibeMode === 'bundle' && !vibeEntryPoint.trim()) {
-      setError('Please enter an entry point file path for Bundle mode');
-      return;
+    if (vibeMode === 'bundle') {
+      if (bundleSubMode === 'file' && !vibeEntryPoint.trim()) {
+        setError('Please select an entry point file for Bundle mode');
+        return;
+      }
+      if (bundleSubMode === 'search' && !vibeQuery.trim()) {
+        setError('Please enter a search query for Bundle mode');
+        return;
+      }
     }
 
     setIsGeneratingPrompt(true);
@@ -82,8 +98,8 @@ export function VibeCodingPanel() {
       const response = await generateVibePrompt({
         job_id: currentJob.id,
         mode: vibeMode,
-        query: vibeMode === 'focus' ? vibeQuery : undefined,
-        entry_point: vibeMode === 'bundle' ? vibeEntryPoint : undefined,
+        query: (vibeMode === 'focus' || (vibeMode === 'bundle' && bundleSubMode === 'search')) ? vibeQuery : undefined,
+        entry_point: (vibeMode === 'bundle' && bundleSubMode === 'file') ? vibeEntryPoint : undefined,
         max_files: 5,
         max_depth: 3,
       });
@@ -217,50 +233,98 @@ export function VibeCodingPanel() {
                   value={vibeQuery}
                   onChange={(e) => setVibeQuery(e.target.value)}
                   placeholder="e.g., How does authentication work? or Fix the login bug"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none bg-white text-gray-900 placeholder-gray-500"
                   rows={3}
                 />
               </div>
             )}
 
             {vibeMode === 'bundle' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Entry Point File
-                </label>
-                {isLoadingFiles ? (
-                  <div className="flex items-center gap-2 text-gray-500 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading file list...
+              <div className="space-y-4">
+                <div className="flex rounded-lg bg-gray-100 p-1">
+                  <button
+                    onClick={() => setBundleSubMode('file')}
+                    className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                      bundleSubMode === 'file'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-900'
+                    }`}
+                  >
+                    Select File
+                  </button>
+                  <button
+                    onClick={() => setBundleSubMode('search')}
+                    className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                      bundleSubMode === 'search'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-500 hover:text-gray-900'
+                    }`}
+                  >
+                    Search Tree
+                  </button>
+                </div>
+
+                {bundleSubMode === 'file' ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Entry Point File
+                    </label>
+                    {isLoadingFiles ? (
+                      <div className="flex items-center gap-2 text-gray-500 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading file list...
+                      </div>
+                    ) : (
+                      <select
+                        value={vibeEntryPoint}
+                        onChange={(e) => setVibeEntryPoint(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
+                      >
+                        <option value="">Select a file...</option>
+                        {fileList.roots.length > 0 && (
+                          <optgroup label="⭐ Suggested Entry Points">
+                            {fileList.roots.map((f) => (
+                              <option key={f} value={f}>
+                                {f}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        <optgroup label="All Files">
+                          {fileList.files.map((f) => (
+                            <option key={f} value={f}>
+                              {f}
+                            </option>
+                          ))}
+                        </optgroup>
+                      </select>
+                    )}
+                    {fileList.files.length === 0 && !isLoadingFiles && (
+                      <p className="text-sm text-amber-600 mt-2">
+                        ⚠️ No files found in the analysis pack. The job might have completed without generating a graph.
+                      </p>
+                    )}
+                    <p className="text-sm text-gray-500 mt-2">
+                      Manually select the root file for the dependency tree
+                    </p>
                   </div>
                 ) : (
-                  <select
-                    value={vibeEntryPoint}
-                    onChange={(e) => setVibeEntryPoint(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
-                  >
-                    <option value="">Select a file...</option>
-                    {fileList.roots.length > 0 && (
-                      <optgroup label="⭐ Suggested Entry Points">
-                        {fileList.roots.map((f) => (
-                          <option key={f} value={f}>
-                            {f}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                    <optgroup label="All Files">
-                      {fileList.files.map((f) => (
-                        <option key={f} value={f}>
-                          {f}
-                        </option>
-                      ))}
-                    </optgroup>
-                  </select>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Search for Entry Point
+                    </label>
+                    <textarea
+                      value={vibeQuery}
+                      onChange={(e) => setVibeQuery(e.target.value)}
+                      placeholder="e.g., Payment Service or Auth Controller"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none bg-white text-gray-900 placeholder-gray-500"
+                      rows={3}
+                    />
+                    <p className="text-sm text-gray-500 mt-2">
+                      We'll find the most relevant file and build the tree from there
+                    </p>
+                  </div>
                 )}
-                <p className="text-sm text-gray-500 mt-2">
-                  The starting point for dependency traversal
-                </p>
               </div>
             )}
 
