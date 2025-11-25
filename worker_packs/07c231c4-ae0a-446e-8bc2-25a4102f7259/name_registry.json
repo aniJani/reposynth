@@ -1,0 +1,2228 @@
+{
+  "src/array.ts:InnerType": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/array.ts",
+    "start_byte": 652,
+    "end_byte": 709,
+    "is_public": false
+  },
+  "src/array.ts:RejectorFn": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/array.ts",
+    "start_byte": 718,
+    "end_byte": 807,
+    "is_public": true
+  },
+  "src/array.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/array.ts",
+    "start_byte": 816,
+    "end_byte": 970,
+    "is_public": true
+  },
+  "src/array.ts:ArraySchemaSpec": {
+    "kind": "interface_declaration",
+    "file_path": "src/array.ts",
+    "start_byte": 972,
+    "end_byte": 1085,
+    "is_public": false
+  },
+  "src/array.ts:Schema": {
+    "kind": "class_declaration",
+    "file_path": "src/array.ts",
+    "start_byte": 1102,
+    "end_byte": 7496,
+    "is_public": true
+  },
+  "src/array.ts:type": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 1387,
+    "end_byte": 1745,
+    "is_public": false
+  },
+  "src/array.ts:v": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 1545,
+    "end_byte": 1624,
+    "is_public": false
+  },
+  "src/array.ts:_value": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 2417,
+    "end_byte": 3852,
+    "is_public": false
+  },
+  "src/array.ts:spec": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 3856,
+    "end_byte": 4014,
+    "is_public": false
+  },
+  "src/array.ts:schema": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 4803,
+    "end_byte": 5373,
+    "is_public": false
+  },
+  "src/array.ts:length": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 5377,
+    "end_byte": 5717,
+    "is_public": false
+  },
+  "src/array.ts:value": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 6337,
+    "end_byte": 6409,
+    "is_public": false
+  },
+  "src/array.ts:min": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 5721,
+    "end_byte": 6088,
+    "is_public": false
+  },
+  "src/array.ts:max": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 6092,
+    "end_byte": 6422,
+    "is_public": false
+  },
+  "src/array.ts:rejector": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 6722,
+    "end_byte": 6974,
+    "is_public": false
+  },
+  "src/array.ts:options": {
+    "kind": "method_definition",
+    "file_path": "src/array.ts",
+    "start_byte": 6978,
+    "end_byte": 7494,
+    "is_public": false
+  },
+  "src/array.ts:ArraySchema": {
+    "kind": "interface_declaration",
+    "file_path": "src/array.ts",
+    "start_byte": 7556,
+    "end_byte": 8554,
+    "is_public": true
+  },
+  "src/boolean.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/boolean.ts",
+    "start_byte": 501,
+    "end_byte": 552,
+    "is_public": true
+  },
+  "src/boolean.ts:Schema": {
+    "kind": "class_declaration",
+    "file_path": "src/boolean.ts",
+    "start_byte": 569,
+    "end_byte": 3098,
+    "is_public": true
+  },
+  "src/boolean.ts:v": {
+    "kind": "method_definition",
+    "file_path": "src/boolean.ts",
+    "start_byte": 3050,
+    "end_byte": 3096,
+    "is_public": false
+  },
+  "src/boolean.ts:message": {
+    "kind": "method_definition",
+    "file_path": "src/boolean.ts",
+    "start_byte": 1613,
+    "end_byte": 1934,
+    "is_public": false
+  },
+  "src/boolean.ts:value": {
+    "kind": "method_definition",
+    "file_path": "src/boolean.ts",
+    "start_byte": 1842,
+    "end_byte": 1914,
+    "is_public": false
+  },
+  "src/boolean.ts:def": {
+    "kind": "method_definition",
+    "file_path": "src/boolean.ts",
+    "start_byte": 1938,
+    "end_byte": 2117,
+    "is_public": false
+  },
+  "src/boolean.ts:msg": {
+    "kind": "method_definition",
+    "file_path": "src/boolean.ts",
+    "start_byte": 2713,
+    "end_byte": 2848,
+    "is_public": false
+  },
+  "src/Condition.ts:ConditionBuilder": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/Condition.ts",
+    "start_byte": 125,
+    "end_byte": 255,
+    "is_public": true
+  },
+  "src/Condition.ts:ConditionConfig": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/Condition.ts",
+    "start_byte": 264,
+    "end_byte": 441,
+    "is_public": true
+  },
+  "src/Condition.ts:ResolveOptions": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/Condition.ts",
+    "start_byte": 450,
+    "end_byte": 545,
+    "is_public": true
+  },
+  "src/Condition.ts:refs": {
+    "kind": "method_definition",
+    "file_path": "src/Condition.ts",
+    "start_byte": 1271,
+    "end_byte": 1413,
+    "is_public": false
+  },
+  "src/Condition.ts:base": {
+    "kind": "method_definition",
+    "file_path": "src/Condition.ts",
+    "start_byte": 1417,
+    "end_byte": 1932,
+    "is_public": false
+  },
+  "src/date.ts:invalidDate": {
+    "kind": "const_declaration",
+    "file_path": "src/date.ts",
+    "start_byte": 345,
+    "end_byte": 371,
+    "is_public": false
+  },
+  "src/date.ts:isDate": {
+    "kind": "const_declaration",
+    "file_path": "src/date.ts",
+    "start_byte": 378,
+    "end_byte": 471,
+    "is_public": false
+  },
+  "src/date.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/date.ts",
+    "start_byte": 652,
+    "end_byte": 700,
+    "is_public": true
+  },
+  "src/date.ts:Schema": {
+    "kind": "class_declaration",
+    "file_path": "src/date.ts",
+    "start_byte": 717,
+    "end_byte": 2714,
+    "is_public": true
+  },
+  "src/date.ts:v": {
+    "kind": "method_definition",
+    "file_path": "src/date.ts",
+    "start_byte": 1008,
+    "end_byte": 1105,
+    "is_public": false
+  },
+  "src/date.ts:ref": {
+    "kind": "method_definition",
+    "file_path": "src/date.ts",
+    "start_byte": 1642,
+    "end_byte": 2080,
+    "is_public": false
+  },
+  "src/date.ts:min": {
+    "kind": "method_definition",
+    "file_path": "src/date.ts",
+    "start_byte": 2084,
+    "end_byte": 2399,
+    "is_public": false
+  },
+  "src/date.ts:value": {
+    "kind": "method_definition",
+    "file_path": "src/date.ts",
+    "start_byte": 2632,
+    "end_byte": 2699,
+    "is_public": false
+  },
+  "src/date.ts:max": {
+    "kind": "method_definition",
+    "file_path": "src/date.ts",
+    "start_byte": 2403,
+    "end_byte": 2712,
+    "is_public": false
+  },
+  "src/date.ts:DateSchema": {
+    "kind": "interface_declaration",
+    "file_path": "src/date.ts",
+    "start_byte": 2808,
+    "end_byte": 3900,
+    "is_public": true
+  },
+  "src/index.ts:addMethod": {
+    "kind": "function_declaration",
+    "file_path": "src/index.ts",
+    "start_byte": 1692,
+    "end_byte": 2108,
+    "is_public": true
+  },
+  "src/index.ts:AnyObjectSchema": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/index.ts",
+    "start_byte": 2117,
+    "end_byte": 2173,
+    "is_public": true
+  },
+  "src/index.ts:CastOptions": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/index.ts",
+    "start_byte": 2182,
+    "end_byte": 2244,
+    "is_public": true
+  },
+  "src/Lazy.ts:LazyBuilder": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 578,
+    "end_byte": 710,
+    "is_public": true
+  },
+  "src/Lazy.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 719,
+    "end_byte": 959,
+    "is_public": true
+  },
+  "src/Lazy.ts:catchValidationError": {
+    "kind": "function_declaration",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 961,
+    "end_byte": 1137,
+    "is_public": false
+  },
+  "src/Lazy.ts:LazySpec": {
+    "kind": "interface_declaration",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 1146,
+    "end_byte": 1234,
+    "is_public": true
+  },
+  "src/Lazy.ts:builder": {
+    "kind": "method_definition",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 1584,
+    "end_byte": 1677,
+    "is_public": false
+  },
+  "src/Lazy.ts:spec": {
+    "kind": "method_definition",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 1681,
+    "end_byte": 1867,
+    "is_public": false
+  },
+  "src/Lazy.ts:optional": {
+    "kind": "method_definition",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 2324,
+    "end_byte": 2428,
+    "is_public": false
+  },
+  "src/Lazy.ts:options": {
+    "kind": "method_definition",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 4339,
+    "end_byte": 4579,
+    "is_public": false
+  },
+  "src/Lazy.ts:value": {
+    "kind": "method_definition",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 5104,
+    "end_byte": 5639,
+    "is_public": false
+  },
+  "src/Lazy.ts:config": {
+    "kind": "method_definition",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 2965,
+    "end_byte": 3207,
+    "is_public": false
+  },
+  "src/Lazy.ts:path": {
+    "kind": "method_definition",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 3740,
+    "end_byte": 3919,
+    "is_public": false
+  },
+  "src/Lazy.ts:args": {
+    "kind": "method_definition",
+    "file_path": "src/Lazy.ts",
+    "start_byte": 4695,
+    "end_byte": 4906,
+    "is_public": false
+  },
+  "src/locale.ts:MixedLocale": {
+    "kind": "interface_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 136,
+    "end_byte": 342,
+    "is_public": true
+  },
+  "src/locale.ts:StringLocale": {
+    "kind": "interface_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 351,
+    "end_byte": 806,
+    "is_public": true
+  },
+  "src/locale.ts:NumberLocale": {
+    "kind": "interface_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 815,
+    "end_byte": 1090,
+    "is_public": true
+  },
+  "src/locale.ts:DateLocale": {
+    "kind": "interface_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 1099,
+    "end_byte": 1205,
+    "is_public": true
+  },
+  "src/locale.ts:ObjectLocale": {
+    "kind": "interface_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 1214,
+    "end_byte": 1331,
+    "is_public": true
+  },
+  "src/locale.ts:ArrayLocale": {
+    "kind": "interface_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 1340,
+    "end_byte": 1473,
+    "is_public": true
+  },
+  "src/locale.ts:TupleLocale": {
+    "kind": "interface_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 1482,
+    "end_byte": 1528,
+    "is_public": true
+  },
+  "src/locale.ts:BooleanLocale": {
+    "kind": "interface_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 1537,
+    "end_byte": 1585,
+    "is_public": true
+  },
+  "src/locale.ts:LocaleObject": {
+    "kind": "interface_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 1594,
+    "end_byte": 1812,
+    "is_public": true
+  },
+  "src/locale.ts:mixed": {
+    "kind": "const_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 1825,
+    "end_byte": 2684,
+    "is_public": true
+  },
+  "src/locale.ts:string": {
+    "kind": "const_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 2698,
+    "end_byte": 3488,
+    "is_public": true
+  },
+  "src/locale.ts:number": {
+    "kind": "const_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 3502,
+    "end_byte": 3891,
+    "is_public": true
+  },
+  "src/locale.ts:date": {
+    "kind": "const_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 3905,
+    "end_byte": 4042,
+    "is_public": true
+  },
+  "src/locale.ts:boolean": {
+    "kind": "const_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 4056,
+    "end_byte": 4129,
+    "is_public": true
+  },
+  "src/locale.ts:object": {
+    "kind": "const_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 4143,
+    "end_byte": 4312,
+    "is_public": true
+  },
+  "src/locale.ts:array": {
+    "kind": "const_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 4326,
+    "end_byte": 4532,
+    "is_public": true
+  },
+  "src/locale.ts:tuple": {
+    "kind": "const_declaration",
+    "file_path": "src/locale.ts",
+    "start_byte": 4546,
+    "end_byte": 5212,
+    "is_public": true
+  },
+  "src/mixed.ts:returnsTrue": {
+    "kind": "const_declaration",
+    "file_path": "src/mixed.ts",
+    "start_byte": 215,
+    "end_byte": 244,
+    "is_public": false
+  },
+  "src/mixed.ts:AnyPresentValue": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/mixed.ts",
+    "start_byte": 247,
+    "end_byte": 273,
+    "is_public": false
+  },
+  "src/mixed.ts:TypeGuard": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/mixed.ts",
+    "start_byte": 282,
+    "end_byte": 350,
+    "is_public": true
+  },
+  "src/mixed.ts:MixedOptions": {
+    "kind": "interface_declaration",
+    "file_path": "src/mixed.ts",
+    "start_byte": 358,
+    "end_byte": 436,
+    "is_public": true
+  },
+  "src/mixed.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/mixed.ts",
+    "start_byte": 445,
+    "end_byte": 598,
+    "is_public": true
+  },
+  "src/mixed.ts:Schema": {
+    "kind": "class_declaration",
+    "file_path": "src/mixed.ts",
+    "start_byte": 615,
+    "end_byte": 1073,
+    "is_public": true
+  },
+  "src/mixed.ts:spec": {
+    "kind": "method_definition",
+    "file_path": "src/mixed.ts",
+    "start_byte": 837,
+    "end_byte": 1071,
+    "is_public": false
+  },
+  "src/mixed.ts:MixedSchema": {
+    "kind": "interface_declaration",
+    "file_path": "src/mixed.ts",
+    "start_byte": 1090,
+    "end_byte": 2503,
+    "is_public": true
+  },
+  "src/number.ts:isNaN": {
+    "kind": "const_declaration",
+    "file_path": "src/number.ts",
+    "start_byte": 356,
+    "end_byte": 406,
+    "is_public": false
+  },
+  "src/number.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/number.ts",
+    "start_byte": 593,
+    "end_byte": 643,
+    "is_public": true
+  },
+  "src/number.ts:Schema": {
+    "kind": "class_declaration",
+    "file_path": "src/number.ts",
+    "start_byte": 660,
+    "end_byte": 3913,
+    "is_public": true
+  },
+  "src/number.ts:value": {
+    "kind": "method_definition",
+    "file_path": "src/number.ts",
+    "start_byte": 2842,
+    "end_byte": 2922,
+    "is_public": false
+  },
+  "src/number.ts:min": {
+    "kind": "method_definition",
+    "file_path": "src/number.ts",
+    "start_byte": 1751,
+    "end_byte": 2038,
+    "is_public": false
+  },
+  "src/number.ts:max": {
+    "kind": "method_definition",
+    "file_path": "src/number.ts",
+    "start_byte": 2042,
+    "end_byte": 2329,
+    "is_public": false
+  },
+  "src/number.ts:less": {
+    "kind": "method_definition",
+    "file_path": "src/number.ts",
+    "start_byte": 2333,
+    "end_byte": 2632,
+    "is_public": false
+  },
+  "src/number.ts:more": {
+    "kind": "method_definition",
+    "file_path": "src/number.ts",
+    "start_byte": 2636,
+    "end_byte": 2935,
+    "is_public": false
+  },
+  "src/number.ts:msg": {
+    "kind": "method_definition",
+    "file_path": "src/number.ts",
+    "start_byte": 3014,
+    "end_byte": 3085,
+    "is_public": false
+  },
+  "src/number.ts:message": {
+    "kind": "method_definition",
+    "file_path": "src/number.ts",
+    "start_byte": 3089,
+    "end_byte": 3265,
+    "is_public": false
+  },
+  "src/number.ts:method": {
+    "kind": "method_definition",
+    "file_path": "src/number.ts",
+    "start_byte": 3367,
+    "end_byte": 3911,
+    "is_public": false
+  },
+  "src/number.ts:NumberSchema": {
+    "kind": "interface_declaration",
+    "file_path": "src/number.ts",
+    "start_byte": 4002,
+    "end_byte": 5356,
+    "is_public": true
+  },
+  "src/object.ts:MakeKeysOptional": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 990,
+    "end_byte": 1061,
+    "is_public": false
+  },
+  "src/object.ts:Shape": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 1070,
+    "end_byte": 1182,
+    "is_public": true
+  },
+  "src/object.ts:ObjectSchemaSpec": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 1191,
+    "end_byte": 1260,
+    "is_public": true
+  },
+  "src/object.ts:deepPartial": {
+    "kind": "function_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 1262,
+    "end_byte": 1927,
+    "is_public": false
+  },
+  "src/object.ts:deepHas": {
+    "kind": "const_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 1935,
+    "end_byte": 2170,
+    "is_public": false
+  },
+  "src/object.ts:isObject": {
+    "kind": "const_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 2177,
+    "end_byte": 2298,
+    "is_public": false
+  },
+  "src/object.ts:unknown": {
+    "kind": "function_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 2301,
+    "end_byte": 2478,
+    "is_public": false
+  },
+  "src/object.ts:defaultSort": {
+    "kind": "const_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 2486,
+    "end_byte": 2518,
+    "is_public": false
+  },
+  "src/object.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 2528,
+    "end_byte": 2770,
+    "is_public": true
+  },
+  "src/object.ts:TIn": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 2633,
+    "end_byte": 2667,
+    "is_public": false
+  },
+  "src/object.ts:TDefault": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 2670,
+    "end_byte": 2709,
+    "is_public": false
+  },
+  "src/object.ts:ObjectSchema": {
+    "kind": "interface_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 2787,
+    "end_byte": 3962,
+    "is_public": true
+  },
+  "src/object.ts:Schema": {
+    "kind": "class_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 3979,
+    "end_byte": 15686,
+    "is_public": true
+  },
+  "src/object.ts:spec": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 8287,
+    "end_byte": 8549,
+    "is_public": false
+  },
+  "src/object.ts:value": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 14190,
+    "end_byte": 14472,
+    "is_public": false
+  },
+  "src/object.ts:_value": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 6795,
+    "end_byte": 8283,
+    "is_public": false
+  },
+  "src/object.ts:schema": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 9036,
+    "end_byte": 9524,
+    "is_public": false
+  },
+  "src/object.ts:options": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 15118,
+    "end_byte": 15684,
+    "is_public": false
+  },
+  "src/object.ts:shape": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 10254,
+    "end_byte": 10788,
+    "is_public": false
+  },
+  "src/object.ts:additions": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 10792,
+    "end_byte": 11583,
+    "is_public": false
+  },
+  "src/object.ts:UIn": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 10898,
+    "end_byte": 10936,
+    "is_public": false
+  },
+  "src/object.ts:UDefault": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/object.ts",
+    "start_byte": 10941,
+    "end_byte": 11132,
+    "is_public": false
+  },
+  "src/object.ts:keys": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 12426,
+    "end_byte": 12715,
+    "is_public": false
+  },
+  "src/object.ts:from": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 12719,
+    "end_byte": 13085,
+    "is_public": false
+  },
+  "src/object.ts:message": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 13320,
+    "end_byte": 13744,
+    "is_public": false
+  },
+  "src/object.ts:noAllow": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 13916,
+    "end_byte": 14539,
+    "is_public": false
+  },
+  "src/object.ts:allow": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 14543,
+    "end_byte": 14642,
+    "is_public": false
+  },
+  "src/object.ts:fn": {
+    "kind": "method_definition",
+    "file_path": "src/object.ts",
+    "start_byte": 14646,
+    "end_byte": 14894,
+    "is_public": false
+  },
+  "src/Reference.ts:prefixes": {
+    "kind": "const_declaration",
+    "file_path": "src/Reference.ts",
+    "start_byte": 101,
+    "end_byte": 154,
+    "is_public": false
+  },
+  "src/Reference.ts:ReferenceOptions": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/Reference.ts",
+    "start_byte": 164,
+    "end_byte": 246,
+    "is_public": true
+  },
+  "src/Reference.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/Reference.ts",
+    "start_byte": 255,
+    "end_byte": 394,
+    "is_public": true
+  },
+  "src/Reference.ts:key": {
+    "kind": "method_definition",
+    "file_path": "src/Reference.ts",
+    "start_byte": 721,
+    "end_byte": 1400,
+    "is_public": true
+  },
+  "src/Reference.ts:value": {
+    "kind": "method_definition",
+    "file_path": "src/Reference.ts",
+    "start_byte": 2135,
+    "end_byte": 2223,
+    "is_public": true
+  },
+  "src/schema.ts:SchemaSpec": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 1043,
+    "end_byte": 1349,
+    "is_public": true
+  },
+  "src/schema.ts:CustomSchemaMetadata": {
+    "kind": "interface_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 1358,
+    "end_byte": 1391,
+    "is_public": true
+  },
+  "src/schema.ts:SchemaMetadata": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 1529,
+    "end_byte": 1646,
+    "is_public": true
+  },
+  "src/schema.ts:SchemaOptions": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 1655,
+    "end_byte": 1807,
+    "is_public": true
+  },
+  "src/schema.ts:AnySchema": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 1816,
+    "end_byte": 1923,
+    "is_public": true
+  },
+  "src/schema.ts:CastOptions": {
+    "kind": "interface_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 1932,
+    "end_byte": 2182,
+    "is_public": true
+  },
+  "src/schema.ts:CastOptionalityOptions": {
+    "kind": "interface_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 2191,
+    "end_byte": 2675,
+    "is_public": true
+  },
+  "src/schema.ts:RunTest": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 2684,
+    "end_byte": 2778,
+    "is_public": true
+  },
+  "src/schema.ts:TestRunOptions": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 2787,
+    "end_byte": 2926,
+    "is_public": true
+  },
+  "src/schema.ts:SchemaRefDescription": {
+    "kind": "interface_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 2935,
+    "end_byte": 2999,
+    "is_public": true
+  },
+  "src/schema.ts:SchemaInnerTypeDescription": {
+    "kind": "interface_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 3008,
+    "end_byte": 3139,
+    "is_public": true
+  },
+  "src/schema.ts:SchemaObjectDescription": {
+    "kind": "interface_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 3148,
+    "end_byte": 3261,
+    "is_public": true
+  },
+  "src/schema.ts:SchemaLazyDescription": {
+    "kind": "interface_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 3270,
+    "end_byte": 3364,
+    "is_public": true
+  },
+  "src/schema.ts:SchemaFieldDescription": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 3373,
+    "end_byte": 3535,
+    "is_public": true
+  },
+  "src/schema.ts:SchemaDescription": {
+    "kind": "interface_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 3544,
+    "end_byte": 3808,
+    "is_public": true
+  },
+  "src/schema.ts:options": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 24587,
+    "end_byte": 25498,
+    "is_public": true
+  },
+  "src/schema.ts:spec": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 5435,
+    "end_byte": 6340,
+    "is_public": true
+  },
+  "src/schema.ts:label": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 6344,
+    "end_byte": 6445,
+    "is_public": true
+  },
+  "src/schema.ts:args": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 19934,
+    "end_byte": 21184,
+    "is_public": true
+  },
+  "src/schema.ts:fn": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 18852,
+    "end_byte": 18998,
+    "is_public": true
+  },
+  "src/schema.ts:schema": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 6980,
+    "end_byte": 8271,
+    "is_public": true
+  },
+  "src/schema.ts:v": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 8275,
+    "end_byte": 8509,
+    "is_public": true
+  },
+  "src/schema.ts:value": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 25703,
+    "end_byte": 26246,
+    "is_public": true
+  },
+  "src/schema.ts:rawValue": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 10718,
+    "end_byte": 11103,
+    "is_public": true
+  },
+  "src/schema.ts:_value": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 11107,
+    "end_byte": 12226,
+    "is_public": true
+  },
+  "src/schema.ts:runOptions": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 12349,
+    "end_byte": 13444,
+    "is_public": true
+  },
+  "src/schema.ts:def": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 17336,
+    "end_byte": 17522,
+    "is_public": true
+  },
+  "src/schema.ts:isStrict": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 17526,
+    "end_byte": 17600,
+    "is_public": true
+  },
+  "src/schema.ts:nullable": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 17604,
+    "end_byte": 17929,
+    "is_public": true
+  },
+  "src/schema.ts:optional": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 17933,
+    "end_byte": 18269,
+    "is_public": true
+  },
+  "src/schema.ts:message": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 22090,
+    "end_byte": 22515,
+    "is_public": true
+  },
+  "src/schema.ts:keys": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 21424,
+    "end_byte": 22086,
+    "is_public": true
+  },
+  "src/schema.ts:enums": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 23495,
+    "end_byte": 24240,
+    "is_public": true
+  },
+  "src/schema.ts:strip": {
+    "kind": "method_definition",
+    "file_path": "src/schema.ts",
+    "start_byte": 24244,
+    "end_byte": 24356,
+    "is_public": true
+  },
+  "src/schema.ts:Schema": {
+    "kind": "interface_declaration",
+    "file_path": "src/schema.ts",
+    "start_byte": 26299,
+    "end_byte": 26831,
+    "is_public": true
+  },
+  "src/setLocale.ts:setLocale": {
+    "kind": "function_declaration",
+    "file_path": "src/setLocale.ts",
+    "start_byte": 96,
+    "end_byte": 338,
+    "is_public": true
+  },
+  "src/standardSchema.ts:StandardSchema": {
+    "kind": "interface_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 230,
+    "end_byte": 351,
+    "is_public": true
+  },
+  "src/standardSchema.ts:StandardSchemaProps": {
+    "kind": "interface_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 360,
+    "end_byte": 645,
+    "is_public": true
+  },
+  "src/standardSchema.ts:StandardResult": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 654,
+    "end_byte": 744,
+    "is_public": true
+  },
+  "src/standardSchema.ts:StandardSuccessResult": {
+    "kind": "interface_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 753,
+    "end_byte": 853,
+    "is_public": true
+  },
+  "src/standardSchema.ts:StandardFailureResult": {
+    "kind": "interface_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 862,
+    "end_byte": 946,
+    "is_public": true
+  },
+  "src/standardSchema.ts:StandardIssue": {
+    "kind": "interface_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 955,
+    "end_byte": 1090,
+    "is_public": true
+  },
+  "src/standardSchema.ts:StandardPathSegment": {
+    "kind": "interface_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 1099,
+    "end_byte": 1161,
+    "is_public": true
+  },
+  "src/standardSchema.ts:StandardTypes": {
+    "kind": "interface_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 1170,
+    "end_byte": 1264,
+    "is_public": true
+  },
+  "src/standardSchema.ts:createStandardPath": {
+    "kind": "function_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 1273,
+    "end_byte": 3143,
+    "is_public": true
+  },
+  "src/standardSchema.ts:createStandardIssues": {
+    "kind": "function_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 3152,
+    "end_byte": 3477,
+    "is_public": true
+  },
+  "src/standardSchema.ts:issuesFromValidationError": {
+    "kind": "function_declaration",
+    "file_path": "src/standardSchema.ts",
+    "start_byte": 3486,
+    "end_byte": 3853,
+    "is_public": true
+  },
+  "src/string.ts:rEmail": {
+    "kind": "const_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 555,
+    "end_byte": 731,
+    "is_public": false
+  },
+  "src/string.ts:rUrl": {
+    "kind": "const_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 738,
+    "end_byte": 1969,
+    "is_public": false
+  },
+  "src/string.ts:rUUID": {
+    "kind": "const_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 2004,
+    "end_byte": 2131,
+    "is_public": false
+  },
+  "src/string.ts:yearMonthDay": {
+    "kind": "const_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 2138,
+    "end_byte": 2176,
+    "is_public": false
+  },
+  "src/string.ts:hourMinuteSecond": {
+    "kind": "const_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 2182,
+    "end_byte": 2223,
+    "is_public": false
+  },
+  "src/string.ts:zOrOffset": {
+    "kind": "const_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 2229,
+    "end_byte": 2270,
+    "is_public": false
+  },
+  "src/string.ts:rIsoDateTime": {
+    "kind": "const_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 2276,
+    "end_byte": 2368,
+    "is_public": false
+  },
+  "src/string.ts:isTrimmed": {
+    "kind": "const_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 2375,
+    "end_byte": 2456,
+    "is_public": false
+  },
+  "src/string.ts:MatchOptions": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 2466,
+    "end_byte": 2578,
+    "is_public": true
+  },
+  "src/string.ts:DateTimeOptions": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 2587,
+    "end_byte": 2929,
+    "is_public": true
+  },
+  "src/string.ts:objStringTag": {
+    "kind": "const_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 2935,
+    "end_byte": 2963,
+    "is_public": false
+  },
+  "src/string.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 3129,
+    "end_byte": 3179,
+    "is_public": true
+  },
+  "src/string.ts:Schema": {
+    "kind": "class_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 3216,
+    "end_byte": 9230,
+    "is_public": true
+  },
+  "src/string.ts:value": {
+    "kind": "method_definition",
+    "file_path": "src/string.ts",
+    "start_byte": 5549,
+    "end_byte": 5636,
+    "is_public": false
+  },
+  "src/string.ts:message": {
+    "kind": "method_definition",
+    "file_path": "src/string.ts",
+    "start_byte": 8888,
+    "end_byte": 9228,
+    "is_public": false
+  },
+  "src/string.ts:length": {
+    "kind": "method_definition",
+    "file_path": "src/string.ts",
+    "start_byte": 4620,
+    "end_byte": 4975,
+    "is_public": false
+  },
+  "src/string.ts:min": {
+    "kind": "method_definition",
+    "file_path": "src/string.ts",
+    "start_byte": 4979,
+    "end_byte": 5312,
+    "is_public": false
+  },
+  "src/string.ts:max": {
+    "kind": "method_definition",
+    "file_path": "src/string.ts",
+    "start_byte": 5316,
+    "end_byte": 5649,
+    "is_public": false
+  },
+  "src/string.ts:regex": {
+    "kind": "method_definition",
+    "file_path": "src/string.ts",
+    "start_byte": 5653,
+    "end_byte": 6306,
+    "is_public": false
+  },
+  "src/string.ts:options": {
+    "kind": "method_definition",
+    "file_path": "src/string.ts",
+    "start_byte": 6746,
+    "end_byte": 8178,
+    "is_public": false
+  },
+  "src/string.ts:StringSchema": {
+    "kind": "interface_declaration",
+    "file_path": "src/string.ts",
+    "start_byte": 9319,
+    "end_byte": 10961,
+    "is_public": true
+  },
+  "src/tuple.ts:AnyTuple": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/tuple.ts",
+    "start_byte": 476,
+    "end_byte": 516,
+    "is_public": false
+  },
+  "src/tuple.ts:create": {
+    "kind": "function_declaration",
+    "file_path": "src/tuple.ts",
+    "start_byte": 525,
+    "end_byte": 661,
+    "is_public": true
+  },
+  "src/tuple.ts:TupleSchema": {
+    "kind": "interface_declaration",
+    "file_path": "src/tuple.ts",
+    "start_byte": 678,
+    "end_byte": 1816,
+    "is_public": true
+  },
+  "src/tuple.ts:TupleSchemaSpec": {
+    "kind": "interface_declaration",
+    "file_path": "src/tuple.ts",
+    "start_byte": 1818,
+    "end_byte": 1967,
+    "is_public": false
+  },
+  "src/tuple.ts:Schema": {
+    "kind": "class_declaration",
+    "file_path": "src/tuple.ts",
+    "start_byte": 1984,
+    "end_byte": 4896,
+    "is_public": true
+  },
+  "src/tuple.ts:schemas": {
+    "kind": "method_definition",
+    "file_path": "src/tuple.ts",
+    "start_byte": 2233,
+    "end_byte": 2641,
+    "is_public": false
+  },
+  "src/tuple.ts:v": {
+    "kind": "method_definition",
+    "file_path": "src/tuple.ts",
+    "start_byte": 2369,
+    "end_byte": 2546,
+    "is_public": false
+  },
+  "src/tuple.ts:inputValue": {
+    "kind": "method_definition",
+    "file_path": "src/tuple.ts",
+    "start_byte": 2645,
+    "end_byte": 3308,
+    "is_public": false
+  },
+  "src/tuple.ts:_value": {
+    "kind": "method_definition",
+    "file_path": "src/tuple.ts",
+    "start_byte": 3312,
+    "end_byte": 4350,
+    "is_public": false
+  },
+  "src/tuple.ts:options": {
+    "kind": "method_definition",
+    "file_path": "src/tuple.ts",
+    "start_byte": 4354,
+    "end_byte": 4894,
+    "is_public": false
+  },
+  "src/types.ts:ISchema": {
+    "kind": "interface_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 374,
+    "end_byte": 871,
+    "is_public": true
+  },
+  "src/types.ts:DefaultThunk": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 880,
+    "end_byte": 953,
+    "is_public": true
+  },
+  "src/types.ts:InferType": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 962,
+    "end_byte": 1026,
+    "is_public": true
+  },
+  "src/types.ts:TransformFunction": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 1035,
+    "end_byte": 1188,
+    "is_public": true
+  },
+  "src/types.ts:Ancester": {
+    "kind": "interface_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 1197,
+    "end_byte": 1277,
+    "is_public": true
+  },
+  "src/types.ts:ValidateOptions": {
+    "kind": "interface_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 1285,
+    "end_byte": 2082,
+    "is_public": true
+  },
+  "src/types.ts:InternalOptions": {
+    "kind": "interface_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 2091,
+    "end_byte": 2337,
+    "is_public": true
+  },
+  "src/types.ts:MessageParams": {
+    "kind": "interface_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 2346,
+    "end_byte": 2533,
+    "is_public": true
+  },
+  "src/types.ts:Message": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 2542,
+    "end_byte": 2695,
+    "is_public": true
+  },
+  "src/types.ts:ExtraParams": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 2704,
+    "end_byte": 2747,
+    "is_public": true
+  },
+  "src/types.ts:AnyMessageParams": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 2756,
+    "end_byte": 2808,
+    "is_public": true
+  },
+  "src/types.ts:NestedTestConfig": {
+    "kind": "interface_declaration",
+    "file_path": "src/types.ts",
+    "start_byte": 2817,
+    "end_byte": 2986,
+    "is_public": true
+  },
+  "src/ValidationError.ts:strReg": {
+    "kind": "const_declaration",
+    "file_path": "src/ValidationError.ts",
+    "start_byte": 87,
+    "end_byte": 116,
+    "is_public": false
+  },
+  "src/ValidationError.ts:Params": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/ValidationError.ts",
+    "start_byte": 119,
+    "end_byte": 157,
+    "is_public": false
+  },
+  "src/ValidationError.ts:errorOrErrors": {
+    "kind": "method_definition",
+    "file_path": "src/ValidationError.ts",
+    "start_byte": 2082,
+    "end_byte": 2809,
+    "is_public": false
+  },
+  "src/ValidationError.ts:Error": {
+    "kind": "class_declaration",
+    "file_path": "src/ValidationError.ts",
+    "start_byte": 1150,
+    "end_byte": 3010,
+    "is_public": true
+  },
+  "src/ValidationError.ts:message": {
+    "kind": "method_definition",
+    "file_path": "src/ValidationError.ts",
+    "start_byte": 1317,
+    "end_byte": 1970,
+    "is_public": false
+  },
+  "src/ValidationError.ts:err": {
+    "kind": "method_definition",
+    "file_path": "src/ValidationError.ts",
+    "start_byte": 1974,
+    "end_byte": 2078,
+    "is_public": false
+  },
+  "src/ValidationError.ts:Symbol": {
+    "kind": "method_definition",
+    "file_path": "src/ValidationError.ts",
+    "start_byte": 2813,
+    "end_byte": 2973,
+    "is_public": false
+  },
+  "src/util/cloneDeep.ts:clone": {
+    "kind": "function_declaration",
+    "file_path": "src/util/cloneDeep.ts",
+    "start_byte": 167,
+    "end_byte": 1290,
+    "is_public": false
+  },
+  "src/util/createValidation.ts:PanicCallback": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 357,
+    "end_byte": 399,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:NextCallback": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 408,
+    "end_byte": 491,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:CreateErrorOptions": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 500,
+    "end_byte": 645,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:TestContext": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 654,
+    "end_byte": 973,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:TestFunction": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 982,
+    "end_byte": 1184,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:TestOptions": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 1193,
+    "end_byte": 1355,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:TestConfig": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 1364,
+    "end_byte": 1573,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:Test": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 1582,
+    "end_byte": 1705,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:createValidation": {
+    "kind": "function_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 1722,
+    "end_byte": 4512,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:validate": {
+    "kind": "function_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 1878,
+    "end_byte": 4460,
+    "is_public": false
+  },
+  "src/util/createValidation.ts:createError": {
+    "kind": "function_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 2351,
+    "end_byte": 3080,
+    "is_public": false
+  },
+  "src/util/createValidation.ts:item": {
+    "kind": "method_definition",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 3241,
+    "end_byte": 3339,
+    "is_public": false
+  },
+  "src/util/createValidation.ts:resolveParams": {
+    "kind": "function_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 4551,
+    "end_byte": 4843,
+    "is_public": true
+  },
+  "src/util/createValidation.ts:Keys": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 4675,
+    "end_byte": 4711,
+    "is_public": false
+  },
+  "src/util/createValidation.ts:resolveMaybeRef": {
+    "kind": "function_declaration",
+    "file_path": "src/util/createValidation.ts",
+    "start_byte": 4845,
+    "end_byte": 5030,
+    "is_public": false
+  },
+  "src/util/isAbsent.ts:isAbsent": {
+    "kind": "const_declaration",
+    "file_path": "src/util/isAbsent.ts",
+    "start_byte": 6,
+    "end_byte": 73,
+    "is_public": false
+  },
+  "src/util/isSchema.ts:isSchema": {
+    "kind": "const_declaration",
+    "file_path": "src/util/isSchema.ts",
+    "start_byte": 48,
+    "end_byte": 120,
+    "is_public": false
+  },
+  "src/util/objectTypes.ts:ObjectShape": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 141,
+    "end_byte": 202,
+    "is_public": true
+  },
+  "src/util/objectTypes.ts:AnyObject": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 211,
+    "end_byte": 249,
+    "is_public": true
+  },
+  "src/util/objectTypes.ts:ResolveStrip": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 258,
+    "end_byte": 439,
+    "is_public": true
+  },
+  "src/util/objectTypes.ts:TypeFromShape": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 448,
+    "end_byte": 630,
+    "is_public": true
+  },
+  "src/util/objectTypes.ts:DefaultFromShape": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 639,
+    "end_byte": 791,
+    "is_public": true
+  },
+  "src/util/objectTypes.ts:MergeObjectTypes": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 800,
+    "end_byte": 952,
+    "is_public": true
+  },
+  "src/util/objectTypes.ts:ConcatObjectTypes": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 961,
+    "end_byte": 1165,
+    "is_public": true
+  },
+  "src/util/objectTypes.ts:PartialDeep": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 1174,
+    "end_byte": 1500,
+    "is_public": true
+  },
+  "src/util/objectTypes.ts:OptionalKeys": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 1502,
+    "end_byte": 1603,
+    "is_public": false
+  },
+  "src/util/objectTypes.ts:RequiredKeys": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 1605,
+    "end_byte": 1677,
+    "is_public": false
+  },
+  "src/util/objectTypes.ts:MakePartial": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/objectTypes.ts",
+    "start_byte": 1686,
+    "end_byte": 1863,
+    "is_public": true
+  },
+  "src/util/parseIsoDate.ts:isoReg": {
+    "kind": "const_declaration",
+    "file_path": "src/util/parseIsoDate.ts",
+    "start_byte": 464,
+    "end_byte": 615,
+    "is_public": false
+  },
+  "src/util/parseIsoDate.ts:parseIsoDate": {
+    "kind": "function_declaration",
+    "file_path": "src/util/parseIsoDate.ts",
+    "start_byte": 625,
+    "end_byte": 1529,
+    "is_public": true
+  },
+  "src/util/parseIsoDate.ts:parseDateStruct": {
+    "kind": "function_declaration",
+    "file_path": "src/util/parseIsoDate.ts",
+    "start_byte": 1538,
+    "end_byte": 2397,
+    "is_public": true
+  },
+  "src/util/parseIsoDate.ts:toNumber": {
+    "kind": "function_declaration",
+    "file_path": "src/util/parseIsoDate.ts",
+    "start_byte": 2399,
+    "end_byte": 2489,
+    "is_public": false
+  },
+  "src/util/parseJson.ts:parseJson": {
+    "kind": "const_declaration",
+    "file_path": "src/util/parseJson.ts",
+    "start_byte": 69,
+    "end_byte": 347,
+    "is_public": false
+  },
+  "src/util/printValue.ts:toString": {
+    "kind": "const_declaration",
+    "file_path": "src/util/printValue.ts",
+    "start_byte": 6,
+    "end_byte": 42,
+    "is_public": false
+  },
+  "src/util/printValue.ts:errorToString": {
+    "kind": "const_declaration",
+    "file_path": "src/util/printValue.ts",
+    "start_byte": 50,
+    "end_byte": 90,
+    "is_public": false
+  },
+  "src/util/printValue.ts:regExpToString": {
+    "kind": "const_declaration",
+    "file_path": "src/util/printValue.ts",
+    "start_byte": 98,
+    "end_byte": 140,
+    "is_public": false
+  },
+  "src/util/printValue.ts:symbolToString": {
+    "kind": "const_declaration",
+    "file_path": "src/util/printValue.ts",
+    "start_byte": 148,
+    "end_byte": 235,
+    "is_public": false
+  },
+  "src/util/printValue.ts:SYMBOL_REGEXP": {
+    "kind": "const_declaration",
+    "file_path": "src/util/printValue.ts",
+    "start_byte": 244,
+    "end_byte": 282,
+    "is_public": false
+  },
+  "src/util/printValue.ts:printNumber": {
+    "kind": "function_declaration",
+    "file_path": "src/util/printValue.ts",
+    "start_byte": 285,
+    "end_byte": 446,
+    "is_public": false
+  },
+  "src/util/printValue.ts:printSimpleValue": {
+    "kind": "function_declaration",
+    "file_path": "src/util/printValue.ts",
+    "start_byte": 448,
+    "end_byte": 1221,
+    "is_public": false
+  },
+  "src/util/printValue.ts:printValue": {
+    "kind": "function_declaration",
+    "file_path": "src/util/printValue.ts",
+    "start_byte": 1238,
+    "end_byte": 1597,
+    "is_public": true
+  },
+  "src/util/reach.ts:getIn": {
+    "kind": "function_declaration",
+    "file_path": "src/util/reach.ts",
+    "start_byte": 182,
+    "end_byte": 2247,
+    "is_public": true
+  },
+  "src/util/reach.ts:reach": {
+    "kind": "function_declaration",
+    "file_path": "src/util/reach.ts",
+    "start_byte": 2249,
+    "end_byte": 2509,
+    "is_public": false
+  },
+  "src/util/ReferenceSet.ts:Set": {
+    "kind": "class_declaration",
+    "file_path": "src/util/ReferenceSet.ts",
+    "start_byte": 109,
+    "end_byte": 876,
+    "is_public": true
+  },
+  "src/util/ReferenceSet.ts:resolve": {
+    "kind": "method_definition",
+    "file_path": "src/util/ReferenceSet.ts",
+    "start_byte": 397,
+    "end_byte": 592,
+    "is_public": false
+  },
+  "src/util/ReferenceSet.ts:newItems": {
+    "kind": "method_definition",
+    "file_path": "src/util/ReferenceSet.ts",
+    "start_byte": 657,
+    "end_byte": 874,
+    "is_public": false
+  },
+  "src/util/sortByKeyOrder.ts:findIndex": {
+    "kind": "function_declaration",
+    "file_path": "src/util/sortByKeyOrder.ts",
+    "start_byte": 51,
+    "end_byte": 263,
+    "is_public": false
+  },
+  "src/util/sortByKeyOrder.ts:sortByKeyOrder": {
+    "kind": "function_declaration",
+    "file_path": "src/util/sortByKeyOrder.ts",
+    "start_byte": 280,
+    "end_byte": 444,
+    "is_public": true
+  },
+  "src/util/sortFields.ts:sortFields": {
+    "kind": "function_declaration",
+    "file_path": "src/util/sortFields.ts",
+    "start_byte": 221,
+    "end_byte": 1013,
+    "is_public": true
+  },
+  "src/util/sortFields.ts:addNode": {
+    "kind": "function_declaration",
+    "file_path": "src/util/sortFields.ts",
+    "start_byte": 471,
+    "end_byte": 645,
+    "is_public": false
+  },
+  "src/util/toArray.ts:toArray": {
+    "kind": "function_declaration",
+    "file_path": "src/util/toArray.ts",
+    "start_byte": 15,
+    "end_byte": 128,
+    "is_public": true
+  },
+  "src/util/types.ts:IfAny": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 7,
+    "end_byte": 53,
+    "is_public": true
+  },
+  "src/util/types.ts:Maybe": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 62,
+    "end_byte": 99,
+    "is_public": true
+  },
+  "src/util/types.ts:Preserve": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 108,
+    "end_byte": 154,
+    "is_public": true
+  },
+  "src/util/types.ts:Optionals": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 163,
+    "end_byte": 212,
+    "is_public": true
+  },
+  "src/util/types.ts:Defined": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 221,
+    "end_byte": 271,
+    "is_public": true
+  },
+  "src/util/types.ts:NotNull": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 280,
+    "end_byte": 325,
+    "is_public": true
+  },
+  "src/util/types.ts:_": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 421,
+    "end_byte": 477,
+    "is_public": true
+  },
+  "src/util/types.ts:Flags": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 510,
+    "end_byte": 538,
+    "is_public": true
+  },
+  "src/util/types.ts:SetFlag": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 547,
+    "end_byte": 619,
+    "is_public": true
+  },
+  "src/util/types.ts:UnsetFlag": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 628,
+    "end_byte": 744,
+    "is_public": true
+  },
+  "src/util/types.ts:ToggleDefault": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 753,
+    "end_byte": 879,
+    "is_public": true
+  },
+  "src/util/types.ts:ResolveFlags": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 888,
+    "end_byte": 1022,
+    "is_public": true
+  },
+  "src/util/types.ts:Concat": {
+    "kind": "type_alias_declaration",
+    "file_path": "src/util/types.ts",
+    "start_byte": 1031,
+    "end_byte": 1160,
+    "is_public": true
+  },
+  "test/date.ts:isInvalidDate": {
+    "kind": "function_declaration",
+    "file_path": "test/date.ts",
+    "start_byte": 126,
+    "end_byte": 233,
+    "is_public": false
+  },
+  "test/helpers.ts:castAndShouldFail": {
+    "kind": "const_declaration",
+    "file_path": "test/helpers.ts",
+    "start_byte": 148,
+    "end_byte": 269,
+    "is_public": true
+  },
+  "test/helpers.ts:Options": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/helpers.ts",
+    "start_byte": 272,
+    "end_byte": 327,
+    "is_public": false
+  },
+  "test/helpers.ts:castAll": {
+    "kind": "const_declaration",
+    "file_path": "test/helpers.ts",
+    "start_byte": 339,
+    "end_byte": 752,
+    "is_public": true
+  },
+  "test/helpers.ts:validateAll": {
+    "kind": "const_declaration",
+    "file_path": "test/helpers.ts",
+    "start_byte": 766,
+    "end_byte": 1409,
+    "is_public": true
+  },
+  "test/helpers.ts:runValidations": {
+    "kind": "function_declaration",
+    "file_path": "test/helpers.ts",
+    "start_byte": 997,
+    "end_byte": 1407,
+    "is_public": true
+  },
+  "test/helpers.ts:validationErrorWithMessages": {
+    "kind": "function_declaration",
+    "file_path": "test/helpers.ts",
+    "start_byte": 1419,
+    "end_byte": 1530,
+    "is_public": true
+  },
+  "test/helpers.ts:ensureSync": {
+    "kind": "function_declaration",
+    "file_path": "test/helpers.ts",
+    "start_byte": 1539,
+    "end_byte": 1899,
+    "is_public": true
+  },
+  "test/mixed.ts:noop": {
+    "kind": "const_declaration",
+    "file_path": "test/mixed.ts",
+    "start_byte": 347,
+    "end_byte": 362,
+    "is_public": false
+  },
+  "test/number.ts:NumberSchema": {
+    "kind": "class_declaration",
+    "file_path": "test/number.ts",
+    "start_byte": 224,
+    "end_byte": 310,
+    "is_public": false
+  },
+  "test/object.ts:Nested": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/object.ts",
+    "start_byte": 14176,
+    "end_byte": 14252,
+    "is_public": false
+  },
+  "test/standardSchema.ts:verifyStandardSchema": {
+    "kind": "function_declaration",
+    "file_path": "test/standardSchema.ts",
+    "start_byte": 248,
+    "end_byte": 498,
+    "is_public": false
+  },
+  "test/standardSchema.ts:getYupValidationError": {
+    "kind": "function_declaration",
+    "file_path": "test/standardSchema.ts",
+    "start_byte": 594,
+    "end_byte": 881,
+    "is_public": false
+  },
+  "test/standardSchema.ts:expectValidationConsistency": {
+    "kind": "function_declaration",
+    "file_path": "test/standardSchema.ts",
+    "start_byte": 974,
+    "end_byte": 2535,
+    "is_public": false
+  },
+  "test/string.ts:getErrorString": {
+    "kind": "function_declaration",
+    "file_path": "test/string.ts",
+    "start_byte": 9455,
+    "end_byte": 9744,
+    "is_public": false
+  },
+  "test/types/types.ts:_a": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 521,
+    "end_byte": 569,
+    "is_public": false
+  },
+  "test/types/types.ts:_b": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 609,
+    "end_byte": 657,
+    "is_public": false
+  },
+  "test/types/types.ts:_c": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 685,
+    "end_byte": 747,
+    "is_public": false
+  },
+  "test/types/types.ts:_d": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 787,
+    "end_byte": 848,
+    "is_public": false
+  },
+  "test/types/types.ts:_e": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 876,
+    "end_byte": 946,
+    "is_public": false
+  },
+  "test/types/types.ts:_f": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 970,
+    "end_byte": 1000,
+    "is_public": false
+  },
+  "test/types/types.ts:_f2": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 1025,
+    "end_byte": 1062,
+    "is_public": false
+  },
+  "test/types/types.ts:_f3": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 1086,
+    "end_byte": 1116,
+    "is_public": false
+  },
+  "test/types/types.ts:_f4": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 1141,
+    "end_byte": 1169,
+    "is_public": false
+  },
+  "test/types/types.ts:Person": {
+    "kind": "interface_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 18371,
+    "end_byte": 18411,
+    "is_public": false
+  },
+  "test/types/types.ts:Employee": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 21287,
+    "end_byte": 21354,
+    "is_public": false
+  },
+  "test/types/types.ts:EmployeeWithPromotions": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 21511,
+    "end_byte": 21600,
+    "is_public": false
+  },
+  "test/types/types.ts:DocumentWithFullHistory": {
+    "kind": "type_alias_declaration",
+    "file_path": "test/types/types.ts",
+    "start_byte": 21799,
+    "end_byte": 21882,
+    "is_public": false
+  },
+  "test/util/parseIsoDate.ts:sixHours": {
+    "kind": "const_declaration",
+    "file_path": "test/util/parseIsoDate.ts",
+    "start_byte": 409,
+    "end_byte": 438,
+    "is_public": false
+  },
+  "test/util/parseIsoDate.ts:sixHoursThirty": {
+    "kind": "const_declaration",
+    "file_path": "test/util/parseIsoDate.ts",
+    "start_byte": 446,
+    "end_byte": 488,
+    "is_public": false
+  },
+  "test/util/parseIsoDate.ts:epochLocalTime": {
+    "kind": "const_declaration",
+    "file_path": "test/util/parseIsoDate.ts",
+    "start_byte": 496,
+    "end_byte": 555,
+    "is_public": false
+  },
+  "rollup.config.js:base": {
+    "kind": "const_declaration",
+    "file_path": "rollup.config.js",
+    "start_byte": 188,
+    "end_byte": 456,
+    "is_public": false
+  }
+}

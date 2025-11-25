@@ -3,9 +3,8 @@
 
 import { useStore } from '@/lib/store';
 import { Settings, Zap, Layers, BarChart, Shield, Brain } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { estimateTokens } from '@/lib/api';
-import { debounce } from '@/lib/utils';
 
 export function ConfiguratorPanel() {
   const {
@@ -17,6 +16,9 @@ export function ConfiguratorPanel() {
     setEstimateError,
   } = useStore();
 
+  // Use a ref to track the debounce timeout
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Debounced estimation
   useEffect(() => {
     if (!repoUrl) {
@@ -24,7 +26,13 @@ export function ConfiguratorPanel() {
       return;
     }
 
-    const fetchEstimate = debounce(async () => {
+    // Clear previous timeout
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new debounced call
+    debounceTimerRef.current = setTimeout(async () => {
       setIsEstimating(true);
       setEstimateError(null);
       try {
@@ -38,7 +46,12 @@ export function ConfiguratorPanel() {
       }
     }, 500);
 
-    fetchEstimate();
+    // Cleanup on unmount or dependency change
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [repoUrl, config, setEstimate, setIsEstimating, setEstimateError]);
 
   const modeConfig = [

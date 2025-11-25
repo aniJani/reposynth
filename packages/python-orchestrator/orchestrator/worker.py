@@ -977,11 +977,66 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
             except Exception as e:
                 print(f"Warning: Failed to cleanup cloned repo: {e}", file=sys.stderr)
         
-        # Cleanup: Remove worker directory (keep only S3 copy)
+        # Cleanup: Remove worker directory BUT keep essential pack files for vibe prompts
         try:
             if worker_root.exists():
-                print(f"🧹 Cleaning up worker directory...")
+                print(f"🧹 Cleaning up worker directory (preserving essential pack files)...")
+                
+                # Essential files needed for vibe prompts:
+                # - import_graph.json (for file listing and dependencies)
+                # - name_registry.json (for symbol search)
+                # - vectors.faiss + vector_ids.json (for semantic search)
+                # - source_spans.json (for reading source code)
+                # - pack.toon or pack.json (for TOON/JSON mode)
+                essential_files = [
+                    "import_graph.json",
+                    "name_registry.json", 
+                    "vectors.faiss",
+                    "vector_ids.json",
+                    "source_spans.json",
+                    "pack.toon",
+                    "pack.json",
+                    "variable_registry.json",
+                ]
+                
+                # Find the pack directory
+                pack_dir = None
+                for candidate in [
+                    worker_root / "pack",
+                    worker_root / "extracted_pack" / "pack",
+                    worker_root / "extracted_pack",
+                ]:
+                    if candidate.exists() and candidate.is_dir():
+                        pack_dir = candidate
+                        break
+                
+                # Preserve essential files
+                preserved_files = {}
+                if pack_dir:
+                    for filename in essential_files:
+                        file_path = pack_dir / filename
+                        if file_path.exists():
+                            if filename.endswith('.faiss'):
+                                # Binary file - read as bytes
+                                preserved_files[filename] = file_path.read_bytes()
+                            else:
+                                # Text file - read as text
+                                preserved_files[filename] = file_path.read_text(encoding='utf-8')
+                
+                # Remove the full directory
                 shutil.rmtree(worker_root)
+                
+                # Re-create with just the essential files
+                if preserved_files:
+                    worker_root.mkdir(parents=True, exist_ok=True)
+                    for filename, content in preserved_files.items():
+                        file_path = worker_root / filename
+                        if isinstance(content, bytes):
+                            file_path.write_bytes(content)
+                        else:
+                            file_path.write_text(content, encoding='utf-8')
+                    print(f"✓ Preserved {len(preserved_files)} essential files for vibe prompts")
+                    
         except Exception as e:
             print(f"Warning: Failed to cleanup worker directory: {e}", file=sys.stderr)
 

@@ -13,6 +13,10 @@ ruff==0.1.6
 detect-secrets==1.4.0
 gitignore-parser==0.1.9
 
+# Token estimation
+tiktoken==0.5.2
+pygount==1.6.1
+
 # Week 8: Web API and Job Queue
 fastapi==0.104.1
 uvicorn[standard]==0.24.0

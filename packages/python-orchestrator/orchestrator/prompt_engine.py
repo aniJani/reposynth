@@ -57,6 +57,15 @@ class PromptEngine:
         elif self.pack_path.suffix == '.toon':
             self._load_from_toon()
             return
+        elif self.pack_path.is_dir():
+            # Pack is a directory - check if it has essential files directly
+            # or if there's a 'pack' subdirectory
+            if (self.pack_path / "name_registry.json").exists():
+                work_dir = self.pack_path
+            elif (self.pack_path / "pack" / "name_registry.json").exists():
+                work_dir = self.pack_path / "pack"
+            else:
+                work_dir = self.pack_path
         else:
             work_dir = self.pack_path
 
@@ -390,7 +399,7 @@ class PromptEngine:
 
     def _read_source_file(self, file_path: str) -> Optional[str]:
         """
-        Read source code from spans.zip or original repository.
+        Read source code from source_spans.json, spans.zip, or original repository.
 
         Args:
             file_path: Relative file path
@@ -406,13 +415,28 @@ class PromptEngine:
                 if isinstance(data, dict):
                     return data.get('full_source', '')
                 return str(data)
-            
-            # If not found in loaded source files, return placeholder
-            # return f"// Source code for {file_path} not available in this pack.\n"
 
-        # If we loaded from JSON, we might not have source code
-        # if self.is_json:
-        #    return f"// Source code for {file_path} not available in JSON pack mode. Use ZIP pack for full source access.\n"
+        # Try to read from source_spans.json (flat file format after cleanup)
+        if self.work_dir:
+            spans_json_path = self.work_dir / "source_spans.json"
+            if spans_json_path.exists():
+                try:
+                    with open(spans_json_path, 'r', encoding='utf-8') as f:
+                        spans_data = json.load(f)
+                    
+                    # source_spans.json can be a list of dicts or a dict keyed by file path
+                    if isinstance(spans_data, list):
+                        for file_data in spans_data:
+                            if file_data.get('file_path') == file_path:
+                                return file_data.get('source_code', file_data.get('full_source', ''))
+                    elif isinstance(spans_data, dict):
+                        if file_path in spans_data:
+                            data = spans_data[file_path]
+                            if isinstance(data, dict):
+                                return data.get('source_code', data.get('full_source', ''))
+                            return str(data)
+                except Exception as e:
+                    print(f"Error reading source_spans.json: {e}", file=sys.stderr)
 
         # Try to read from spans.zip
         if self.work_dir:
@@ -425,7 +449,7 @@ class PromptEngine:
                             with zf.open(file_path) as f:
                                 return f.read().decode('utf-8', errors='replace')
                         except KeyError:
-                            # Fallback to old format (source_spans.json)
+                            # Fallback to old format (source_spans.json inside zip)
                             try:
                                 spans_json = zf.read('source_spans.json').decode('utf-8')
                                 spans_data = json.loads(spans_json)
@@ -438,7 +462,6 @@ class PromptEngine:
                     pass
 
         # Fallback: try to read from repoBrief or other sources
-        # For now, return placeholder
         # If reading from extracted pack or temp_repo
         if self.work_dir:
             # Try to find the file in temp_repos if we are in a dev environment

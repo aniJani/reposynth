@@ -4,7 +4,7 @@
 import { useStore } from '@/lib/store';
 import { generateVibePrompt, getJobFiles } from '@/lib/api';
 import { useState, useEffect } from 'react';
-import { X, Copy, CheckCircle, PlayCircle, AlertCircle } from 'lucide-react';
+import { X, Copy, CheckCircle, PlayCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface VibeStationDrawerProps {
   isOpen: boolean;
@@ -24,32 +24,33 @@ export function VibeStationDrawer({ isOpen, onClose }: VibeStationDrawerProps) {
     setVibePrompt,
     vibeMetadata,
     setVibeMetadata,
+    vibeFileList,
+    setVibeFileList,
     isGeneratingPrompt,
     setIsGeneratingPrompt,
   } = useStore();
 
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fileList, setFileList] = useState<{ files: string[]; roots: string[] }>({
-    files: [],
-    roots: [],
-  });
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
+  const [bundleSubMode, setBundleSubMode] = useState<'file' | 'search'>('file');
 
   useEffect(() => {
     if (vibeMode === 'bundle' && currentJob?.id) {
-      setIsLoadingFiles(true);
-      getJobFiles(currentJob.id)
-        .then((data) => {
-          setFileList(data);
-          if (data.roots.length > 0 && !vibeEntryPoint) {
-            setVibeEntryPoint(data.roots[0]);
-          }
-        })
-        .catch((err) => console.error('Failed to load files:', err))
-        .finally(() => setIsLoadingFiles(false));
+      if (vibeFileList.files.length === 0) {
+        setIsLoadingFiles(true);
+        getJobFiles(currentJob.id)
+          .then((data) => {
+            setVibeFileList(data);
+            if (data.roots.length > 0 && !vibeEntryPoint) {
+              setVibeEntryPoint(data.roots[0]);
+            }
+          })
+          .catch((err) => console.error('Failed to load files:', err))
+          .finally(() => setIsLoadingFiles(false));
+      }
     }
-  }, [vibeMode, currentJob?.id, setVibeEntryPoint, vibeEntryPoint]);
+  }, [vibeMode, currentJob?.id, setVibeEntryPoint, vibeEntryPoint, vibeFileList.files.length, setVibeFileList]);
 
   const handleGeneratePrompt = async () => {
     if (!currentJob || currentJob.status !== 'completed') {
@@ -62,9 +63,15 @@ export function VibeStationDrawer({ isOpen, onClose }: VibeStationDrawerProps) {
       return;
     }
 
-    if (vibeMode === 'bundle' && !vibeEntryPoint.trim()) {
-      setError('Please enter an entry point file path for Bundle mode');
-      return;
+    if (vibeMode === 'bundle') {
+      if (bundleSubMode === 'file' && !vibeEntryPoint.trim()) {
+        setError('Please select an entry point file for Bundle mode');
+        return;
+      }
+      if (bundleSubMode === 'search' && !vibeQuery.trim()) {
+        setError('Please enter a search query for Bundle mode');
+        return;
+      }
     }
 
     setIsGeneratingPrompt(true);
@@ -75,8 +82,8 @@ export function VibeStationDrawer({ isOpen, onClose }: VibeStationDrawerProps) {
       const response = await generateVibePrompt({
         job_id: currentJob.id,
         mode: vibeMode,
-        query: vibeMode === 'focus' ? vibeQuery : undefined,
-        entry_point: vibeMode === 'bundle' ? vibeEntryPoint : undefined,
+        query: (vibeMode === 'focus' || (vibeMode === 'bundle' && bundleSubMode === 'search')) ? vibeQuery : undefined,
+        entry_point: (vibeMode === 'bundle' && bundleSubMode === 'file') ? vibeEntryPoint : undefined,
         max_files: 5,
         max_depth: 3,
       });
@@ -186,37 +193,92 @@ export function VibeStationDrawer({ isOpen, onClose }: VibeStationDrawerProps) {
             )}
 
             {vibeMode === 'bundle' && (
-              <div>
-                <label
-                  className="text-zinc-400 text-xs font-semibold tracking-wider mb-2 block"
-                  htmlFor="vibe-entrypoint"
-                >
-                  BUNDLE_MODE // ENTRY_POINT
-                </label>
-                <select
-                  id="vibe-entrypoint"
-                  value={vibeEntryPoint}
-                  onChange={(e) => setVibeEntryPoint(e.target.value)}
-                  className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-zinc-300 focus:ring-2 focus:ring-cyber-blue focus:border-cyber-blue transition-colors"
-                >
-                  <option value="">Select a file...</option>
-                  {fileList.roots.length > 0 && (
-                    <optgroup label="Suggested Entry Points">
-                      {fileList.roots.map((f) => (
-                        <option key={f} value={f}>
-                          {f}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  <optgroup label="All Files">
-                    {fileList.files.map((f) => (
-                      <option key={f} value={f}>
-                        {f}
-                      </option>
-                    ))}
-                  </optgroup>
-                </select>
+              <div className="space-y-4">
+                <div className="flex rounded-lg bg-zinc-950 p-1 border border-zinc-800">
+                  <button
+                    onClick={() => setBundleSubMode('file')}
+                    className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                      bundleSubMode === 'file'
+                        ? 'bg-zinc-800 text-white shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    Select File
+                  </button>
+                  <button
+                    onClick={() => setBundleSubMode('search')}
+                    className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                      bundleSubMode === 'search'
+                        ? 'bg-zinc-800 text-white shadow-sm'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    Search Tree
+                  </button>
+                </div>
+
+                {bundleSubMode === 'file' ? (
+                  <div>
+                    <label
+                      className="text-zinc-400 text-xs font-semibold tracking-wider mb-2 block"
+                      htmlFor="vibe-entrypoint"
+                    >
+                      BUNDLE_MODE // ENTRY_POINT
+                    </label>
+                    {isLoadingFiles ? (
+                      <div className="flex items-center gap-2 text-zinc-500 px-4 py-3 border border-zinc-800 rounded-lg bg-zinc-900/50">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Loading file list...
+                      </div>
+                    ) : (
+                      <select
+                        id="vibe-entrypoint"
+                        value={vibeEntryPoint}
+                        onChange={(e) => setVibeEntryPoint(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-zinc-300 focus:ring-2 focus:ring-cyber-blue focus:border-cyber-blue transition-colors"
+                      >
+                        <option value="">Select a file...</option>
+                        {vibeFileList.roots.length > 0 && (
+                          <optgroup label="Suggested Entry Points">
+                            {vibeFileList.roots.map((f) => (
+                              <option key={f} value={f}>
+                                {f}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        <optgroup label="All Files">
+                          {vibeFileList.files.map((f) => (
+                            <option key={f} value={f}>
+                              {f}
+                            </option>
+                          ))}
+                        </optgroup>
+                      </select>
+                    )}
+                    {vibeFileList.files.length === 0 && !isLoadingFiles && (
+                      <p className="text-sm text-amber-600 mt-2">
+                        ⚠️ No files found. The job might have completed without generating a graph.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <label className="text-zinc-400 text-xs font-semibold tracking-wider mb-2 block">
+                      BUNDLE_MODE // SEARCH_QUERY
+                    </label>
+                    <textarea
+                      value={vibeQuery}
+                      onChange={(e) => setVibeQuery(e.target.value)}
+                      placeholder="e.g., Payment Service or Auth Controller"
+                      className="w-full resize-none bg-zinc-950 border border-zinc-800 rounded-lg p-4 text-zinc-300 placeholder:text-zinc-600 focus:ring-2 focus:ring-cyber-blue focus:border-cyber-blue transition-colors font-mono text-sm"
+                      rows={3}
+                    />
+                  <p className="text-xs text-zinc-500 mt-2">
+                    We&apos;ll find the most relevant file and build the tree from there
+                  </p>
+                  </div>
+                )}
               </div>
             )}
 

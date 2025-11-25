@@ -73,9 +73,19 @@ app = FastAPI(
 
 # Mount worker_packs directory to serve generated files locally
 # This allows downloading packs without S3/MinIO if needed
-worker_packs_dir = Path("/app/worker_packs")
+if os.environ.get("WORKER_PACKS_DIR"):
+    worker_packs_dir = Path(os.environ.get("WORKER_PACKS_DIR"))
+elif Path("/app/worker_packs").exists() or os.environ.get("DOCKER_ENV"):
+    worker_packs_dir = Path("/app/worker_packs")
+else:
+    # Local development fallback (relative to project root)
+    # api.py is in packages/python-orchestrator/orchestrator/
+    # Project root is 3 levels up
+    project_root = Path(__file__).parent.parent.parent.parent
+    worker_packs_dir = project_root / "worker_packs"
+
 worker_packs_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/packs", StaticFiles(directory="/app/worker_packs"), name="packs")
+app.mount("/packs", StaticFiles(directory=str(worker_packs_dir)), name="packs")
 
 # Enable CORS for future web UI
 app.add_middleware(
@@ -608,52 +618,47 @@ async def get_job_files(job_id: str):
     """
     # Locate pack (adjust path if using S3 vs local)
     # Try local first
-    pack_path = Path(f"/app/worker_packs/{job_id}")
+    pack_path = worker_packs_dir / job_id
     
-    # Check for unzipped pack folder first
-    if (pack_path / "pack").exists():
-        work_dir = pack_path / "pack"
-    # Check for zip file
-    elif (pack_path / f"reposynth_{job_id}.zip").exists():
-        # We can't easily list files inside zip without extracting or using zipfile
-        # For now, let's assume if it's zipped, we might need to peek inside
-        # But simpler is to look for import_graph.json if it was extracted
-        # If not extracted, we might fail or need to implement zip reading here
-        # Let's try to find import_graph.json in the pack directory if it exists
-        work_dir = pack_path
-    else:
-        # Fallback to just checking if we can find import_graph.json anywhere
-        work_dir = pack_path
-
-    graph_path = work_dir / "import_graph.json"
+    # Check multiple locations for import_graph.json
+    graph_candidates = [
+        pack_path / "import_graph.json",  # Preserved directly in job folder
+        pack_path / "pack" / "import_graph.json",  # Unzipped pack folder
+    ]
     
-    # If not found locally, we might need to check S3 or fail
-    # For this implementation, we assume local availability or extracted pack
-    if not graph_path.exists():
-        # Try looking inside the zip if it exists
-        zip_files = list(pack_path.glob("*.zip"))
+    graph_path = None
+    for candidate in graph_candidates:
+        if candidate.exists():
+            graph_path = candidate
+            break
+    
+    # If not found locally, try to read from a zip file
+    if not graph_path or not graph_path.exists():
+        zip_files = list(pack_path.glob("*.zip")) if pack_path.exists() else []
         if zip_files:
             import zipfile
             try:
                 with zipfile.ZipFile(zip_files[0], 'r') as zf:
-                    if "import_graph.json" in zf.namelist():
-                        graph_data = json.loads(zf.read("import_graph.json"))
-                        
-                        if "edges" in graph_data:
-                             files = set()
-                             for edge in graph_data["edges"]:
-                                 files.add(edge["source"])
-                                 files.add(edge["target"])
-                             file_list = sorted(list(files))
-                        else:
-                             file_list = sorted(list(graph_data.keys()))
-                             
-                        return {
-                            "files": file_list,
-                            "roots": suggest_entry_points(graph_data)
-                        }
-            except Exception:
-                pass
+                    # Try different paths inside the zip
+                    for zip_internal_path in ["import_graph.json", "pack/import_graph.json"]:
+                        if zip_internal_path in zf.namelist():
+                            graph_data = json.loads(zf.read(zip_internal_path))
+                            
+                            if "edges" in graph_data:
+                                 files = set()
+                                 for edge in graph_data["edges"]:
+                                     files.add(edge["source"])
+                                     files.add(edge["target"])
+                                 file_list = sorted(list(files))
+                            else:
+                                 file_list = sorted(list(graph_data.keys()))
+                                 
+                            return {
+                                "files": file_list,
+                                "roots": suggest_entry_points(graph_data)
+                            }
+            except Exception as e:
+                print(f"Error reading zip file: {e}", file=sys.stderr)
         
         return {"files": [], "roots": []}
         
@@ -734,25 +739,32 @@ async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session 
 
     try:
         # Check if the pack exists locally (shared volume)
-        local_job_dir = Path("/app/worker_packs") / request.job_id
+        local_job_dir = worker_packs_dir / request.job_id
         local_pack_path = None
         
         if local_job_dir.exists():
-            # Find the pack file in the job directory
-            # Priority: TOON > ZIP > JSON
-            toons = list(local_job_dir.glob("*.toon"))
-            zips = list(local_job_dir.glob("*.zip"))
-            jsons = list(local_job_dir.glob("*.json"))
-            
-            if toons:
-                local_pack_path = toons[0]
-                print(f"Found local pack (toon): {local_pack_path}")
-            elif zips:
-                local_pack_path = zips[0]
-                print(f"Found local pack (zip): {local_pack_path}")
-            elif jsons:
-                local_pack_path = jsons[0]
-                print(f"Found local pack (json): {local_pack_path}")
+            # Check if essential pack files exist directly in the job directory
+            # (This is the new format after cleanup preserves essential files)
+            if (local_job_dir / "name_registry.json").exists():
+                # Use the job directory itself as the pack path
+                local_pack_path = local_job_dir
+                print(f"Found local pack (directory with essential files): {local_pack_path}")
+            else:
+                # Fallback to finding pack files
+                # Priority: TOON > ZIP > JSON
+                toons = list(local_job_dir.glob("*.toon"))
+                zips = list(local_job_dir.glob("*.zip"))
+                jsons = list(local_job_dir.glob("pack*.json"))  # Only match pack.json, not import_graph.json
+                
+                if toons:
+                    local_pack_path = toons[0]
+                    print(f"Found local pack (toon): {local_pack_path}")
+                elif zips:
+                    local_pack_path = zips[0]
+                    print(f"Found local pack (zip): {local_pack_path}")
+                elif jsons:
+                    local_pack_path = jsons[0]
+                    print(f"Found local pack (json): {local_pack_path}")
 
         if local_pack_path and local_pack_path.exists():
             # Use local file directly

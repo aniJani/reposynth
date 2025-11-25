@@ -1,0 +1,1132 @@
+{
+  "vitest.config.ts": [],
+  "src/array.ts": [
+    {
+      "name": "InnerType",
+      "kind": "type_alias_declaration",
+      "scope": "internal",
+      "start_byte": 652,
+      "end_byte": 709
+    },
+    {
+      "name": "RejectorFn",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 718,
+      "end_byte": 807
+    },
+    {
+      "name": "ArraySchemaSpec",
+      "kind": "interface_declaration",
+      "scope": "internal",
+      "start_byte": 972,
+      "end_byte": 1085
+    },
+    {
+      "name": "ArraySchema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 7556,
+      "end_byte": 8554
+    }
+  ],
+  "src/boolean.ts": [],
+  "src/Condition.ts": [
+    {
+      "name": "ConditionBuilder",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 125,
+      "end_byte": 255
+    },
+    {
+      "name": "ConditionConfig",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 264,
+      "end_byte": 441
+    },
+    {
+      "name": "ResolveOptions",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 450,
+      "end_byte": 545
+    }
+  ],
+  "src/date.ts": [
+    {
+      "name": "invalidDate",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 345,
+      "end_byte": 371
+    },
+    {
+      "name": "isDate",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 378,
+      "end_byte": 471
+    },
+    {
+      "name": "DateSchema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 2808,
+      "end_byte": 3900
+    }
+  ],
+  "src/globals.d.ts": [],
+  "src/index.ts": [
+    {
+      "name": "AnyObjectSchema",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 2117,
+      "end_byte": 2173
+    },
+    {
+      "name": "CastOptions",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 2182,
+      "end_byte": 2244
+    }
+  ],
+  "src/Lazy.ts": [
+    {
+      "name": "LazyBuilder",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 578,
+      "end_byte": 710
+    },
+    {
+      "name": "LazySpec",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1146,
+      "end_byte": 1234
+    }
+  ],
+  "src/locale.ts": [
+    {
+      "name": "MixedLocale",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 136,
+      "end_byte": 342
+    },
+    {
+      "name": "StringLocale",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 351,
+      "end_byte": 806
+    },
+    {
+      "name": "NumberLocale",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 815,
+      "end_byte": 1090
+    },
+    {
+      "name": "DateLocale",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1099,
+      "end_byte": 1205
+    },
+    {
+      "name": "ObjectLocale",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1214,
+      "end_byte": 1331
+    },
+    {
+      "name": "ArrayLocale",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1340,
+      "end_byte": 1473
+    },
+    {
+      "name": "TupleLocale",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1482,
+      "end_byte": 1528
+    },
+    {
+      "name": "BooleanLocale",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1537,
+      "end_byte": 1585
+    },
+    {
+      "name": "LocaleObject",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1594,
+      "end_byte": 1812
+    },
+    {
+      "name": "mixed",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 1825,
+      "end_byte": 2684
+    },
+    {
+      "name": "string",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 2698,
+      "end_byte": 3488
+    },
+    {
+      "name": "number",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 3502,
+      "end_byte": 3891
+    },
+    {
+      "name": "date",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 3905,
+      "end_byte": 4042
+    },
+    {
+      "name": "boolean",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 4056,
+      "end_byte": 4129
+    },
+    {
+      "name": "object",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 4143,
+      "end_byte": 4312
+    },
+    {
+      "name": "array",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 4326,
+      "end_byte": 4532
+    },
+    {
+      "name": "tuple",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 4546,
+      "end_byte": 5212
+    }
+  ],
+  "src/mixed.ts": [
+    {
+      "name": "returnsTrue",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 215,
+      "end_byte": 244
+    },
+    {
+      "name": "AnyPresentValue",
+      "kind": "type_alias_declaration",
+      "scope": "internal",
+      "start_byte": 247,
+      "end_byte": 273
+    },
+    {
+      "name": "TypeGuard",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 282,
+      "end_byte": 350
+    },
+    {
+      "name": "MixedOptions",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 358,
+      "end_byte": 436
+    },
+    {
+      "name": "MixedSchema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1090,
+      "end_byte": 2503
+    }
+  ],
+  "src/number.ts": [
+    {
+      "name": "isNaN",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 356,
+      "end_byte": 406
+    },
+    {
+      "name": "NumberSchema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 4002,
+      "end_byte": 5356
+    }
+  ],
+  "src/object.ts": [
+    {
+      "name": "MakeKeysOptional",
+      "kind": "type_alias_declaration",
+      "scope": "internal",
+      "start_byte": 990,
+      "end_byte": 1061
+    },
+    {
+      "name": "Shape",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1070,
+      "end_byte": 1182
+    },
+    {
+      "name": "ObjectSchemaSpec",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1191,
+      "end_byte": 1260
+    },
+    {
+      "name": "deepHas",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 1935,
+      "end_byte": 2170
+    },
+    {
+      "name": "isObject",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 2177,
+      "end_byte": 2298
+    },
+    {
+      "name": "defaultSort",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 2486,
+      "end_byte": 2518
+    },
+    {
+      "name": "ObjectSchema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 2787,
+      "end_byte": 3962
+    }
+  ],
+  "src/Reference.ts": [
+    {
+      "name": "prefixes",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 101,
+      "end_byte": 154
+    },
+    {
+      "name": "ReferenceOptions",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 164,
+      "end_byte": 246
+    }
+  ],
+  "src/schema.ts": [
+    {
+      "name": "SchemaSpec",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1043,
+      "end_byte": 1349
+    },
+    {
+      "name": "CustomSchemaMetadata",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1358,
+      "end_byte": 1391
+    },
+    {
+      "name": "SchemaMetadata",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1529,
+      "end_byte": 1646
+    },
+    {
+      "name": "SchemaOptions",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1655,
+      "end_byte": 1807
+    },
+    {
+      "name": "AnySchema",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1816,
+      "end_byte": 1923
+    },
+    {
+      "name": "CastOptions",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1932,
+      "end_byte": 2182
+    },
+    {
+      "name": "CastOptionalityOptions",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 2191,
+      "end_byte": 2675
+    },
+    {
+      "name": "RunTest",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 2684,
+      "end_byte": 2778
+    },
+    {
+      "name": "TestRunOptions",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 2787,
+      "end_byte": 2926
+    },
+    {
+      "name": "SchemaRefDescription",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 2935,
+      "end_byte": 2999
+    },
+    {
+      "name": "SchemaInnerTypeDescription",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 3008,
+      "end_byte": 3139
+    },
+    {
+      "name": "SchemaObjectDescription",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 3148,
+      "end_byte": 3261
+    },
+    {
+      "name": "SchemaLazyDescription",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 3270,
+      "end_byte": 3364
+    },
+    {
+      "name": "SchemaFieldDescription",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 3373,
+      "end_byte": 3535
+    },
+    {
+      "name": "SchemaDescription",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 3544,
+      "end_byte": 3808
+    },
+    {
+      "name": "Schema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 26299,
+      "end_byte": 26831
+    }
+  ],
+  "src/setLocale.ts": [],
+  "src/standardSchema.ts": [
+    {
+      "name": "StandardSchema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 230,
+      "end_byte": 351
+    },
+    {
+      "name": "StandardSchemaProps",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 360,
+      "end_byte": 645
+    },
+    {
+      "name": "StandardResult",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 654,
+      "end_byte": 744
+    },
+    {
+      "name": "StandardSuccessResult",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 753,
+      "end_byte": 853
+    },
+    {
+      "name": "StandardFailureResult",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 862,
+      "end_byte": 946
+    },
+    {
+      "name": "StandardIssue",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 955,
+      "end_byte": 1090
+    },
+    {
+      "name": "StandardPathSegment",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1099,
+      "end_byte": 1161
+    },
+    {
+      "name": "StandardTypes",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1170,
+      "end_byte": 1264
+    }
+  ],
+  "src/string.ts": [
+    {
+      "name": "rEmail",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 555,
+      "end_byte": 731
+    },
+    {
+      "name": "rUrl",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 738,
+      "end_byte": 1969
+    },
+    {
+      "name": "rUUID",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 2004,
+      "end_byte": 2131
+    },
+    {
+      "name": "yearMonthDay",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 2138,
+      "end_byte": 2176
+    },
+    {
+      "name": "hourMinuteSecond",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 2182,
+      "end_byte": 2223
+    },
+    {
+      "name": "zOrOffset",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 2229,
+      "end_byte": 2270
+    },
+    {
+      "name": "rIsoDateTime",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 2276,
+      "end_byte": 2368
+    },
+    {
+      "name": "isTrimmed",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 2375,
+      "end_byte": 2456
+    },
+    {
+      "name": "MatchOptions",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 2466,
+      "end_byte": 2578
+    },
+    {
+      "name": "DateTimeOptions",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 2587,
+      "end_byte": 2929
+    },
+    {
+      "name": "objStringTag",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 2935,
+      "end_byte": 2963
+    },
+    {
+      "name": "StringSchema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 9319,
+      "end_byte": 10961
+    }
+  ],
+  "src/tuple.ts": [
+    {
+      "name": "AnyTuple",
+      "kind": "type_alias_declaration",
+      "scope": "internal",
+      "start_byte": 476,
+      "end_byte": 516
+    },
+    {
+      "name": "TupleSchema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 678,
+      "end_byte": 1816
+    },
+    {
+      "name": "TupleSchemaSpec",
+      "kind": "interface_declaration",
+      "scope": "internal",
+      "start_byte": 1818,
+      "end_byte": 1967
+    }
+  ],
+  "src/types.ts": [
+    {
+      "name": "ISchema",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 374,
+      "end_byte": 871
+    },
+    {
+      "name": "DefaultThunk",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 880,
+      "end_byte": 953
+    },
+    {
+      "name": "InferType",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 962,
+      "end_byte": 1026
+    },
+    {
+      "name": "TransformFunction",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1035,
+      "end_byte": 1188
+    },
+    {
+      "name": "Ancester",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1197,
+      "end_byte": 1277
+    },
+    {
+      "name": "ValidateOptions",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 1285,
+      "end_byte": 2082
+    },
+    {
+      "name": "InternalOptions",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 2091,
+      "end_byte": 2337
+    },
+    {
+      "name": "MessageParams",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 2346,
+      "end_byte": 2533
+    },
+    {
+      "name": "Message",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 2542,
+      "end_byte": 2695
+    },
+    {
+      "name": "ExtraParams",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 2704,
+      "end_byte": 2747
+    },
+    {
+      "name": "AnyMessageParams",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 2756,
+      "end_byte": 2808
+    },
+    {
+      "name": "NestedTestConfig",
+      "kind": "interface_declaration",
+      "scope": "export",
+      "start_byte": 2817,
+      "end_byte": 2986
+    }
+  ],
+  "src/ValidationError.ts": [
+    {
+      "name": "strReg",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 87,
+      "end_byte": 116
+    },
+    {
+      "name": "Params",
+      "kind": "type_alias_declaration",
+      "scope": "internal",
+      "start_byte": 119,
+      "end_byte": 157
+    }
+  ],
+  "src/util/cloneDeep.ts": [],
+  "src/util/createValidation.ts": [
+    {
+      "name": "PanicCallback",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 357,
+      "end_byte": 399
+    },
+    {
+      "name": "NextCallback",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 408,
+      "end_byte": 491
+    },
+    {
+      "name": "CreateErrorOptions",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 500,
+      "end_byte": 645
+    },
+    {
+      "name": "TestContext",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 654,
+      "end_byte": 973
+    },
+    {
+      "name": "TestFunction",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 982,
+      "end_byte": 1184
+    },
+    {
+      "name": "TestOptions",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1193,
+      "end_byte": 1355
+    },
+    {
+      "name": "TestConfig",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1364,
+      "end_byte": 1573
+    },
+    {
+      "name": "Test",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1582,
+      "end_byte": 1705
+    }
+  ],
+  "src/util/isAbsent.ts": [
+    {
+      "name": "isAbsent",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 6,
+      "end_byte": 73
+    }
+  ],
+  "src/util/isSchema.ts": [
+    {
+      "name": "isSchema",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 48,
+      "end_byte": 120
+    }
+  ],
+  "src/util/objectTypes.ts": [
+    {
+      "name": "ObjectShape",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 141,
+      "end_byte": 202
+    },
+    {
+      "name": "AnyObject",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 211,
+      "end_byte": 249
+    },
+    {
+      "name": "ResolveStrip",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 258,
+      "end_byte": 439
+    },
+    {
+      "name": "TypeFromShape",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 448,
+      "end_byte": 630
+    },
+    {
+      "name": "DefaultFromShape",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 639,
+      "end_byte": 791
+    },
+    {
+      "name": "MergeObjectTypes",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 800,
+      "end_byte": 952
+    },
+    {
+      "name": "ConcatObjectTypes",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 961,
+      "end_byte": 1165
+    },
+    {
+      "name": "PartialDeep",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1174,
+      "end_byte": 1500
+    },
+    {
+      "name": "OptionalKeys",
+      "kind": "type_alias_declaration",
+      "scope": "internal",
+      "start_byte": 1502,
+      "end_byte": 1603
+    },
+    {
+      "name": "RequiredKeys",
+      "kind": "type_alias_declaration",
+      "scope": "internal",
+      "start_byte": 1605,
+      "end_byte": 1677
+    },
+    {
+      "name": "MakePartial",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1686,
+      "end_byte": 1863
+    }
+  ],
+  "src/util/parseIsoDate.ts": [
+    {
+      "name": "isoReg",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 464,
+      "end_byte": 615
+    }
+  ],
+  "src/util/parseJson.ts": [
+    {
+      "name": "parseJson",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 69,
+      "end_byte": 347
+    }
+  ],
+  "src/util/printValue.ts": [
+    {
+      "name": "toString",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 6,
+      "end_byte": 42
+    },
+    {
+      "name": "errorToString",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 50,
+      "end_byte": 90
+    },
+    {
+      "name": "regExpToString",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 98,
+      "end_byte": 140
+    },
+    {
+      "name": "symbolToString",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 148,
+      "end_byte": 235
+    },
+    {
+      "name": "SYMBOL_REGEXP",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 244,
+      "end_byte": 282
+    }
+  ],
+  "src/util/reach.ts": [],
+  "src/util/ReferenceSet.ts": [],
+  "src/util/sortByKeyOrder.ts": [],
+  "src/util/sortFields.ts": [],
+  "src/util/toArray.ts": [],
+  "src/util/types.ts": [
+    {
+      "name": "IfAny",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 7,
+      "end_byte": 53
+    },
+    {
+      "name": "Maybe",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 62,
+      "end_byte": 99
+    },
+    {
+      "name": "Preserve",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 108,
+      "end_byte": 154
+    },
+    {
+      "name": "Optionals",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 163,
+      "end_byte": 212
+    },
+    {
+      "name": "Defined",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 221,
+      "end_byte": 271
+    },
+    {
+      "name": "NotNull",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 280,
+      "end_byte": 325
+    },
+    {
+      "name": "_",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 421,
+      "end_byte": 477
+    },
+    {
+      "name": "Flags",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 510,
+      "end_byte": 538
+    },
+    {
+      "name": "SetFlag",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 547,
+      "end_byte": 619
+    },
+    {
+      "name": "UnsetFlag",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 628,
+      "end_byte": 744
+    },
+    {
+      "name": "ToggleDefault",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 753,
+      "end_byte": 879
+    },
+    {
+      "name": "ResolveFlags",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 888,
+      "end_byte": 1022
+    },
+    {
+      "name": "Concat",
+      "kind": "type_alias_declaration",
+      "scope": "export",
+      "start_byte": 1031,
+      "end_byte": 1160
+    }
+  ],
+  "test/array.ts": [],
+  "test/bool.ts": [],
+  "test/date.ts": [],
+  "test/helpers.ts": [
+    {
+      "name": "castAndShouldFail",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 148,
+      "end_byte": 269
+    },
+    {
+      "name": "Options",
+      "kind": "type_alias_declaration",
+      "scope": "internal",
+      "start_byte": 272,
+      "end_byte": 327
+    },
+    {
+      "name": "castAll",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 339,
+      "end_byte": 752
+    },
+    {
+      "name": "validateAll",
+      "kind": "lexical_declaration",
+      "scope": "export",
+      "start_byte": 766,
+      "end_byte": 1409
+    }
+  ],
+  "test/lazy.ts": [],
+  "test/mixed.ts": [
+    {
+      "name": "noop",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 347,
+      "end_byte": 362
+    }
+  ],
+  "test/number.ts": [],
+  "test/object.ts": [],
+  "test/setLocale.ts": [],
+  "test/standardSchema.ts": [],
+  "test/string.ts": [],
+  "test/tuple.ts": [],
+  "test/ValidationError.ts": [],
+  "test/types/types.ts": [],
+  "test/util/parseIsoDate.ts": [
+    {
+      "name": "sixHours",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 409,
+      "end_byte": 438
+    },
+    {
+      "name": "sixHoursThirty",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 446,
+      "end_byte": 488
+    },
+    {
+      "name": "epochLocalTime",
+      "kind": "lexical_declaration",
+      "scope": "global",
+      "start_byte": 496,
+      "end_byte": 555
+    }
+  ],
+  ".babelrc.js": [],
+  "rollup.config.js": [
+    {
+      "name": "base",
+      "scope": "global",
+      "start_byte": 182,
+      "end_byte": 457
+    }
+  ],
+  "test/yup.js": [],
+  "test/types/.eslintrc.js": []
+}

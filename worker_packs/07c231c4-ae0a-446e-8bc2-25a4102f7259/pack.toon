@@ -1,0 +1,5369 @@
+# CODEBASE STRUCTURE (TOON v2)
+This is a structural map of the codebase.
+Use this to understand architecture, dependencies, and symbol locations.
+
+## Symbol Registry
+symbols[318]{name,kind,file,pub,inherits}:
+  InnerType,type,src/array.ts,0,
+  RejectorFn,type,src/array.ts,1,
+  create,func,src/array.ts,1,
+  ArraySchemaSpec,iface,src/array.ts,0,
+  Schema,class,src/array.ts,1,
+  type,meth,src/array.ts,0,
+  v,meth,src/array.ts,0,
+  _value,meth,src/array.ts,0,
+  spec,meth,src/array.ts,0,
+  schema,meth,src/array.ts,0,
+  length,meth,src/array.ts,0,
+  value,meth,src/array.ts,0,
+  min,meth,src/array.ts,0,
+  max,meth,src/array.ts,0,
+  rejector,meth,src/array.ts,0,
+  options,meth,src/array.ts,0,
+  ArraySchema,iface,src/array.ts,1,
+  create,func,src/boolean.ts,1,
+  Schema,class,src/boolean.ts,1,
+  v,meth,src/boolean.ts,0,
+  message,meth,src/boolean.ts,0,
+  value,meth,src/boolean.ts,0,
+  def,meth,src/boolean.ts,0,
+  msg,meth,src/boolean.ts,0,
+  ConditionBuilder,type,src/Condition.ts,1,
+  ConditionConfig,type,src/Condition.ts,1,
+  ResolveOptions,type,src/Condition.ts,1,
+  refs,meth,src/Condition.ts,0,
+  base,meth,src/Condition.ts,0,
+  invalidDate,const,src/date.ts,0,
+  isDate,const,src/date.ts,0,
+  create,func,src/date.ts,1,
+  Schema,class,src/date.ts,1,
+  v,meth,src/date.ts,0,
+  ref,meth,src/date.ts,0,
+  min,meth,src/date.ts,0,
+  value,meth,src/date.ts,0,
+  max,meth,src/date.ts,0,
+  DateSchema,iface,src/date.ts,1,
+  addMethod,func,src/index.ts,1,
+  AnyObjectSchema,type,src/index.ts,1,
+  CastOptions,type,src/index.ts,1,
+  LazyBuilder,type,src/Lazy.ts,1,
+  create,func,src/Lazy.ts,1,
+  catchValidationError,func,src/Lazy.ts,0,
+  LazySpec,iface,src/Lazy.ts,1,
+  builder,meth,src/Lazy.ts,0,
+  spec,meth,src/Lazy.ts,0,
+  optional,meth,src/Lazy.ts,0,
+  options,meth,src/Lazy.ts,0,
+  value,meth,src/Lazy.ts,0,
+  config,meth,src/Lazy.ts,0,
+  path,meth,src/Lazy.ts,0,
+  args,meth,src/Lazy.ts,0,
+  MixedLocale,iface,src/locale.ts,1,
+  StringLocale,iface,src/locale.ts,1,
+  NumberLocale,iface,src/locale.ts,1,
+  DateLocale,iface,src/locale.ts,1,
+  ObjectLocale,iface,src/locale.ts,1,
+  ArrayLocale,iface,src/locale.ts,1,
+  TupleLocale,iface,src/locale.ts,1,
+  BooleanLocale,iface,src/locale.ts,1,
+  LocaleObject,iface,src/locale.ts,1,
+  mixed,const,src/locale.ts,1,
+  string,const,src/locale.ts,1,
+  number,const,src/locale.ts,1,
+  date,const,src/locale.ts,1,
+  boolean,const,src/locale.ts,1,
+  object,const,src/locale.ts,1,
+  array,const,src/locale.ts,1,
+  tuple,const,src/locale.ts,1,
+  returnsTrue,const,src/mixed.ts,0,
+  AnyPresentValue,type,src/mixed.ts,0,
+  TypeGuard,type,src/mixed.ts,1,
+  MixedOptions,iface,src/mixed.ts,1,
+  create,func,src/mixed.ts,1,
+  Schema,class,src/mixed.ts,1,
+  spec,meth,src/mixed.ts,0,
+  MixedSchema,iface,src/mixed.ts,1,
+  isNaN,const,src/number.ts,0,
+  create,func,src/number.ts,1,
+  Schema,class,src/number.ts,1,
+  value,meth,src/number.ts,0,
+  min,meth,src/number.ts,0,
+  max,meth,src/number.ts,0,
+  less,meth,src/number.ts,0,
+  more,meth,src/number.ts,0,
+  msg,meth,src/number.ts,0,
+  message,meth,src/number.ts,0,
+  method,meth,src/number.ts,0,
+  NumberSchema,iface,src/number.ts,1,
+  MakeKeysOptional,type,src/object.ts,0,
+  Shape,type,src/object.ts,1,
+  ObjectSchemaSpec,type,src/object.ts,1,
+  deepPartial,func,src/object.ts,0,
+  deepHas,const,src/object.ts,0,
+  isObject,const,src/object.ts,0,
+  unknown,func,src/object.ts,0,
+  defaultSort,const,src/object.ts,0,
+  create,func,src/object.ts,1,
+  TIn,type,src/object.ts,0,
+  TDefault,type,src/object.ts,0,
+  ObjectSchema,iface,src/object.ts,1,
+  Schema,class,src/object.ts,1,
+  spec,meth,src/object.ts,0,
+  value,meth,src/object.ts,0,
+  _value,meth,src/object.ts,0,
+  schema,meth,src/object.ts,0,
+  options,meth,src/object.ts,0,
+  shape,meth,src/object.ts,0,
+  additions,meth,src/object.ts,0,
+  UIn,type,src/object.ts,0,
+  UDefault,type,src/object.ts,0,
+  keys,meth,src/object.ts,0,
+  from,meth,src/object.ts,0,
+  message,meth,src/object.ts,0,
+  noAllow,meth,src/object.ts,0,
+  allow,meth,src/object.ts,0,
+  fn,meth,src/object.ts,0,
+  prefixes,const,src/Reference.ts,0,
+  ReferenceOptions,type,src/Reference.ts,1,
+  create,func,src/Reference.ts,1,
+  key,meth,src/Reference.ts,1,
+  value,meth,src/Reference.ts,1,
+  SchemaSpec,type,src/schema.ts,1,
+  CustomSchemaMetadata,iface,src/schema.ts,1,
+  SchemaMetadata,type,src/schema.ts,1,
+  SchemaOptions,type,src/schema.ts,1,
+  AnySchema,type,src/schema.ts,1,
+  CastOptions,iface,src/schema.ts,1,
+  CastOptionalityOptions,iface,src/schema.ts,1,
+  RunTest,type,src/schema.ts,1,
+  TestRunOptions,type,src/schema.ts,1,
+  SchemaRefDescription,iface,src/schema.ts,1,
+  SchemaInnerTypeDescription,iface,src/schema.ts,1,
+  SchemaObjectDescription,iface,src/schema.ts,1,
+  SchemaLazyDescription,iface,src/schema.ts,1,
+  SchemaFieldDescription,type,src/schema.ts,1,
+  SchemaDescription,iface,src/schema.ts,1,
+  options,meth,src/schema.ts,1,
+  spec,meth,src/schema.ts,1,
+  label,meth,src/schema.ts,1,
+  args,meth,src/schema.ts,1,
+  fn,meth,src/schema.ts,1,
+  schema,meth,src/schema.ts,1,
+  v,meth,src/schema.ts,1,
+  value,meth,src/schema.ts,1,
+  rawValue,meth,src/schema.ts,1,
+  _value,meth,src/schema.ts,1,
+  runOptions,meth,src/schema.ts,1,
+  def,meth,src/schema.ts,1,
+  isStrict,meth,src/schema.ts,1,
+  nullable,meth,src/schema.ts,1,
+  optional,meth,src/schema.ts,1,
+  message,meth,src/schema.ts,1,
+  keys,meth,src/schema.ts,1,
+  enums,meth,src/schema.ts,1,
+  strip,meth,src/schema.ts,1,
+  Schema,iface,src/schema.ts,1,
+  setLocale,func,src/setLocale.ts,1,
+  StandardSchema,iface,src/standardSchema.ts,1,
+  StandardSchemaProps,iface,src/standardSchema.ts,1,
+  StandardResult,type,src/standardSchema.ts,1,
+  StandardSuccessResult,iface,src/standardSchema.ts,1,
+  StandardFailureResult,iface,src/standardSchema.ts,1,
+  StandardIssue,iface,src/standardSchema.ts,1,
+  StandardPathSegment,iface,src/standardSchema.ts,1,
+  StandardTypes,iface,src/standardSchema.ts,1,
+  createStandardPath,func,src/standardSchema.ts,1,
+  createStandardIssues,func,src/standardSchema.ts,1,
+  issuesFromValidationError,func,src/standardSchema.ts,1,
+  rEmail,const,src/string.ts,0,
+  rUrl,const,src/string.ts,0,
+  rUUID,const,src/string.ts,0,
+  yearMonthDay,const,src/string.ts,0,
+  hourMinuteSecond,const,src/string.ts,0,
+  zOrOffset,const,src/string.ts,0,
+  rIsoDateTime,const,src/string.ts,0,
+  isTrimmed,const,src/string.ts,0,
+  MatchOptions,type,src/string.ts,1,
+  DateTimeOptions,type,src/string.ts,1,
+  objStringTag,const,src/string.ts,0,
+  create,func,src/string.ts,1,
+  Schema,class,src/string.ts,1,
+  value,meth,src/string.ts,0,
+  message,meth,src/string.ts,0,
+  length,meth,src/string.ts,0,
+  min,meth,src/string.ts,0,
+  max,meth,src/string.ts,0,
+  regex,meth,src/string.ts,0,
+  options,meth,src/string.ts,0,
+  StringSchema,iface,src/string.ts,1,
+  AnyTuple,type,src/tuple.ts,0,
+  create,func,src/tuple.ts,1,
+  TupleSchema,iface,src/tuple.ts,1,
+  TupleSchemaSpec,iface,src/tuple.ts,0,
+  Schema,class,src/tuple.ts,1,
+  schemas,meth,src/tuple.ts,0,
+  v,meth,src/tuple.ts,0,
+  inputValue,meth,src/tuple.ts,0,
+  _value,meth,src/tuple.ts,0,
+  options,meth,src/tuple.ts,0,
+  ISchema,iface,src/types.ts,1,
+  DefaultThunk,type,src/types.ts,1,
+  InferType,type,src/types.ts,1,
+  TransformFunction,type,src/types.ts,1,
+  Ancester,iface,src/types.ts,1,
+  ValidateOptions,iface,src/types.ts,1,
+  InternalOptions,iface,src/types.ts,1,
+  MessageParams,iface,src/types.ts,1,
+  Message,type,src/types.ts,1,
+  ExtraParams,type,src/types.ts,1,
+  AnyMessageParams,type,src/types.ts,1,
+  NestedTestConfig,iface,src/types.ts,1,
+  strReg,const,src/ValidationError.ts,0,
+  Params,type,src/ValidationError.ts,0,
+  errorOrErrors,meth,src/ValidationError.ts,0,
+  Error,class,src/ValidationError.ts,1,
+  message,meth,src/ValidationError.ts,0,
+  err,meth,src/ValidationError.ts,0,
+  Symbol,meth,src/ValidationError.ts,0,
+  clone,func,src/util/cloneDeep.ts,0,
+  PanicCallback,type,src/util/createValidation.ts,1,
+  NextCallback,type,src/util/createValidation.ts,1,
+  CreateErrorOptions,type,src/util/createValidation.ts,1,
+  TestContext,type,src/util/createValidation.ts,1,
+  TestFunction,type,src/util/createValidation.ts,1,
+  TestOptions,type,src/util/createValidation.ts,1,
+  TestConfig,type,src/util/createValidation.ts,1,
+  Test,type,src/util/createValidation.ts,1,
+  createValidation,func,src/util/createValidation.ts,1,
+  validate,func,src/util/createValidation.ts,0,
+  createError,func,src/util/createValidation.ts,0,
+  item,meth,src/util/createValidation.ts,0,
+  resolveParams,func,src/util/createValidation.ts,1,
+  Keys,type,src/util/createValidation.ts,0,
+  resolveMaybeRef,func,src/util/createValidation.ts,0,
+  isAbsent,const,src/util/isAbsent.ts,0,
+  isSchema,const,src/util/isSchema.ts,0,
+  ObjectShape,type,src/util/objectTypes.ts,1,
+  AnyObject,type,src/util/objectTypes.ts,1,
+  ResolveStrip,type,src/util/objectTypes.ts,1,
+  TypeFromShape,type,src/util/objectTypes.ts,1,
+  DefaultFromShape,type,src/util/objectTypes.ts,1,
+  MergeObjectTypes,type,src/util/objectTypes.ts,1,
+  ConcatObjectTypes,type,src/util/objectTypes.ts,1,
+  PartialDeep,type,src/util/objectTypes.ts,1,
+  OptionalKeys,type,src/util/objectTypes.ts,0,
+  RequiredKeys,type,src/util/objectTypes.ts,0,
+  MakePartial,type,src/util/objectTypes.ts,1,
+  isoReg,const,src/util/parseIsoDate.ts,0,
+  parseIsoDate,func,src/util/parseIsoDate.ts,1,
+  parseDateStruct,func,src/util/parseIsoDate.ts,1,
+  toNumber,func,src/util/parseIsoDate.ts,0,
+  parseJson,const,src/util/parseJson.ts,0,
+  toString,const,src/util/printValue.ts,0,
+  errorToString,const,src/util/printValue.ts,0,
+  regExpToString,const,src/util/printValue.ts,0,
+  symbolToString,const,src/util/printValue.ts,0,
+  SYMBOL_REGEXP,const,src/util/printValue.ts,0,
+  printNumber,func,src/util/printValue.ts,0,
+  printSimpleValue,func,src/util/printValue.ts,0,
+  printValue,func,src/util/printValue.ts,1,
+  getIn,func,src/util/reach.ts,1,
+  reach,func,src/util/reach.ts,0,
+  Set,class,src/util/ReferenceSet.ts,1,
+  resolve,meth,src/util/ReferenceSet.ts,0,
+  newItems,meth,src/util/ReferenceSet.ts,0,
+  findIndex,func,src/util/sortByKeyOrder.ts,0,
+  sortByKeyOrder,func,src/util/sortByKeyOrder.ts,1,
+  sortFields,func,src/util/sortFields.ts,1,
+  addNode,func,src/util/sortFields.ts,0,
+  toArray,func,src/util/toArray.ts,1,
+  IfAny,type,src/util/types.ts,1,
+  Maybe,type,src/util/types.ts,1,
+  Preserve,type,src/util/types.ts,1,
+  Optionals,type,src/util/types.ts,1,
+  Defined,type,src/util/types.ts,1,
+  NotNull,type,src/util/types.ts,1,
+  _,type,src/util/types.ts,1,
+  Flags,type,src/util/types.ts,1,
+  SetFlag,type,src/util/types.ts,1,
+  UnsetFlag,type,src/util/types.ts,1,
+  ToggleDefault,type,src/util/types.ts,1,
+  ResolveFlags,type,src/util/types.ts,1,
+  Concat,type,src/util/types.ts,1,
+  isInvalidDate,func,test/date.ts,0,
+  castAndShouldFail,const,test/helpers.ts,1,
+  Options,type,test/helpers.ts,0,
+  castAll,const,test/helpers.ts,1,
+  validateAll,const,test/helpers.ts,1,
+  runValidations,func,test/helpers.ts,1,
+  validationErrorWithMessages,func,test/helpers.ts,1,
+  ensureSync,func,test/helpers.ts,1,
+  noop,const,test/mixed.ts,0,
+  NumberSchema,class,test/number.ts,0,
+  Nested,type,test/object.ts,0,
+  verifyStandardSchema,func,test/standardSchema.ts,0,
+  getYupValidationError,func,test/standardSchema.ts,0,
+  expectValidationConsistency,func,test/standardSchema.ts,0,
+  getErrorString,func,test/string.ts,0,
+  _a,type,test/types/types.ts,0,
+  _b,type,test/types/types.ts,0,
+  _c,type,test/types/types.ts,0,
+  _d,type,test/types/types.ts,0,
+  _e,type,test/types/types.ts,0,
+  _f,type,test/types/types.ts,0,
+  _f2,type,test/types/types.ts,0,
+  _f3,type,test/types/types.ts,0,
+  _f4,type,test/types/types.ts,0,
+  Person,iface,test/types/types.ts,0,
+  Employee,type,test/types/types.ts,0,
+  EmployeeWithPromotions,type,test/types/types.ts,0,
+  DocumentWithFullHistory,type,test/types/types.ts,0,
+  sixHours,const,test/util/parseIsoDate.ts,0,
+  sixHoursThirty,const,test/util/parseIsoDate.ts,0,
+  epochLocalTime,const,test/util/parseIsoDate.ts,0,
+  base,const,rollup.config.js,0,
+
+## Import Dependencies
+dependencies[22]{source,target}:
+  src/Lazy.ts,src/string.ts
+  src/mixed.ts,src/string.ts
+  src/Reference.ts,src/string.ts
+  src/schema.ts,src/string.ts
+  src/schema.ts,src/string.ts
+  src/schema.ts,src/string.ts
+  src/schema.ts,src/string.ts
+  src/standardSchema.ts,src/string.ts
+  src/standardSchema.ts,src/string.ts
+  src/standardSchema.ts,src/string.ts
+  src/standardSchema.ts,src/string.ts
+  src/types.ts,src/string.ts
+  src/types.ts,src/string.ts
+  src/types.ts,src/string.ts
+  src/types.ts,src/string.ts
+  src/types.ts,src/string.ts
+  src/util/objectTypes.ts,src/string.ts
+  src/util/parseIsoDate.ts,src/string.ts
+  src/util/parseIsoDate.ts,src/string.ts
+  src/util/reach.ts,src/string.ts
+  src/util/sortByKeyOrder.ts,src/string.ts
+  src/util/sortFields.ts,src/string.ts
+
+
+## Source Code (29 files)
+
+### File: src/array.ts
+```typescript
+import isSchema from './util/isSchema';
+import printValue from './util/printValue';
+import parseJson from './util/parseJson';
+import { array as locale } from './locale';
+import type {
+  AnyObject,
+  InternalOptions,
+  Message,
+  ISchema,
+  DefaultThunk,
+} from './types';
+import type Reference from './Reference';
+import type {
+  Defined,
+  Flags,
+  NotNull,
+  SetFlag,
+  Maybe,
+  Optionals,
+  ToggleDefault,
+  UnsetFlag,
+  Concat,
+} from './util/types';
+import Schema, {
+  RunTest,
+  SchemaInnerTypeDescription,
+  SchemaSpec,
+} from './schema';
+import type { ResolveOptions } from './Condition';
+import type ValidationError from './ValidationError';
+
+type InnerType<T> = T extends Array<infer I> ? I : never;
+
+export type RejectorFn = (
+  value: any,
+  index: number,
+  array: readonly any[],
+) => boolean;
+
+export function create<C extends Maybe<AnyObject> = AnyObject, T = any>(
+  type?: ISchema<T, C>,
+) {
+  return new ArraySchema<T[] | undefined, C>(type as any);
+}
+
+interface ArraySchemaSpec<TIn, TContext> extends SchemaSpec<any> {
+  types?: ISchema<InnerType<TIn>, TContext>;
+}
+
+export default class ArraySchema<
+  TIn extends any[] | null | undefined,
+  TContext,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TIn, TContext, TDefault, TFlags> {
+  declare spec: ArraySchemaSpec<TIn, TContext>;
+  readonly innerType?: ISchema<InnerType<TIn>, TContext>;
+
+  constructor(type?: ISchema<InnerType<TIn>, TContext>) {
+    super({
+      type: 'array',
+      spec: { types: type } as ArraySchemaSpec<TIn, TContext>,
+      check(v: any): v is NonNullable<TIn> {
+        return Array.isArray(v);
+      },
+    });
+
+    // `undefined` specifically means uninitialized, as opposed to "no subtype"
+    this.innerType = type;
+  }
+
+  protected _cast(_value: any, _opts: InternalOptions<TContext>) {
+    const value = super._cast(_value, _opts);
+
+    // should ignore nulls here
+    if (!this._typeCheck(value) || !this.innerType) {
+      return value;
+    }
+
+    let isChanged = false;
+    const castArray = value.map((v, idx) => {
+      const castElement = this.innerType!.cast(v, {
+        ..._opts,
+        path: `${_opts.path || ''}[${idx}]`,
+        parent: value,
+        originalValue: v,
+        value: v,
+        index: idx,
+
+      });
+      
+      if (castElement !== v) {
+        isChanged = true;
+      }
+
+      return castElement;
+    });
+
+    return isChanged ? castArray : value;
+  }
+
+  protected _validate(
+    _value: any,
+    options: InternalOptions<TContext> = {},
+
+    panic: (err: Error, value: unknown) => void,
+    next: (err: ValidationError[], value: unknown) => void,
+  ) {
+    // let sync = options.sync;
+    // let path = options.path;
+    let innerType = this.innerType;
+    // let endEarly = options.abortEarly ?? this.spec.abortEarly;
+    let recursive = options.recursive ?? this.spec.recursive;
+
+    let originalValue =
+      options.originalValue != null ? options.originalValue : _value;
+
+    super._validate(_value, options, panic, (arrayErrors, value) => {
+      if (!recursive || !innerType || !this._typeCheck(value)) {
+        next(arrayErrors, value);
+        return;
+      }
+
+      originalValue = originalValue || value;
+
+      // #950 Ensure that sparse array empty slots are validated
+      let tests: RunTest[] = new Array(value.length);
+      for (let index = 0; index < value.length; index++) {
+        tests[index] = innerType!.asNestedTest({
+          options,
+          index,
+          parent: value,
+          parentPath: options.path,
+          originalParent: options.originalValue ?? _value,
+        });
+      }
+
+      this.runTests(
+        {
+          value,
+          tests,
+          originalValue: options.originalValue ?? _value,
+          options,
+        },
+        panic,
+        (innerTypeErrors) => next(innerTypeErrors.concat(arrayErrors), value),
+      );
+    });
+  }
+
+  clone(spec?: SchemaSpec<any>) {
+    const next = super.clone(spec);
+    // @ts-expect-error readonly
+    next.innerType = this.innerType;
+    return next;
+  }
+
+  /** Parse an input JSON string to an object */
+  json() {
+    return this.transform(parseJson);
+  }
+
+  concat<IIn extends Maybe<any[]>, IC, ID, IF extends Flags>(
+    schema: ArraySchema<IIn, IC, ID, IF>,
+  ): ArraySchema<
+    Concat<TIn, IIn>,
+    TContext & IC,
+    Extract<IF, 'd'> extends never ? TDefault : ID,
+    TFlags | IF
+  >;
+  concat(schema: this): this;
+  concat(schema: any): any {
+    let next = super.concat(schema) as this;
+
+    // @ts-expect-error readonly
+    next.innerType = this.innerType;
+
+    if (schema.innerType)
+      // @ts-expect-error readonly
+      next.innerType = next.innerType
+        ? // @ts-expect-error Lazy doesn't have concat and will break
+          next.innerType.concat(schema.innerType)
+        : schema.innerType;
+
+    return next;
+  }
+
+  of<U>(
+    schema: ISchema<U, TContext>,
+  ): ArraySchema<U[] | Optionals<TIn>, TContext, TFlags> {
+    // FIXME: this should return a new instance of array without the default to be
+    let next = this.clone();
+
+    if (!isSchema(schema))
+      throw new TypeError(
+        '`array.of()` sub-schema must be a valid yup schema not: ' +
+          printValue(schema),
+      );
+
+    // @ts-expect-error readonly
+    next.innerType = schema;
+
+    next.spec = {
+      ...next.spec,
+      types: schema as ISchema<InnerType<TIn>, TContext>,
+    };
+
+    return next as any;
+  }
+
+  length(
+    length: number | Reference<number>,
+    message: Message<{ length: number }> = locale.length,
+  ) {
+    return this.test({
+      message,
+      name: 'length',
+      exclusive: true,
+      params: { length },
+      skipAbsent: true,
+      test(value) {
+        return value!.length === this.resolve(length);
+      },
+    });
+  }
+
+  min(min: number | Reference<number>, message?: Message<{ min: number }>) {
+    message = message || locale.min;
+
+    return this.test({
+      message,
+      name: 'min',
+      exclusive: true,
+      params: { min },
+      skipAbsent: true,
+      // FIXME(ts): Array<typeof T>
+      test(value) {
+        return value!.length >= this.resolve(min);
+      },
+    });
+  }
+
+  max(max: number | Reference<number>, message?: Message<{ max: number }>) {
+    message = message || locale.max;
+    return this.test({
+      message,
+      name: 'max',
+      exclusive: true,
+      params: { max },
+      skipAbsent: true,
+      test(value) {
+        return value!.length <= this.resolve(max);
+      },
+    });
+  }
+
+  ensure() {
+    return this.default<TIn>(() => [] as any).transform(
+      (val: TIn, original: any) => {
+        // We don't want to return `null` for nullable schema
+        if (this._typeCheck(val)) return val;
+        return original == null ? [] : [].concat(original);
+      },
+    );
+  }
+
+  compact(rejector?: RejectorFn) {
+    let reject: RejectorFn = !rejector
+      ? (v) => !!v
+      : (v, i, a) => !rejector(v, i, a);
+
+    return this.transform((values: readonly any[]) =>
+      values != null ? values.filter(reject) : values,
+    );
+  }
+
+  describe(options?: ResolveOptions<TContext>) {
+    const next = (options ? this.resolve(options) : this).clone();
+    const base = super.describe(options) as SchemaInnerTypeDescription;
+    if (next.innerType) {
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[0],
+        };
+      }
+      base.innerType = next.innerType.describe(innerOptions);
+    }
+    return base;
+  }
+}
+
+create.prototype = ArraySchema.prototype;
+
+export default interface ArraySchema<
+  TIn extends any[] | null | undefined,
+  TContext,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TIn, TContext, TDefault, TFlags> {
+  default<D extends Maybe<TIn>>(
+    def: DefaultThunk<D, TContext>,
+  ): ArraySchema<TIn, TContext, D, ToggleDefault<TFlags, D>>;
+
+  defined(msg?: Message): ArraySchema<Defined<TIn>, TContext, TDefault, TFlags>;
+  optional(): ArraySchema<TIn | undefined, TContext, TDefault, TFlags>;
+
+  required(
+    msg?: Message,
+  ): ArraySchema<NonNullable<TIn>, TContext, TDefault, TFlags>;
+  notRequired(): ArraySchema<Maybe<TIn>, TContext, TDefault, TFlags>;
+
+  nullable(msg?: Message): ArraySchema<TIn | null, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message,
+  ): ArraySchema<NotNull<TIn>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): ArraySchema<TIn, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): ArraySchema<TIn, TContext, TDefault, SetFlag<TFlags, 's'>>;
+}
+
+```
+
+### File: src/boolean.ts
+```typescript
+import Schema from './schema';
+import type { AnyObject, DefaultThunk, Message } from './types';
+import type {
+  Defined,
+  Flags,
+  NotNull,
+  SetFlag,
+  ToggleDefault,
+  UnsetFlag,
+  Maybe,
+  Optionals,
+} from './util/types';
+import { boolean as locale } from './locale';
+import isAbsent from './util/isAbsent';
+
+export function create(): BooleanSchema;
+export function create<
+  T extends boolean,
+  TContext extends Maybe<AnyObject> = AnyObject,
+>(): BooleanSchema<T | undefined, TContext>;
+export function create() {
+  return new BooleanSchema();
+}
+
+export default class BooleanSchema<
+  TType extends Maybe<boolean> = boolean | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  constructor() {
+    super({
+      type: 'boolean',
+      check(v: any): v is NonNullable<TType> {
+        if (v instanceof Boolean) v = v.valueOf();
+
+        return typeof v === 'boolean';
+      },
+    });
+
+    this.withMutation(() => {
+      this.transform((value, _raw) => {
+        if (this.spec.coerce && !this.isType(value)) {
+          if (/^(true|1)$/i.test(String(value))) return true;
+          if (/^(false|0)$/i.test(String(value))) return false;
+        }
+        return value;
+      });
+    });
+  }
+
+  isTrue(
+    message = locale.isValue,
+  ): BooleanSchema<true | Optionals<TType>, TContext, TFlags> {
+    return this.test({
+      message,
+      name: 'is-value',
+      exclusive: true,
+      params: { value: 'true' },
+      test(value) {
+        return isAbsent(value) || value === true;
+      },
+    }) as any;
+  }
+
+  isFalse(
+    message = locale.isValue,
+  ): BooleanSchema<false | Optionals<TType>, TContext, TFlags> {
+    return this.test({
+      message,
+      name: 'is-value',
+      exclusive: true,
+      params: { value: 'false' },
+      test(value) {
+        return isAbsent(value) || value === false;
+      },
+    }) as any;
+  }
+
+  override default<D extends Maybe<TType>>(
+    def: DefaultThunk<D, TContext>,
+  ): BooleanSchema<TType, TContext, D, ToggleDefault<TFlags, D>> {
+    return super.default(def);
+  }
+
+  defined(
+    msg?: Message,
+  ): BooleanSchema<Defined<TType>, TContext, TDefault, TFlags> {
+    return super.defined(msg);
+  }
+  optional(): BooleanSchema<TType | undefined, TContext, TDefault, TFlags> {
+    return super.optional();
+  }
+  required(
+    msg?: Message,
+  ): BooleanSchema<NonNullable<TType>, TContext, TDefault, TFlags> {
+    return super.required(msg);
+  }
+  notRequired(): BooleanSchema<Maybe<TType>, TContext, TDefault, TFlags> {
+    return super.notRequired();
+  }
+  nullable(): BooleanSchema<TType | null, TContext, TDefault, TFlags> {
+    return super.nullable();
+  }
+  nonNullable(
+    msg?: Message,
+  ): BooleanSchema<NotNull<TType>, TContext, TDefault, TFlags> {
+    return super.nonNullable(msg);
+  }
+
+  strip(
+    enabled: false,
+  ): BooleanSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): BooleanSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+  strip(v: any) {
+    return super.strip(v);
+  }
+}
+
+create.prototype = BooleanSchema.prototype;
+
+```
+
+### File: src/Condition.ts
+```typescript
+import isSchema from './util/isSchema';
+import Reference from './Reference';
+import type { ISchema } from './types';
+
+export type ConditionBuilder<T extends ISchema<any, any>> = (
+  values: any[],
+  schema: T,
+  options: ResolveOptions,
+) => ISchema<any>;
+
+export type ConditionConfig<T extends ISchema<any>> = {
+  is: any | ((...values: any[]) => boolean);
+  then?: (schema: T) => ISchema<any>;
+  otherwise?: (schema: T) => ISchema<any>;
+};
+
+export type ResolveOptions<TContext = any> = {
+  value?: any;
+  parent?: any;
+  context?: TContext;
+};
+
+class Condition<TIn extends ISchema<any, any> = ISchema<any, any>> {
+  fn: ConditionBuilder<TIn>;
+
+  static fromOptions<TIn extends ISchema<any, any>>(
+    refs: Reference[],
+    config: ConditionConfig<TIn>,
+  ) {
+    if (!config.then && !config.otherwise)
+      throw new TypeError(
+        'either `then:` or `otherwise:` is required for `when()` conditions',
+      );
+
+    let { is, then, otherwise } = config;
+
+    let check =
+      typeof is === 'function'
+        ? is
+        : (...values: any[]) => values.every((value) => value === is);
+
+    return new Condition<TIn>(refs, (values, schema: any) => {
+      let branch = check(...values) ? then : otherwise;
+
+      return branch?.(schema) ?? schema;
+    });
+  }
+
+  constructor(
+    public refs: readonly Reference[],
+    builder: ConditionBuilder<TIn>,
+  ) {
+    this.refs = refs;
+    this.fn = builder;
+  }
+
+  resolve(base: TIn, options: ResolveOptions) {
+    let values = this.refs.map((ref) =>
+      // TODO: ? operator here?
+      ref.getValue(options?.value, options?.parent, options?.context),
+    );
+
+    let schema = this.fn(values, base, options);
+
+    if (
+      schema === undefined ||
+      // @ts-ignore this can be base
+      schema === base
+    ) {
+      return base;
+    }
+
+    if (!isSchema(schema))
+      throw new TypeError('conditions must return a schema object');
+
+    return schema.resolve(options);
+  }
+}
+
+export default Condition;
+
+```
+
+### File: src/date.ts
+```typescript
+import { parseIsoDate } from './util/parseIsoDate';
+import { date as locale } from './locale';
+import Ref from './Reference';
+import type { AnyObject, DefaultThunk, Message } from './types';
+import type {
+  Defined,
+  Flags,
+  NotNull,
+  SetFlag,
+  Maybe,
+  ToggleDefault,
+  UnsetFlag,
+} from './util/types';
+import Schema from './schema';
+
+let invalidDate = new Date('');
+
+let isDate = (obj: any): obj is Date =>
+  Object.prototype.toString.call(obj) === '[object Date]';
+
+export function create(): DateSchema;
+export function create<
+  T extends Date,
+  TContext extends Maybe<AnyObject> = AnyObject,
+>(): DateSchema<T | undefined, TContext>;
+export function create() {
+  return new DateSchema();
+}
+
+export default class DateSchema<
+  TType extends Maybe<Date> = Date | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  static INVALID_DATE = invalidDate;
+
+  constructor() {
+    super({
+      type: 'date',
+      check(v: any): v is NonNullable<TType> {
+        return isDate(v) && !isNaN(v.getTime());
+      },
+    });
+
+    this.withMutation(() => {
+      this.transform((value, _raw) => {
+        // null -> InvalidDate isn't useful; treat all nulls as null and let it fail on
+        // nullability check vs TypeErrors
+        if (!this.spec.coerce || this.isType(value) || value === null)
+          return value;
+
+        value = parseIsoDate(value);
+
+        // 0 is a valid timestamp equivalent to 1970-01-01T00:00:00Z(unix epoch) or before.
+        return !isNaN(value) ? new Date(value) : DateSchema.INVALID_DATE;
+      });
+    });
+  }
+
+  private prepareParam(
+    ref: unknown | Ref<Date>,
+    name: string,
+  ): Date | Ref<Date> {
+    let param: Date | Ref<Date>;
+
+    if (!Ref.isRef(ref)) {
+      let cast = this.cast(ref);
+      if (!this._typeCheck(cast))
+        throw new TypeError(
+          `\`${name}\` must be a Date or a value that can be \`cast()\` to a Date`,
+        );
+      param = cast;
+    } else {
+      param = ref as Ref<Date>;
+    }
+    return param;
+  }
+
+  min(min: unknown | Ref<Date>, message = locale.min) {
+    let limit = this.prepareParam(min, 'min');
+
+    return this.test({
+      message,
+      name: 'min',
+      exclusive: true,
+      params: { min },
+      skipAbsent: true,
+      test(value) {
+        return value! >= this.resolve(limit);
+      },
+    });
+  }
+
+  max(max: unknown | Ref, message = locale.max) {
+    let limit = this.prepareParam(max, 'max');
+
+    return this.test({
+      message,
+      name: 'max',
+      exclusive: true,
+      params: { max },
+      skipAbsent: true,
+      test(value) {
+        return value! <= this.resolve(limit);
+      },
+    });
+  }
+}
+
+create.prototype = DateSchema.prototype;
+create.INVALID_DATE = invalidDate;
+
+export default interface DateSchema<
+  TType extends Maybe<Date>,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  default<D extends Maybe<TType>>(
+    def: DefaultThunk<D, TContext>,
+  ): DateSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
+
+  concat<TOther extends DateSchema<any, any>>(schema: TOther): TOther;
+
+  defined(
+    msg?: Message,
+  ): DateSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): DateSchema<TType | undefined, TContext, TDefault, TFlags>;
+
+  required(
+    msg?: Message,
+  ): DateSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): DateSchema<Maybe<TType>, TContext, TDefault, TFlags>;
+
+  nullable(msg?: Message): DateSchema<TType | null, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message,
+  ): DateSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): DateSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): DateSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+}
+
+```
+
+### File: src/index.ts
+```typescript
+import MixedSchema, {
+  create as mixedCreate,
+  MixedOptions,
+  TypeGuard,
+} from './mixed';
+import BooleanSchema, { create as boolCreate } from './boolean';
+import StringSchema, { create as stringCreate } from './string';
+import NumberSchema, { create as numberCreate } from './number';
+import DateSchema, { create as dateCreate } from './date';
+import ObjectSchema, { AnyObject, create as objectCreate } from './object';
+import ArraySchema, { create as arrayCreate } from './array';
+import TupleSchema, { create as tupleCreate } from './tuple';
+import Reference, { create as refCreate } from './Reference';
+import Lazy, { create as lazyCreate } from './Lazy';
+import ValidationError from './ValidationError';
+import reach, { getIn } from './util/reach';
+import isSchema from './util/isSchema';
+import printValue from './util/printValue';
+import setLocale, { LocaleObject } from './setLocale';
+import defaultLocale from './locale';
+import Schema, {
+  AnySchema,
+  CastOptions as BaseCastOptions,
+  SchemaSpec,
+  SchemaRefDescription,
+  SchemaInnerTypeDescription,
+  SchemaObjectDescription,
+  SchemaLazyDescription,
+  SchemaFieldDescription,
+  SchemaDescription,
+  SchemaMetadata,
+  CustomSchemaMetadata,
+} from './schema';
+import type {
+  AnyMessageParams,
+  InferType,
+  ISchema,
+  Message,
+  MessageParams,
+  ValidateOptions,
+  DefaultThunk,
+} from './types';
+
+function addMethod<T extends ISchema<any>>(
+  schemaType: (...arg: any[]) => T,
+  name: string,
+  fn: (this: T, ...args: any[]) => T,
+): void;
+function addMethod<T extends abstract new (...args: any) => ISchema<any>>(
+  schemaType: T,
+  name: string,
+  fn: (this: InstanceType<T>, ...args: any[]) => InstanceType<T>,
+): void;
+function addMethod(schemaType: any, name: string, fn: any) {
+  if (!schemaType || !isSchema(schemaType.prototype))
+    throw new TypeError('You must provide a yup schema constructor function');
+
+  if (typeof name !== 'string')
+    throw new TypeError('A Method name must be provided');
+  if (typeof fn !== 'function')
+    throw new TypeError('Method function must be provided');
+
+  schemaType.prototype[name] = fn;
+}
+
+export type AnyObjectSchema = ObjectSchema<any, any, any, any>;
+
+export type CastOptions = Omit<BaseCastOptions, 'path' | 'resolved'>;
+
+export type {
+  AnyMessageParams,
+  AnyObject,
+  InferType,
+  InferType as Asserts,
+  ISchema,
+  Message,
+  MessageParams,
+  AnySchema,
+  MixedOptions,
+  TypeGuard as MixedTypeGuard,
+  SchemaSpec,
+  SchemaRefDescription,
+  SchemaInnerTypeDescription,
+  SchemaObjectDescription,
+  SchemaLazyDescription,
+  SchemaFieldDescription,
+  SchemaDescription,
+  SchemaMetadata,
+  CustomSchemaMetadata,
+  LocaleObject,
+  ValidateOptions,
+  DefaultThunk,
+  Lazy,
+  Reference,
+};
+
+export {
+  mixedCreate as mixed,
+  boolCreate as bool,
+  boolCreate as boolean,
+  stringCreate as string,
+  numberCreate as number,
+  dateCreate as date,
+  objectCreate as object,
+  arrayCreate as array,
+  refCreate as ref,
+  lazyCreate as lazy,
+  tupleCreate as tuple,
+  reach,
+  getIn,
+  isSchema,
+  printValue,
+  addMethod,
+  setLocale,
+  defaultLocale,
+  ValidationError,
+};
+
+export {
+  Schema,
+  MixedSchema,
+  BooleanSchema,
+  StringSchema,
+  NumberSchema,
+  DateSchema,
+  ObjectSchema,
+  ArraySchema,
+  TupleSchema,
+  Lazy as LazySchema,
+};
+
+export type {
+  CreateErrorOptions,
+  TestContext,
+  TestFunction,
+  TestOptions,
+  TestConfig,
+} from './util/createValidation';
+
+export type {
+  ObjectShape,
+  TypeFromShape,
+  DefaultFromShape,
+  MakePartial,
+} from './util/objectTypes';
+
+export type {
+  Maybe,
+  Flags,
+  Optionals,
+  ToggleDefault,
+  Defined,
+  NotNull,
+  UnsetFlag,
+  SetFlag,
+} from './util/types';
+
+```
+
+### File: src/Lazy.ts
+```typescript
+import isSchema from './util/isSchema';
+import type {
+  AnyObject,
+  ISchema,
+  ValidateOptions,
+  NestedTestConfig,
+  InferType,
+} from './types';
+import type { ResolveOptions } from './Condition';
+
+import type {
+  CastOptionalityOptions,
+  CastOptions,
+  SchemaFieldDescription,
+  SchemaLazyDescription,
+} from './schema';
+import { Flags, Maybe, ResolveFlags } from './util/types';
+import ValidationError from './ValidationError';
+import Schema from './schema';
+import {
+  issuesFromValidationError,
+  StandardResult,
+  StandardSchemaProps,
+} from './standardSchema';
+
+export type LazyBuilder<
+  TSchema extends ISchema<TContext>,
+  TContext = AnyObject,
+> = (value: any, options: ResolveOptions) => TSchema;
+
+export function create<
+  TSchema extends ISchema<any, TContext>,
+  TContext extends Maybe<AnyObject> = AnyObject,
+>(builder: (value: any, options: ResolveOptions<TContext>) => TSchema) {
+  return new Lazy<InferType<TSchema>, TContext>(builder);
+}
+
+function catchValidationError(fn: () => any) {
+  try {
+    return fn();
+  } catch (err) {
+    if (ValidationError.isError(err)) return Promise.reject(err);
+    throw err;
+  }
+}
+
+export interface LazySpec {
+  meta: Record<string, unknown> | undefined;
+  optional: boolean;
+}
+
+class Lazy<T, TContext = AnyObject, TFlags extends Flags = any>
+  implements ISchema<T, TContext, TFlags, undefined>
+{
+  type = 'lazy' as const;
+
+  __isYupSchema__ = true;
+
+  declare readonly __outputType: T;
+  declare readonly __context: TContext;
+  declare readonly __flags: TFlags;
+  declare readonly __default: undefined;
+
+  spec: LazySpec;
+
+  constructor(private builder: any) {
+    this.spec = { meta: undefined, optional: false };
+  }
+
+  clone(spec?: Partial<LazySpec>): Lazy<T, TContext, TFlags> {
+    const next = new Lazy<T, TContext, TFlags>(this.builder);
+    next.spec = { ...this.spec, ...spec };
+    return next;
+  }
+
+  private _resolve = (
+    value: any,
+    options: ResolveOptions<TContext> = {},
+  ): Schema<T, TContext, undefined, TFlags> => {
+    let schema = this.builder(value, options) as Schema<
+      T,
+      TContext,
+      undefined,
+      TFlags
+    >;
+
+    if (!isSchema(schema))
+      throw new TypeError('lazy() functions must return a valid schema');
+
+    if (this.spec.optional) schema = schema.optional();
+
+    return schema.resolve(options);
+  };
+
+  private optionality(optional: boolean) {
+    const next = this.clone({ optional });
+    return next;
+  }
+
+  optional(): Lazy<T | undefined, TContext, TFlags> {
+    return this.optionality(true);
+  }
+
+  resolve(options: ResolveOptions<TContext>) {
+    return this._resolve(options.value, options);
+  }
+
+  cast(value: any, options?: CastOptions<TContext>): T;
+  cast(
+    value: any,
+    options?: CastOptionalityOptions<TContext>,
+  ): T | null | undefined;
+  cast(
+    value: any,
+    options?: CastOptions<TContext> | CastOptionalityOptions<TContext>,
+  ): any {
+    return this._resolve(value, options).cast(value, options as any);
+  }
+
+  asNestedTest(config: NestedTestConfig) {
+    let { key, index, parent, options } = config;
+    let value = parent[index ?? key!];
+
+    return this._resolve(value, {
+      ...options,
+      value,
+      parent,
+    }).asNestedTest(config);
+  }
+
+  validate(value: any, options?: ValidateOptions<TContext>): Promise<T> {
+    return catchValidationError(() =>
+      this._resolve(value, options).validate(value, options),
+    );
+  }
+
+  validateSync(value: any, options?: ValidateOptions<TContext>): T {
+    return this._resolve(value, options).validateSync(value, options);
+  }
+
+  validateAt(path: string, value: any, options?: ValidateOptions<TContext>) {
+    return catchValidationError(() =>
+      this._resolve(value, options).validateAt(path, value, options),
+    );
+  }
+
+  validateSyncAt(
+    path: string,
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ) {
+    return this._resolve(value, options).validateSyncAt(path, value, options);
+  }
+
+  isValid(value: any, options?: ValidateOptions<TContext>) {
+    try {
+      return this._resolve(value, options).isValid(value, options);
+    } catch (err) {
+      if (ValidationError.isError(err)) {
+        return Promise.resolve(false);
+      }
+      throw err;
+    }
+  }
+
+  isValidSync(value: any, options?: ValidateOptions<TContext>) {
+    return this._resolve(value, options).isValidSync(value, options);
+  }
+
+  describe(
+    options?: ResolveOptions<TContext>,
+  ): SchemaLazyDescription | SchemaFieldDescription {
+    return options
+      ? this.resolve(options).describe(options)
+      : { type: 'lazy', meta: this.spec.meta, label: undefined };
+  }
+
+  meta(): Record<string, unknown> | undefined;
+  meta(obj: Record<string, unknown>): Lazy<T, TContext, TFlags>;
+  meta(...args: [Record<string, unknown>?]) {
+    if (args.length === 0) return this.spec.meta;
+
+    let next = this.clone();
+    next.spec.meta = Object.assign(next.spec.meta || {}, args[0]);
+    return next;
+  }
+
+  get ['~standard']() {
+    const schema = this;
+
+    const standard: StandardSchemaProps<
+      T,
+      ResolveFlags<T, TFlags, undefined>
+    > = {
+      version: 1,
+      vendor: 'yup',
+      async validate(
+        value: unknown,
+      ): Promise<StandardResult<ResolveFlags<T, TFlags, undefined>>> {
+        try {
+          const result = await schema.validate(value, {
+            abortEarly: false,
+          });
+
+          return {
+            value: result as ResolveFlags<T, TFlags, undefined>,
+          };
+        } catch (err) {
+          if (ValidationError.isError(err)) {
+            return {
+              issues: issuesFromValidationError(err),
+            };
+          }
+
+          throw err;
+        }
+      },
+    };
+
+    return standard;
+  }
+}
+
+export default Lazy;
+
+```
+
+### File: src/locale.ts
+```typescript
+import printValue from './util/printValue';
+import { Message } from './types';
+import ValidationError from './ValidationError';
+
+export interface MixedLocale {
+  default?: Message;
+  required?: Message;
+  oneOf?: Message<{ values: any }>;
+  notOneOf?: Message<{ values: any }>;
+  notNull?: Message;
+  notType?: Message;
+  defined?: Message;
+}
+
+export interface StringLocale {
+  length?: Message<{ length: number }>;
+  min?: Message<{ min: number }>;
+  max?: Message<{ max: number }>;
+  matches?: Message<{ regex: RegExp }>;
+  email?: Message<{ regex: RegExp }>;
+  url?: Message<{ regex: RegExp }>;
+  uuid?: Message<{ regex: RegExp }>;
+  datetime?: Message;
+  datetime_offset?: Message;
+  datetime_precision?: Message<{ precision: number }>;
+  trim?: Message;
+  lowercase?: Message;
+  uppercase?: Message;
+}
+
+export interface NumberLocale {
+  min?: Message<{ min: number }>;
+  max?: Message<{ max: number }>;
+  lessThan?: Message<{ less: number }>;
+  moreThan?: Message<{ more: number }>;
+  positive?: Message<{ more: number }>;
+  negative?: Message<{ less: number }>;
+  integer?: Message;
+}
+
+export interface DateLocale {
+  min?: Message<{ min: Date | string }>;
+  max?: Message<{ max: Date | string }>;
+}
+
+export interface ObjectLocale {
+  noUnknown?: Message<{ unknown: string[] }>;
+  exact?: Message<{ properties: string[] }>;
+}
+
+export interface ArrayLocale {
+  length?: Message<{ length: number }>;
+  min?: Message<{ min: number }>;
+  max?: Message<{ max: number }>;
+}
+
+export interface TupleLocale {
+  notType?: Message;
+}
+
+export interface BooleanLocale {
+  isValue?: Message;
+}
+
+export interface LocaleObject {
+  mixed?: MixedLocale;
+  string?: StringLocale;
+  number?: NumberLocale;
+  date?: DateLocale;
+  boolean?: BooleanLocale;
+  object?: ObjectLocale;
+  array?: ArrayLocale;
+  tuple?: TupleLocale;
+}
+
+export let mixed: Required<MixedLocale> = {
+  default: '${path} is invalid',
+  required: '${path} is a required field',
+  defined: '${path} must be defined',
+  notNull: '${path} cannot be null',
+  oneOf: '${path} must be one of the following values: ${values}',
+  notOneOf: '${path} must not be one of the following values: ${values}',
+  notType: ({ path, type, value, originalValue }) => {
+    const castMsg =
+      originalValue != null && originalValue !== value
+        ? ` (cast from the value \`${printValue(originalValue, true)}\`).`
+        : '.';
+
+    return type !== 'mixed'
+      ? `${path} must be a \`${type}\` type, ` +
+          `but the final value was: \`${printValue(value, true)}\`` +
+          castMsg
+      : `${path} must match the configured type. ` +
+          `The validated value was: \`${printValue(value, true)}\`` +
+          castMsg;
+  },
+};
+
+export let string: Required<StringLocale> = {
+  length: '${path} must be exactly ${length} characters',
+  min: '${path} must be at least ${min} characters',
+  max: '${path} must be at most ${max} characters',
+  matches: '${path} must match the following: "${regex}"',
+  email: '${path} must be a valid email',
+  url: '${path} must be a valid URL',
+  uuid: '${path} must be a valid UUID',
+  datetime: '${path} must be a valid ISO date-time',
+  datetime_precision:
+    '${path} must be a valid ISO date-time with a sub-second precision of exactly ${precision} digits',
+  datetime_offset:
+    '${path} must be a valid ISO date-time with UTC "Z" timezone',
+  trim: '${path} must be a trimmed string',
+  lowercase: '${path} must be a lowercase string',
+  uppercase: '${path} must be a upper case string',
+};
+
+export let number: Required<NumberLocale> = {
+  min: '${path} must be greater than or equal to ${min}',
+  max: '${path} must be less than or equal to ${max}',
+  lessThan: '${path} must be less than ${less}',
+  moreThan: '${path} must be greater than ${more}',
+  positive: '${path} must be a positive number',
+  negative: '${path} must be a negative number',
+  integer: '${path} must be an integer',
+};
+
+export let date: Required<DateLocale> = {
+  min: '${path} field must be later than ${min}',
+  max: '${path} field must be at earlier than ${max}',
+};
+
+export let boolean: BooleanLocale = {
+  isValue: '${path} field must be ${value}',
+};
+
+export let object: Required<ObjectLocale> = {
+  noUnknown: '${path} field has unspecified keys: ${unknown}',
+  exact: '${path} object contains unknown properties: ${properties}',
+};
+
+export let array: Required<ArrayLocale> = {
+  min: '${path} field must have at least ${min} items',
+  max: '${path} field must have less than or equal to ${max} items',
+  length: '${path} must have ${length} items',
+};
+
+export let tuple: Required<TupleLocale> = {
+  notType: (params) => {
+    const { path, value, spec } = params;
+    const typeLen = spec.types.length;
+    if (Array.isArray(value)) {
+      if (value.length < typeLen)
+        return `${path} tuple value has too few items, expected a length of ${typeLen} but got ${
+          value.length
+        } for value: \`${printValue(value, true)}\``;
+      if (value.length > typeLen)
+        return `${path} tuple value has too many items, expected a length of ${typeLen} but got ${
+          value.length
+        } for value: \`${printValue(value, true)}\``;
+    }
+
+    return ValidationError.formatError(mixed.notType, params);
+  },
+};
+
+export default Object.assign(Object.create(null), {
+  mixed,
+  string,
+  number,
+  date,
+  object,
+  array,
+  boolean,
+  tuple,
+}) as LocaleObject;
+
+```
+
+### File: src/mixed.ts
+```typescript
+import { AnyObject, DefaultThunk, Message } from './types';
+import type {
+  Concat,
+  Defined,
+  Flags,
+  SetFlag,
+  Maybe,
+  ToggleDefault,
+  UnsetFlag,
+} from './util/types';
+import Schema from './schema';
+
+const returnsTrue: any = () => true;
+
+type AnyPresentValue = {};
+
+export type TypeGuard<TType> = (value: any) => value is NonNullable<TType>;
+export interface MixedOptions<TType> {
+  type?: string;
+  check?: TypeGuard<TType>;
+}
+
+export function create<TType extends AnyPresentValue>(
+  spec?: MixedOptions<TType> | TypeGuard<TType>,
+) {
+  return new MixedSchema<TType | undefined>(spec);
+}
+
+export default class MixedSchema<
+  TType extends Maybe<AnyPresentValue> = AnyPresentValue | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  constructor(spec?: MixedOptions<TType> | TypeGuard<TType>) {
+    super(
+      typeof spec === 'function'
+        ? { type: 'mixed', check: spec }
+        : { type: 'mixed', check: returnsTrue as TypeGuard<TType>, ...spec },
+    );
+  }
+}
+
+export default interface MixedSchema<
+  TType extends Maybe<AnyPresentValue> = AnyPresentValue | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  default<D extends Maybe<TType>>(
+    def: DefaultThunk<D, TContext>,
+  ): MixedSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
+
+  concat<IT, IC, ID, IF extends Flags>(
+    schema: MixedSchema<IT, IC, ID, IF>,
+  ): MixedSchema<Concat<TType, IT>, TContext & IC, ID, TFlags | IF>;
+  concat<IT, IC, ID, IF extends Flags>(
+    schema: Schema<IT, IC, ID, IF>,
+  ): MixedSchema<Concat<TType, IT>, TContext & IC, ID, TFlags | IF>;
+  concat(schema: this): this;
+
+  defined(
+    msg?: Message,
+  ): MixedSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): MixedSchema<TType | undefined, TContext, TDefault, TFlags>;
+
+  required(
+    msg?: Message,
+  ): MixedSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): MixedSchema<Maybe<TType>, TContext, TDefault, TFlags>;
+
+  nullable(
+    msg?: Message,
+  ): MixedSchema<TType | null, TContext, TDefault, TFlags>;
+
+  nonNullable(
+    msg?: Message,
+  ): MixedSchema<Exclude<TType, null>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): MixedSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): MixedSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+}
+
+create.prototype = MixedSchema.prototype;
+
+```
+
+### File: src/number.ts
+```typescript
+import { number as locale } from './locale';
+import isAbsent from './util/isAbsent';
+import type { AnyObject, DefaultThunk, Message } from './types';
+import type Reference from './Reference';
+import type {
+  Concat,
+  Defined,
+  Flags,
+  NotNull,
+  SetFlag,
+  Maybe,
+  ToggleDefault,
+  UnsetFlag,
+} from './util/types';
+import Schema from './schema';
+
+let isNaN = (value: Maybe<number>) => value != +value!;
+
+export function create(): NumberSchema;
+export function create<
+  T extends number,
+  TContext extends Maybe<AnyObject> = AnyObject,
+>(): NumberSchema<T | undefined, TContext>;
+export function create() {
+  return new NumberSchema();
+}
+
+export default class NumberSchema<
+  TType extends Maybe<number> = number | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  constructor() {
+    super({
+      type: 'number',
+      check(value: any): value is NonNullable<TType> {
+        if (value instanceof Number) value = value.valueOf();
+
+        return typeof value === 'number' && !isNaN(value);
+      },
+    });
+
+    this.withMutation(() => {
+      this.transform((value, _raw) => {
+        if (!this.spec.coerce) return value;
+
+        let parsed = value;
+        if (typeof parsed === 'string') {
+          parsed = parsed.replace(/\s/g, '');
+          if (parsed === '') return NaN;
+          // don't use parseFloat to avoid positives on alpha-numeric strings
+          parsed = +parsed;
+        }
+
+        // null -> NaN isn't useful; treat all nulls as null and let it fail on
+        // nullability check vs TypeErrors
+        if (this.isType(parsed) || parsed === null) return parsed;
+
+        return parseFloat(parsed);
+      });
+    });
+  }
+
+  min(min: number | Reference<number>, message = locale.min) {
+    return this.test({
+      message,
+      name: 'min',
+      exclusive: true,
+      params: { min },
+      skipAbsent: true,
+      test(value: Maybe<number>) {
+        return value! >= this.resolve(min);
+      },
+    });
+  }
+
+  max(max: number | Reference<number>, message = locale.max) {
+    return this.test({
+      message,
+      name: 'max',
+      exclusive: true,
+      params: { max },
+      skipAbsent: true,
+      test(value: Maybe<number>) {
+        return value! <= this.resolve(max);
+      },
+    });
+  }
+
+  lessThan(less: number | Reference<number>, message = locale.lessThan) {
+    return this.test({
+      message,
+      name: 'max',
+      exclusive: true,
+      params: { less },
+      skipAbsent: true,
+      test(value: Maybe<number>) {
+        return value! < this.resolve(less);
+      },
+    });
+  }
+
+  moreThan(more: number | Reference<number>, message = locale.moreThan) {
+    return this.test({
+      message,
+      name: 'min',
+      exclusive: true,
+      params: { more },
+      skipAbsent: true,
+      test(value: Maybe<number>) {
+        return value! > this.resolve(more);
+      },
+    });
+  }
+
+  positive(msg = locale.positive) {
+    return this.moreThan(0, msg);
+  }
+
+  negative(msg = locale.negative) {
+    return this.lessThan(0, msg);
+  }
+
+  integer(message = locale.integer) {
+    return this.test({
+      name: 'integer',
+      message,
+      skipAbsent: true,
+      test: (val) => Number.isInteger(val),
+    });
+  }
+
+  truncate() {
+    return this.transform((value) => (!isAbsent(value) ? value | 0 : value));
+  }
+
+  round(method?: 'ceil' | 'floor' | 'round' | 'trunc') {
+    let avail = ['ceil', 'floor', 'round', 'trunc'];
+    method = (method?.toLowerCase() as any) || ('round' as const);
+
+    // this exists for symemtry with the new Math.trunc
+    if (method === 'trunc') return this.truncate();
+
+    if (avail.indexOf(method!.toLowerCase()) === -1)
+      throw new TypeError(
+        'Only valid options for round() are: ' + avail.join(', '),
+      );
+
+    return this.transform((value) =>
+      !isAbsent(value) ? Math[method!](value) : value,
+    );
+  }
+}
+
+create.prototype = NumberSchema.prototype;
+
+//
+// Number Interfaces
+//
+
+export default interface NumberSchema<
+  TType extends Maybe<number> = number | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  default<D extends Maybe<TType>>(
+    def: DefaultThunk<D, TContext>,
+  ): NumberSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
+
+  concat<UType extends Maybe<number>, UContext, UFlags extends Flags, UDefault>(
+    schema: NumberSchema<UType, UContext, UDefault, UFlags>,
+  ): NumberSchema<
+    Concat<TType, UType>,
+    TContext & UContext,
+    UDefault,
+    TFlags | UFlags
+  >;
+  concat(schema: this): this;
+
+  defined(
+    msg?: Message,
+  ): NumberSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): NumberSchema<TType | undefined, TContext, TDefault, TFlags>;
+
+  required(
+    msg?: Message,
+  ): NumberSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): NumberSchema<Maybe<TType>, TContext, TDefault, TFlags>;
+
+  nullable(
+    msg?: Message,
+  ): NumberSchema<TType | null, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message,
+  ): NumberSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): NumberSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): NumberSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+}
+
+```
+
+### File: src/object.ts
+```typescript
+// @ts-ignore
+import { getter, normalizePath, join } from 'property-expr';
+import { camelCase, snakeCase } from 'tiny-case';
+
+import { Flags, Maybe, SetFlag, ToggleDefault, UnsetFlag } from './util/types';
+import { object as locale } from './locale';
+import sortFields from './util/sortFields';
+import sortByKeyOrder from './util/sortByKeyOrder';
+import { DefaultThunk, InternalOptions, ISchema, Message } from './types';
+import type { Defined, NotNull, _ } from './util/types';
+import Reference from './Reference';
+import Schema, { SchemaObjectDescription, SchemaSpec } from './schema';
+import { ResolveOptions } from './Condition';
+import type {
+  AnyObject,
+  ConcatObjectTypes,
+  DefaultFromShape,
+  MakePartial,
+  MergeObjectTypes,
+  ObjectShape,
+  PartialDeep,
+  TypeFromShape,
+} from './util/objectTypes';
+import parseJson from './util/parseJson';
+import type { Test } from './util/createValidation';
+import type ValidationError from './ValidationError';
+export type { AnyObject };
+
+type MakeKeysOptional<T> = T extends AnyObject ? _<MakePartial<T>> : T;
+
+export type Shape<T extends Maybe<AnyObject>, C = any> = {
+  [field in keyof T]-?: ISchema<T[field], C> | Reference;
+};
+
+export type ObjectSchemaSpec = SchemaSpec<any> & {
+  noUnknown?: boolean;
+};
+
+function deepPartial(schema: any) {
+  if ('fields' in schema) {
+    const partial: any = {};
+    for (const [key, fieldSchema] of Object.entries(schema.fields)) {
+      partial[key] = deepPartial(fieldSchema);
+    }
+    return schema.setFields(partial);
+  }
+  if (schema.type === 'array') {
+    const nextArray = schema.optional();
+    if (nextArray.innerType)
+      nextArray.innerType = deepPartial(nextArray.innerType);
+    return nextArray;
+  }
+  if (schema.type === 'tuple') {
+    return schema
+      .optional()
+      .clone({ types: schema.spec.types.map(deepPartial) });
+  }
+  if ('optional' in schema) {
+    return schema.optional();
+  }
+  return schema;
+}
+
+const deepHas = (obj: any, p: string) => {
+  const path = [...normalizePath(p)];
+  if (path.length === 1) return path[0] in obj;
+  let last = path.pop()!;
+  let parent = getter(join(path), true)(obj);
+  return !!(parent && last in parent);
+};
+
+let isObject = (obj: any): obj is Record<PropertyKey, unknown> =>
+  Object.prototype.toString.call(obj) === '[object Object]';
+
+function unknown(ctx: ObjectSchema<any, any, any>, value: any) {
+  let known = Object.keys(ctx.fields);
+  return Object.keys(value).filter((key) => known.indexOf(key) === -1);
+}
+
+const defaultSort = sortByKeyOrder([]);
+
+export function create<
+  C extends Maybe<AnyObject> = AnyObject,
+  S extends ObjectShape = {},
+>(spec?: S) {
+  type TIn = _<TypeFromShape<S, C>>;
+  type TDefault = _<DefaultFromShape<S>>;
+
+  return new ObjectSchema<TIn, C, TDefault>(spec as any);
+}
+
+export default interface ObjectSchema<
+  TIn extends Maybe<AnyObject>,
+  TContext = AnyObject,
+  // important that this is `any` so that using `ObjectSchema<MyType>`'s default
+  // will match object schema regardless of defaults
+  TDefault = any,
+  TFlags extends Flags = '',
+> extends Schema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
+  default<D extends Maybe<AnyObject>>(
+    def: DefaultThunk<D, TContext>,
+  ): ObjectSchema<TIn, TContext, D, ToggleDefault<TFlags, 'd'>>;
+
+  defined(
+    msg?: Message,
+  ): ObjectSchema<Defined<TIn>, TContext, TDefault, TFlags>;
+  optional(): ObjectSchema<TIn | undefined, TContext, TDefault, TFlags>;
+
+  required(
+    msg?: Message,
+  ): ObjectSchema<NonNullable<TIn>, TContext, TDefault, TFlags>;
+  notRequired(): ObjectSchema<Maybe<TIn>, TContext, TDefault, TFlags>;
+
+  nullable(msg?: Message): ObjectSchema<TIn | null, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message,
+  ): ObjectSchema<NotNull<TIn>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): ObjectSchema<TIn, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): ObjectSchema<TIn, TContext, TDefault, SetFlag<TFlags, 's'>>;
+}
+
+export default class ObjectSchema<
+  TIn extends Maybe<AnyObject>,
+  TContext = AnyObject,
+  TDefault = any,
+  TFlags extends Flags = '',
+> extends Schema<MakeKeysOptional<TIn>, TContext, TDefault, TFlags> {
+  fields: Shape<NonNullable<TIn>, TContext> = Object.create(null);
+
+  declare spec: ObjectSchemaSpec;
+
+  private _sortErrors = defaultSort;
+  private _nodes: string[] = [];
+
+  private _excludedEdges: readonly [nodeA: string, nodeB: string][] = [];
+
+  constructor(spec?: Shape<TIn, TContext>) {
+    super({
+      type: 'object',
+      check(value): value is NonNullable<MakeKeysOptional<TIn>> {
+        return isObject(value) || typeof value === 'function';
+      },
+    });
+
+    this.withMutation(() => {
+      if (spec) {
+        this.shape(spec as any);
+      }
+    });
+  }
+
+  protected _cast(_value: any, options: InternalOptions<TContext> = {}) {
+    let value = super._cast(_value, options);
+
+    //should ignore nulls here
+    if (value === undefined) return this.getDefault(options);
+
+    if (!this._typeCheck(value)) return value;
+
+    let fields = this.fields;
+
+    let strip = options.stripUnknown ?? this.spec.noUnknown;
+    let props = ([] as string[]).concat(
+      this._nodes,
+      Object.keys(value).filter((v) => !this._nodes.includes(v)),
+    );
+
+    let intermediateValue: Record<string, unknown> = {}; // is filled during the transform below
+    let innerOptions: InternalOptions<TContext> = {
+      ...options,
+      parent: intermediateValue,
+      __validating: options.__validating || false,
+    };
+
+    let isChanged = false;
+    for (const prop of props) {
+      let field = fields[prop];
+      let exists = prop in (value as {})!;
+      let inputValue = value[prop];
+
+      if (field) {
+        let fieldValue;
+
+        // safe to mutate since this is fired in sequence
+        innerOptions.path = (options.path ? `${options.path}.` : '') + prop;
+
+        field = field.resolve({
+          value: inputValue,
+          context: options.context,
+          parent: intermediateValue,
+        });
+
+        let fieldSpec = field instanceof Schema ? field.spec : undefined;
+        let strict = fieldSpec?.strict;
+
+        if (fieldSpec?.strip) {
+          isChanged = isChanged || prop in (value as {});
+          continue;
+        }
+
+        fieldValue =
+          !options.__validating || !strict
+            ? (field as ISchema<any>).cast(inputValue, innerOptions)
+            : inputValue;
+
+        if (fieldValue !== undefined) {
+          intermediateValue[prop] = fieldValue;
+        }
+      } else if (exists && !strip) {
+        intermediateValue[prop] = inputValue;
+      }
+
+      if (
+        exists !== prop in intermediateValue ||
+        intermediateValue[prop] !== inputValue
+      ) {
+        isChanged = true;
+      }
+    }
+
+    return isChanged ? intermediateValue : value;
+  }
+
+  protected _validate(
+    _value: any,
+    options: InternalOptions<TContext> = {},
+    panic: (err: Error, value: unknown) => void,
+    next: (err: ValidationError[], value: unknown) => void,
+  ) {
+    let {
+      from = [],
+      originalValue = _value,
+      recursive = this.spec.recursive,
+    } = options;
+
+    options.from = [{ schema: this, value: originalValue }, ...from];
+    // this flag is needed for handling `strict` correctly in the context of
+    // validation vs just casting. e.g strict() on a field is only used when validating
+    options.__validating = true;
+    options.originalValue = originalValue;
+
+    super._validate(_value, options, panic, (objectErrors, value) => {
+      if (!recursive || !isObject(value)) {
+        next(objectErrors, value);
+        return;
+      }
+
+      originalValue = originalValue || value;
+
+      let tests = [] as Test[];
+      for (let key of this._nodes) {
+        let field = this.fields[key];
+
+        if (!field || Reference.isRef(field)) {
+          continue;
+        }
+
+        tests.push(
+          field.asNestedTest({
+            options,
+            key,
+            parent: value,
+            parentPath: options.path,
+            originalParent: originalValue,
+          }),
+        );
+      }
+
+      this.runTests(
+        { tests, value, originalValue, options },
+        panic,
+        (fieldErrors) => {
+          next(fieldErrors.sort(this._sortErrors).concat(objectErrors), value);
+        },
+      );
+    });
+  }
+
+  clone(spec?: Partial<ObjectSchemaSpec>): this {
+    const next = super.clone(spec);
+    next.fields = { ...this.fields };
+    next._nodes = this._nodes;
+    next._excludedEdges = this._excludedEdges;
+    next._sortErrors = this._sortErrors;
+
+    return next;
+  }
+
+  concat<IIn extends Maybe<AnyObject>, IC, ID, IF extends Flags>(
+    schema: ObjectSchema<IIn, IC, ID, IF>,
+  ): ObjectSchema<
+    ConcatObjectTypes<TIn, IIn>,
+    TContext & IC,
+    Extract<IF, 'd'> extends never
+      ? // this _attempts_ to cover the default from shape case
+        TDefault extends AnyObject
+        ? ID extends AnyObject
+          ? _<ConcatObjectTypes<TDefault, ID>>
+          : ID
+        : ID
+      : ID,
+    TFlags | IF
+  >;
+  concat(schema: this): this;
+  concat(schema: any): any {
+    let next = super.concat(schema) as any;
+
+    let nextFields = next.fields;
+    for (let [field, schemaOrRef] of Object.entries(this.fields)) {
+      const target = nextFields[field];
+      nextFields[field] = target === undefined ? schemaOrRef : target;
+    }
+
+    return next.withMutation((s: any) =>
+      // XXX: excludes here is wrong
+      s.setFields(nextFields, [
+        ...this._excludedEdges,
+        ...schema._excludedEdges,
+      ]),
+    );
+  }
+
+  protected _getDefault(options?: ResolveOptions<TContext>) {
+    if ('default' in this.spec) {
+      return super._getDefault(options);
+    }
+
+    // if there is no default set invent one
+    if (!this._nodes.length) {
+      return undefined;
+    }
+
+    let dft: any = {};
+    this._nodes.forEach((key) => {
+      const field = this.fields[key] as any;
+
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[key],
+        };
+      }
+
+      dft[key] =
+        field && 'getDefault' in field
+          ? field.getDefault(innerOptions)
+          : undefined;
+    });
+
+    return dft;
+  }
+
+  private setFields<TInNext extends Maybe<AnyObject>, TDefaultNext>(
+    shape: Shape<TInNext, TContext>,
+    excludedEdges?: readonly [string, string][],
+  ): ObjectSchema<TInNext, TContext, TDefaultNext, TFlags> {
+    let next = this.clone() as any;
+    next.fields = shape;
+
+    next._nodes = sortFields(shape, excludedEdges);
+    next._sortErrors = sortByKeyOrder(Object.keys(shape));
+    // XXX: this carries over edges which may not be what you want
+    if (excludedEdges) next._excludedEdges = excludedEdges;
+    return next;
+  }
+
+  shape<U extends ObjectShape>(
+    additions: U,
+    excludes: readonly [string, string][] = [],
+  ) {
+    type UIn = TypeFromShape<U, TContext>;
+    type UDefault = Extract<TFlags, 'd'> extends never
+      ? // not defaulted then assume the default is derived and should be merged
+        _<TDefault & DefaultFromShape<U>>
+      : TDefault;
+
+    return this.clone().withMutation((next) => {
+      let edges = next._excludedEdges;
+      if (excludes.length) {
+        if (!Array.isArray(excludes[0])) excludes = [excludes as any];
+
+        edges = [...next._excludedEdges, ...excludes];
+      }
+
+      // XXX: excludes here is wrong
+      return next.setFields<_<MergeObjectTypes<TIn, UIn>>, UDefault>(
+        Object.assign(next.fields, additions) as any,
+        edges,
+      );
+    });
+  }
+
+  partial() {
+    const partial: any = {};
+    for (const [key, schema] of Object.entries(this.fields)) {
+      partial[key] =
+        'optional' in schema && schema.optional instanceof Function
+          ? schema.optional()
+          : schema;
+    }
+
+    return this.setFields<Partial<TIn>, TDefault>(partial);
+  }
+
+  deepPartial(): ObjectSchema<PartialDeep<TIn>, TContext, TDefault, TFlags> {
+    const next = deepPartial(this);
+    return next;
+  }
+
+  pick<TKey extends keyof TIn>(keys: readonly TKey[]) {
+    const picked: any = {};
+    for (const key of keys) {
+      if (this.fields[key]) picked[key] = this.fields[key];
+    }
+
+    return this.setFields<{ [K in TKey]: TIn[K] }, TDefault>(
+      picked,
+      this._excludedEdges.filter(
+        ([a, b]) => keys.includes(a as TKey) && keys.includes(b as TKey),
+      ),
+    );
+  }
+
+  omit<TKey extends keyof TIn>(keys: readonly TKey[]) {
+    const remaining: TKey[] = [];
+
+    for (const key of Object.keys(this.fields) as TKey[]) {
+      if (keys.includes(key)) continue;
+      remaining.push(key);
+    }
+
+    return this.pick<keyof Omit<TIn, TKey>>(remaining as any);
+  }
+
+  from(from: string, to: keyof TIn, alias?: boolean) {
+    let fromGetter = getter(from, true);
+
+    return this.transform((obj) => {
+      if (!obj) return obj;
+      let newObj = obj;
+      if (deepHas(obj, from)) {
+        newObj = { ...obj };
+        if (!alias) delete newObj[from];
+
+        newObj[to] = fromGetter(obj);
+      }
+
+      return newObj;
+    });
+  }
+
+  /** Parse an input JSON string to an object */
+  json() {
+    return this.transform(parseJson);
+  }
+
+  /**
+   * Similar to `noUnknown` but only validates that an object is the right shape without stripping the unknown keys
+   */
+  exact(message?: Message): this {
+    return this.test({
+      name: 'exact',
+      exclusive: true,
+      message: message || locale.exact,
+      test(value) {
+        if (value == null) return true;
+
+        const unknownKeys = unknown(this.schema, value);
+
+        return (
+          unknownKeys.length === 0 ||
+          this.createError({ params: { properties: unknownKeys.join(', ') } })
+        );
+      },
+    });
+  }
+
+  stripUnknown(): this {
+    return this.clone({ noUnknown: true });
+  }
+
+  noUnknown(message?: Message): this;
+  noUnknown(noAllow: boolean, message?: Message): this;
+  noUnknown(noAllow: Message | boolean = true, message = locale.noUnknown) {
+    if (typeof noAllow !== 'boolean') {
+      message = noAllow;
+      noAllow = true;
+    }
+
+    let next = this.test({
+      name: 'noUnknown',
+      exclusive: true,
+      message: message,
+      test(value) {
+        if (value == null) return true;
+        const unknownKeys = unknown(this.schema, value);
+        return (
+          !noAllow ||
+          unknownKeys.length === 0 ||
+          this.createError({ params: { unknown: unknownKeys.join(', ') } })
+        );
+      },
+    });
+
+    next.spec.noUnknown = noAllow;
+
+    return next;
+  }
+
+  unknown(allow = true, message = locale.noUnknown) {
+    return this.noUnknown(!allow, message);
+  }
+
+  transformKeys(fn: (key: string) => string) {
+    return this.transform((obj) => {
+      if (!obj) return obj;
+      const result: AnyObject = {};
+      for (const key of Object.keys(obj)) result[fn(key)] = obj[key];
+      return result;
+    });
+  }
+
+  camelCase() {
+    return this.transformKeys(camelCase);
+  }
+
+  snakeCase() {
+    return this.transformKeys(snakeCase);
+  }
+
+  constantCase() {
+    return this.transformKeys((key) => snakeCase(key).toUpperCase());
+  }
+
+  describe(options?: ResolveOptions<TContext>) {
+    const next = (options ? this.resolve(options) : this).clone();
+    const base = super.describe(options) as SchemaObjectDescription;
+    base.fields = {};
+    for (const [key, value] of Object.entries(next.fields)) {
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[key],
+        };
+      }
+      base.fields[key] = value.describe(innerOptions);
+    }
+    return base;
+  }
+}
+
+create.prototype = ObjectSchema.prototype;
+
+```
+
+### File: src/Reference.ts
+```typescript
+import { getter } from 'property-expr';
+import type { SchemaRefDescription } from './schema';
+
+const prefixes = {
+  context: '$',
+  value: '.',
+} as const;
+
+export type ReferenceOptions<TValue = unknown> = {
+  map?: (value: unknown) => TValue;
+};
+
+export function create<TValue = unknown>(
+  key: string,
+  options?: ReferenceOptions<TValue>,
+) {
+  return new Reference<TValue>(key, options);
+}
+
+export default class Reference<TValue = unknown> {
+  readonly key: string;
+  readonly isContext: boolean;
+  readonly isValue: boolean;
+  readonly isSibling: boolean;
+  readonly path: any;
+
+  readonly getter: (data: unknown) => unknown;
+  readonly map?: (value: unknown) => TValue;
+
+  declare readonly __isYupRef: boolean;
+
+  constructor(key: string, options: ReferenceOptions<TValue> = {}) {
+    if (typeof key !== 'string')
+      throw new TypeError('ref must be a string, got: ' + key);
+
+    this.key = key.trim();
+
+    if (key === '') throw new TypeError('ref must be a non-empty string');
+
+    this.isContext = this.key[0] === prefixes.context;
+    this.isValue = this.key[0] === prefixes.value;
+    this.isSibling = !this.isContext && !this.isValue;
+
+    let prefix = this.isContext
+      ? prefixes.context
+      : this.isValue
+      ? prefixes.value
+      : '';
+
+    this.path = this.key.slice(prefix.length);
+    this.getter = this.path && getter(this.path, true);
+    this.map = options.map;
+  }
+
+  getValue(value: any, parent?: {}, context?: {}): TValue {
+    let result = this.isContext ? context : this.isValue ? value : parent;
+
+    if (this.getter) result = this.getter(result || {});
+
+    if (this.map) result = this.map(result);
+
+    return result;
+  }
+
+  /**
+   *
+   * @param {*} value
+   * @param {Object} options
+   * @param {Object=} options.context
+   * @param {Object=} options.parent
+   */
+  cast(value: any, options?: { parent?: {}; context?: {} }) {
+    return this.getValue(value, options?.parent, options?.context);
+  }
+
+  resolve() {
+    return this;
+  }
+
+  describe(): SchemaRefDescription {
+    return {
+      type: 'ref',
+      key: this.key,
+    };
+  }
+
+  toString() {
+    return `Ref(${this.key})`;
+  }
+
+  static isRef(value: any): value is Reference {
+    return value && value.__isYupRef;
+  }
+}
+
+// @ts-ignore
+Reference.prototype.__isYupRef = true;
+
+```
+
+### File: src/schema.ts
+```typescript
+import { mixed as locale } from './locale';
+import Condition, {
+  ConditionBuilder,
+  ConditionConfig,
+  ResolveOptions,
+} from './Condition';
+import createValidation, {
+  TestFunction,
+  Test,
+  TestConfig,
+  NextCallback,
+  PanicCallback,
+  TestOptions,
+  resolveParams,
+} from './util/createValidation';
+import printValue from './util/printValue';
+import Ref from './Reference';
+import { getIn } from './util/reach';
+import {
+  ValidateOptions,
+  TransformFunction,
+  Message,
+  InternalOptions,
+  ExtraParams,
+  ISchema,
+  NestedTestConfig,
+  DefaultThunk,
+} from './types';
+
+import ValidationError from './ValidationError';
+import ReferenceSet from './util/ReferenceSet';
+import Reference from './Reference';
+import isAbsent from './util/isAbsent';
+import type { Flags, Maybe, ResolveFlags, _ } from './util/types';
+import toArray from './util/toArray';
+import cloneDeep from './util/cloneDeep';
+import {
+  issuesFromValidationError,
+  StandardResult,
+  type StandardSchema,
+  type StandardSchemaProps,
+} from './standardSchema';
+
+export type SchemaSpec<TDefault> = {
+  coerce: boolean;
+  nullable: boolean;
+  optional: boolean;
+  default?: TDefault | (() => TDefault);
+  abortEarly?: boolean;
+  strip?: boolean;
+  strict?: boolean;
+  recursive?: boolean;
+  disableStackTrace?: boolean;
+  label?: string | undefined;
+  meta?: SchemaMetadata;
+};
+
+export interface CustomSchemaMetadata {}
+
+// If `CustomSchemaMeta` isn't extended with any keys, we'll fall back to a
+// loose Record definition allowing free form usage.
+export type SchemaMetadata = keyof CustomSchemaMetadata extends never
+  ? Record<PropertyKey, any>
+  : CustomSchemaMetadata;
+
+export type SchemaOptions<TType, TDefault> = {
+  type: string;
+  spec?: Partial<SchemaSpec<TDefault>>;
+  check: (value: any) => value is NonNullable<TType>;
+};
+
+export type AnySchema<
+  TType = any,
+  C = any,
+  D = any,
+  F extends Flags = Flags,
+> = Schema<TType, C, D, F>;
+
+export interface CastOptions<C = {}> {
+  parent?: any;
+  context?: C;
+  assert?: boolean;
+  stripUnknown?: boolean;
+  // XXX: should be private?
+  path?: string;
+  index?: number;
+  key?: string;
+  originalValue?: any;
+  value?: any;
+  resolved?: boolean;
+}
+
+export interface CastOptionalityOptions<C = {}>
+  extends Omit<CastOptions<C>, 'assert'> {
+  /**
+   * Whether or not to throw TypeErrors if casting fails to produce a valid type.
+   * defaults to `true`. The `'ignore-optionality'` options is provided as a migration
+   * path from pre-v1 where `schema.nullable().required()` was allowed. When provided
+   * cast will only throw for values that are the wrong type *not* including `null` and `undefined`
+   */
+  assert: 'ignore-optionality';
+}
+
+export type RunTest = (
+  opts: TestOptions,
+  panic: PanicCallback,
+  next: NextCallback,
+) => void;
+
+export type TestRunOptions = {
+  tests: RunTest[];
+  path?: string | undefined;
+  options: InternalOptions;
+  originalValue: any;
+  value: any;
+};
+
+export interface SchemaRefDescription {
+  type: 'ref';
+  key: string;
+}
+
+export interface SchemaInnerTypeDescription extends SchemaDescription {
+  innerType?: SchemaFieldDescription | SchemaFieldDescription[];
+}
+
+export interface SchemaObjectDescription extends SchemaDescription {
+  fields: Record<string, SchemaFieldDescription>;
+}
+
+export interface SchemaLazyDescription {
+  type: string;
+  label?: string;
+  meta?: SchemaMetadata;
+}
+
+export type SchemaFieldDescription =
+  | SchemaDescription
+  | SchemaRefDescription
+  | SchemaObjectDescription
+  | SchemaInnerTypeDescription
+  | SchemaLazyDescription;
+
+export interface SchemaDescription {
+  type: string;
+  label?: string;
+  meta?: SchemaMetadata;
+  oneOf: unknown[];
+  notOneOf: unknown[];
+  default?: unknown;
+  nullable: boolean;
+  optional: boolean;
+  tests: Array<{ name?: string; params: ExtraParams | undefined }>;
+}
+
+export default abstract class Schema<
+  TType = any,
+  TContext = any,
+  TDefault = any,
+  TFlags extends Flags = '',
+> implements
+    ISchema<TType, TContext, TFlags, TDefault>,
+    StandardSchema<TType, ResolveFlags<TType, TFlags, TDefault>>
+{
+  readonly type: string;
+
+  declare readonly __outputType: ResolveFlags<TType, TFlags, TDefault>;
+  declare readonly __context: TContext;
+  declare readonly __flags: TFlags;
+  declare readonly __isYupSchema__: boolean;
+  declare readonly __default: TDefault;
+
+  readonly deps: readonly string[] = [];
+
+  tests: Test[];
+  transforms: TransformFunction<AnySchema, TContext>[];
+
+  private conditions: Condition[] = [];
+
+  private _mutate?: boolean;
+
+  private internalTests: Record<string, Test | null> = {};
+
+  protected _whitelist = new ReferenceSet();
+  protected _blacklist = new ReferenceSet();
+
+  protected exclusiveTests: Record<string, boolean> = Object.create(null);
+  protected _typeCheck: (value: any) => value is NonNullable<TType>;
+
+  spec: SchemaSpec<any>;
+
+  constructor(options: SchemaOptions<TType, any>) {
+    this.tests = [];
+    this.transforms = [];
+
+    this.withMutation(() => {
+      this.typeError(locale.notType);
+    });
+
+    this.type = options.type;
+    this._typeCheck = options.check;
+
+    this.spec = {
+      strip: false,
+      strict: false,
+      abortEarly: true,
+      recursive: true,
+      disableStackTrace: false,
+      nullable: false,
+      optional: true,
+      coerce: true,
+      ...options?.spec,
+    };
+
+    this.withMutation((s) => {
+      s.nonNullable();
+    });
+  }
+
+  // TODO: remove
+  get _type() {
+    return this.type;
+  }
+
+  clone(spec?: Partial<SchemaSpec<any>>): this {
+    if (this._mutate) {
+      if (spec) Object.assign(this.spec, spec);
+      return this;
+    }
+
+    // if the nested value is a schema we can skip cloning, since
+    // they are already immutable
+    const next: AnySchema = Object.create(Object.getPrototypeOf(this));
+
+    // @ts-expect-error this is readonly
+    next.type = this.type;
+    next._typeCheck = this._typeCheck;
+
+    next._whitelist = this._whitelist.clone();
+    next._blacklist = this._blacklist.clone();
+    next.internalTests = { ...this.internalTests };
+    next.exclusiveTests = { ...this.exclusiveTests };
+
+    // @ts-expect-error this is readonly
+    next.deps = [...this.deps];
+    next.conditions = [...this.conditions];
+    next.tests = [...this.tests];
+    next.transforms = [...this.transforms];
+    next.spec = cloneDeep({ ...this.spec, ...spec });
+
+    return next as this;
+  }
+
+  label(label: string) {
+    let next = this.clone();
+    next.spec.label = label;
+    return next;
+  }
+
+  meta(): SchemaMetadata | undefined;
+  meta(obj: SchemaMetadata): this;
+  meta(...args: [SchemaMetadata?]) {
+    if (args.length === 0) return this.spec.meta;
+
+    let next = this.clone();
+    next.spec.meta = Object.assign(next.spec.meta || {}, args[0]);
+    return next;
+  }
+
+  withMutation<T>(fn: (schema: this) => T): T {
+    let before = this._mutate;
+    this._mutate = true;
+    let result = fn(this);
+    this._mutate = before;
+    return result;
+  }
+
+  concat(schema: this): this;
+  concat(schema: AnySchema): AnySchema;
+  concat(schema: AnySchema): AnySchema {
+    if (!schema || schema === this) return this;
+
+    if (schema.type !== this.type && this.type !== 'mixed')
+      throw new TypeError(
+        `You cannot \`concat()\` schema's of different types: ${this.type} and ${schema.type}`,
+      );
+
+    let base = this;
+    let combined = schema.clone();
+
+    const mergedSpec = { ...base.spec, ...combined.spec };
+
+    combined.spec = mergedSpec;
+    combined.internalTests = {
+      ...base.internalTests,
+      ...combined.internalTests,
+    };
+
+    // manually merge the blacklist/whitelist (the other `schema` takes
+    // precedence in case of conflicts)
+    combined._whitelist = base._whitelist.merge(
+      schema._whitelist,
+      schema._blacklist,
+    );
+    combined._blacklist = base._blacklist.merge(
+      schema._blacklist,
+      schema._whitelist,
+    );
+
+    // start with the current tests
+    combined.tests = base.tests;
+    combined.exclusiveTests = base.exclusiveTests;
+
+    // manually add the new tests to ensure
+    // the deduping logic is consistent
+    combined.withMutation((next) => {
+      schema.tests.forEach((fn) => {
+        next.test(fn.OPTIONS!);
+      });
+    });
+
+    combined.transforms = [...base.transforms, ...combined.transforms];
+    return combined as any;
+  }
+
+  isType(v: unknown): v is TType {
+    if (v == null) {
+      if (this.spec.nullable && v === null) return true;
+      if (this.spec.optional && v === undefined) return true;
+      return false;
+    }
+
+    return this._typeCheck(v);
+  }
+
+  resolve(options: ResolveOptions<TContext>) {
+    let schema = this;
+
+    if (schema.conditions.length) {
+      let conditions = schema.conditions;
+
+      schema = schema.clone();
+      schema.conditions = [];
+      schema = conditions.reduce(
+        (prevSchema, condition) =>
+          condition.resolve(prevSchema, options) as any,
+        schema,
+      ) as any as this;
+
+      schema = schema.resolve(options);
+    }
+
+    return schema;
+  }
+
+  protected resolveOptions<T extends InternalOptions<any>>(options: T): T {
+    return {
+      ...options,
+      from: options.from || [],
+      strict: options.strict ?? this.spec.strict,
+      abortEarly: options.abortEarly ?? this.spec.abortEarly,
+      recursive: options.recursive ?? this.spec.recursive,
+      disableStackTrace:
+        options.disableStackTrace ?? this.spec.disableStackTrace,
+    };
+  }
+
+  /**
+   * Run the configured transform pipeline over an input value.
+   */
+  cast(value: any, options?: CastOptions<TContext>): this['__outputType'];
+  cast(
+    value: any,
+    options: CastOptionalityOptions<TContext>,
+  ): this['__outputType'] | null | undefined;
+  cast(
+    value: any,
+    options: CastOptions<TContext> | CastOptionalityOptions<TContext> = {},
+  ): this['__outputType'] {
+    let resolvedSchema = this.resolve({
+      ...options,
+      value,
+      // parent: options.parent,
+      // context: options.context,
+    });
+    let allowOptionality = options.assert === 'ignore-optionality';
+
+    let result = resolvedSchema._cast(value, options as any);
+
+    if (options.assert !== false && !resolvedSchema.isType(result)) {
+      if (allowOptionality && isAbsent(result)) {
+        return result as any;
+      }
+
+      let formattedValue = printValue(value);
+      let formattedResult = printValue(result);
+
+      throw new TypeError(
+        `The value of ${
+          options.path || 'field'
+        } could not be cast to a value ` +
+          `that satisfies the schema type: "${resolvedSchema.type}". \n\n` +
+          `attempted value: ${formattedValue} \n` +
+          (formattedResult !== formattedValue
+            ? `result of cast: ${formattedResult}`
+            : ''),
+      );
+    }
+
+    return result;
+  }
+
+  protected _cast(rawValue: any, options: CastOptions<TContext>): any {
+    let value =
+      rawValue === undefined
+        ? rawValue
+        : this.transforms.reduce(
+            (prevValue, fn) => fn.call(this, prevValue, rawValue, this, options),
+            rawValue,
+          );
+
+    if (value === undefined) {
+      value = this.getDefault(options);
+    }
+
+    return value;
+  }
+
+  protected _validate(
+    _value: any,
+    options: InternalOptions<TContext> = {},
+    panic: (err: Error, value: unknown) => void,
+    next: (err: ValidationError[], value: unknown) => void,
+  ): void {
+    let { path, originalValue = _value, strict = this.spec.strict } = options;
+
+    let value = _value;
+    if (!strict) {
+      value = this._cast(value, { assert: false, ...options });
+    }
+
+    let initialTests = [];
+    for (let test of Object.values(this.internalTests)) {
+      if (test) initialTests.push(test);
+    }
+
+    this.runTests(
+      {
+        path,
+        value,
+        originalValue,
+        options,
+        tests: initialTests,
+      },
+      panic,
+      (initialErrors) => {
+        // even if we aren't ending early we can't proceed further if the types aren't correct
+        if (initialErrors.length) {
+          return next(initialErrors, value);
+        }
+
+        this.runTests(
+          {
+            path,
+            value,
+            originalValue,
+            options,
+            tests: this.tests,
+          },
+          panic,
+          next,
+        );
+      },
+    );
+  }
+
+  /**
+   * Executes a set of validations, either schema, produced Tests or a nested
+   * schema validate result.
+   */
+  protected runTests(
+    runOptions: TestRunOptions,
+    panic: (err: Error, value: unknown) => void,
+    next: (errors: ValidationError[], value: unknown) => void,
+  ): void {
+    let fired = false;
+    let { tests, value, originalValue, path, options } = runOptions;
+
+    let panicOnce = (arg: Error) => {
+      if (fired) return;
+      fired = true;
+      panic(arg, value);
+    };
+
+    let nextOnce = (arg: ValidationError[]) => {
+      if (fired) return;
+      fired = true;
+      next(arg, value);
+    };
+
+    let count = tests.length;
+    let nestedErrors = [] as ValidationError[];
+
+    if (!count) return nextOnce([]);
+
+    let args = {
+      value,
+      originalValue,
+      path,
+      options,
+      schema: this,
+    };
+
+    for (let i = 0; i < tests.length; i++) {
+      const test = tests[i];
+
+      test(args!, panicOnce, function finishTestRun(err) {
+        if (err) {
+          Array.isArray(err)
+            ? nestedErrors.push(...err)
+            : nestedErrors.push(err);
+        }
+        if (--count <= 0) {
+          nextOnce(nestedErrors);
+        }
+      });
+    }
+  }
+
+  asNestedTest({
+    key,
+    index,
+    parent,
+    parentPath,
+    originalParent,
+    options,
+  }: NestedTestConfig): RunTest {
+    const k = key ?? index;
+    if (k == null) {
+      throw TypeError('Must include `key` or `index` for nested validations');
+    }
+
+    const isIndex = typeof k === 'number';
+    let value = parent[k];
+
+    const testOptions = {
+      ...options,
+      // Nested validations fields are always strict:
+      //    1. parent isn't strict so the casting will also have cast inner values
+      //    2. parent is strict in which case the nested values weren't cast either
+      strict: true,
+      parent,
+      value,
+      originalValue: originalParent[k],
+      // FIXME: tests depend on `index` being passed around deeply,
+      //   we should not let the options.key/index bleed through
+      key: undefined,
+      // index: undefined,
+      [isIndex ? 'index' : 'key']: k,
+      path:
+        isIndex || k.includes('.')
+          ? `${parentPath || ''}[${isIndex ? k : `"${k}"`}]`
+          : (parentPath ? `${parentPath}.` : '') + key,
+    };
+
+    return (_: any, panic, next) =>
+      this.resolve(testOptions)._validate(value, testOptions, panic, next);
+  }
+
+  validate(
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ): Promise<this['__outputType']> {
+    let schema = this.resolve({ ...options, value });
+    let disableStackTrace =
+      options?.disableStackTrace ?? schema.spec.disableStackTrace;
+
+    return new Promise((resolve, reject) =>
+      schema._validate(
+        value,
+        options,
+        (error, parsed) => {
+          if (ValidationError.isError(error)) error.value = parsed;
+          reject(error);
+        },
+        (errors, validated) => {
+          if (errors.length)
+            reject(
+              new ValidationError(
+                errors!,
+                validated,
+                undefined,
+                undefined,
+                disableStackTrace,
+              ),
+            );
+          else resolve(validated as this['__outputType']);
+        },
+      ),
+    );
+  }
+
+  validateSync(
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ): this['__outputType'] {
+    let schema = this.resolve({ ...options, value });
+    let result: any;
+    let disableStackTrace =
+      options?.disableStackTrace ?? schema.spec.disableStackTrace;
+
+    schema._validate(
+      value,
+      { ...options, sync: true },
+      (error, parsed) => {
+        if (ValidationError.isError(error)) error.value = parsed;
+        throw error;
+      },
+      (errors, validated) => {
+        if (errors.length)
+          throw new ValidationError(
+            errors!,
+            value,
+            undefined,
+            undefined,
+            disableStackTrace,
+          );
+        result = validated;
+      },
+    );
+
+    return result;
+  }
+
+  isValid(value: any, options?: ValidateOptions<TContext>): Promise<boolean> {
+    return this.validate(value, options).then(
+      () => true,
+      (err) => {
+        if (ValidationError.isError(err)) return false;
+        throw err;
+      },
+    );
+  }
+
+  isValidSync(
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ): value is this['__outputType'] {
+    try {
+      this.validateSync(value, options);
+      return true;
+    } catch (err) {
+      if (ValidationError.isError(err)) return false;
+      throw err;
+    }
+  }
+
+  protected _getDefault(options?: ResolveOptions<TContext>) {
+    let defaultValue = this.spec.default;
+
+    if (defaultValue == null) {
+      return defaultValue;
+    }
+
+    return typeof defaultValue === 'function'
+      ? defaultValue.call(this, options)
+      : cloneDeep(defaultValue);
+  }
+
+  getDefault(
+    options?: ResolveOptions<TContext>,
+    // If schema is defaulted we know it's at least not undefined
+  ): TDefault {
+    let schema = this.resolve(options || {});
+    return schema._getDefault(options);
+  }
+
+  default(def: DefaultThunk<any>): any {
+    if (arguments.length === 0) {
+      return this._getDefault();
+    }
+
+    let next = this.clone({ default: def });
+
+    return next as any;
+  }
+
+  strict(isStrict = true) {
+    return this.clone({ strict: isStrict });
+  }
+
+  protected nullability(nullable: boolean, message?: Message<any>) {
+    const next = this.clone({ nullable });
+    next.internalTests.nullable = createValidation({
+      message,
+      name: 'nullable',
+      test(value) {
+        return value === null ? this.schema.spec.nullable : true;
+      },
+    });
+    return next;
+  }
+
+  protected optionality(optional: boolean, message?: Message<any>) {
+    const next = this.clone({ optional });
+    next.internalTests.optionality = createValidation({
+      message,
+      name: 'optionality',
+      test(value) {
+        return value === undefined ? this.schema.spec.optional : true;
+      },
+    });
+    return next;
+  }
+
+  optional(): any {
+    return this.optionality(true);
+  }
+  defined(message = locale.defined): any {
+    return this.optionality(false, message);
+  }
+
+  nullable(): any {
+    return this.nullability(true);
+  }
+  nonNullable(message = locale.notNull): any {
+    return this.nullability(false, message);
+  }
+
+  required(message: Message<any> = locale.required): any {
+    return this.clone().withMutation((next) =>
+      next.nonNullable(message).defined(message),
+    );
+  }
+  notRequired(): any {
+    return this.clone().withMutation((next) => next.nullable().optional());
+  }
+
+  transform(fn: TransformFunction<this>) {
+    let next = this.clone();
+    next.transforms.push(fn as TransformFunction<any>);
+    return next;
+  }
+
+  /**
+   * Adds a test function to the schema's queue of tests.
+   * tests can be exclusive or non-exclusive.
+   *
+   * - exclusive tests, will replace any existing tests of the same name.
+   * - non-exclusive: can be stacked
+   *
+   * If a non-exclusive test is added to a schema with an exclusive test of the same name
+   * the exclusive test is removed and further tests of the same name will be stacked.
+   *
+   * If an exclusive test is added to a schema with non-exclusive tests of the same name
+   * the previous tests are removed and further tests of the same name will replace each other.
+   */
+  test(options: TestConfig<this['__outputType'], TContext>): this;
+  test(test: TestFunction<this['__outputType'], TContext>): this;
+  test(name: string, test: TestFunction<this['__outputType'], TContext>): this;
+  test(
+    name: string,
+    message: Message,
+    test: TestFunction<this['__outputType'], TContext>,
+  ): this;
+  test(...args: any[]) {
+    let opts: TestConfig;
+
+    if (args.length === 1) {
+      if (typeof args[0] === 'function') {
+        opts = { test: args[0] };
+      } else {
+        opts = args[0];
+      }
+    } else if (args.length === 2) {
+      opts = { name: args[0], test: args[1] };
+    } else {
+      opts = { name: args[0], message: args[1], test: args[2] };
+    }
+
+    if (opts.message === undefined) opts.message = locale.default;
+
+    if (typeof opts.test !== 'function')
+      throw new TypeError('`test` is a required parameters');
+
+    let next = this.clone();
+    let validate = createValidation(opts);
+
+    let isExclusive =
+      opts.exclusive || (opts.name && next.exclusiveTests[opts.name] === true);
+
+    if (opts.exclusive) {
+      if (!opts.name)
+        throw new TypeError(
+          'Exclusive tests must provide a unique `name` identifying the test',
+        );
+    }
+
+    if (opts.name) next.exclusiveTests[opts.name] = !!opts.exclusive;
+
+    next.tests = next.tests.filter((fn) => {
+      if (fn.OPTIONS!.name === opts.name) {
+        if (isExclusive) return false;
+        if (fn.OPTIONS!.test === validate.OPTIONS.test) return false;
+      }
+      return true;
+    });
+
+    next.tests.push(validate);
+
+    return next;
+  }
+
+  when(builder: ConditionBuilder<this>): this;
+  when(keys: string | string[], builder: ConditionBuilder<this>): this;
+  when(options: ConditionConfig<this>): this;
+  when(keys: string | string[], options: ConditionConfig<this>): this;
+  when(
+    keys: string | string[] | ConditionBuilder<this> | ConditionConfig<this>,
+    options?: ConditionBuilder<this> | ConditionConfig<this>,
+  ) {
+    if (!Array.isArray(keys) && typeof keys !== 'string') {
+      options = keys;
+      keys = '.';
+    }
+
+    let next = this.clone();
+    let deps = toArray(keys).map((key) => new Ref(key));
+
+    deps.forEach((dep) => {
+      // @ts-ignore readonly array
+      if (dep.isSibling) next.deps.push(dep.key);
+    });
+
+    next.conditions.push(
+      (typeof options === 'function'
+        ? new Condition(deps, options!)
+        : Condition.fromOptions(deps, options!)) as Condition,
+    );
+
+    return next;
+  }
+
+  typeError(message: Message) {
+    let next = this.clone();
+
+    next.internalTests.typeError = createValidation({
+      message,
+      name: 'typeError',
+      skipAbsent: true,
+      test(value) {
+        if (!this.schema._typeCheck(value))
+          return this.createError({
+            params: {
+              type: this.schema.type,
+            },
+          });
+        return true;
+      },
+    });
+    return next;
+  }
+
+  oneOf<U extends TType>(
+    enums: ReadonlyArray<U | Reference>,
+    message?: Message<{ values: any }>,
+  ): this;
+  oneOf(
+    enums: ReadonlyArray<TType | Reference>,
+    message: Message<{ values: any }>,
+  ): any;
+  oneOf<U extends TType>(
+    enums: ReadonlyArray<U | Reference>,
+    message = locale.oneOf,
+  ): any {
+    let next = this.clone();
+
+    enums.forEach((val) => {
+      next._whitelist.add(val);
+      next._blacklist.delete(val);
+    });
+
+    next.internalTests.whiteList = createValidation({
+      message,
+      name: 'oneOf',
+      skipAbsent: true,
+      test(value) {
+        let valids = (this.schema as Schema)._whitelist;
+        let resolved = valids.resolveAll(this.resolve);
+
+        return resolved.includes(value)
+          ? true
+          : this.createError({
+              params: {
+                values: Array.from(valids).join(', '),
+                resolved,
+              },
+            });
+      },
+    });
+
+    return next;
+  }
+
+  notOneOf<U extends TType>(
+    enums: ReadonlyArray<Maybe<U> | Reference>,
+    message = locale.notOneOf,
+  ): this {
+    let next = this.clone();
+    enums.forEach((val) => {
+      next._blacklist.add(val);
+      next._whitelist.delete(val);
+    });
+
+    next.internalTests.blacklist = createValidation({
+      message,
+      name: 'notOneOf',
+      test(value) {
+        let invalids = (this.schema as Schema)._blacklist;
+        let resolved = invalids.resolveAll(this.resolve);
+        if (resolved.includes(value))
+          return this.createError({
+            params: {
+              values: Array.from(invalids).join(', '),
+              resolved,
+            },
+          });
+        return true;
+      },
+    });
+
+    return next;
+  }
+
+  strip(strip = true): any {
+    let next = this.clone();
+    next.spec.strip = strip;
+    return next as any;
+  }
+
+  /**
+   * Return a serialized description of the schema including validations, flags, types etc.
+   *
+   * @param options Provide any needed context for resolving runtime schema alterations (lazy, when conditions, etc).
+   */
+  describe(options?: ResolveOptions<TContext>) {
+    const next = (options ? this.resolve(options) : this).clone();
+    const { label, meta, optional, nullable } = next.spec;
+    const description: SchemaDescription = {
+      meta,
+      label,
+      optional,
+      nullable,
+      default: next.getDefault(options),
+      type: next.type,
+      oneOf: next._whitelist.describe(),
+      notOneOf: next._blacklist.describe(),
+      tests: next.tests
+        .filter(
+          (n, idx, list) =>
+            list.findIndex((c) => c.OPTIONS!.name === n.OPTIONS!.name) === idx,
+        )
+        .map((fn) => {
+          const params =
+            fn.OPTIONS!.params && options
+              ? resolveParams({ ...fn.OPTIONS!.params }, options)
+              : fn.OPTIONS!.params;
+
+          return {
+            name: fn.OPTIONS!.name,
+            params,
+          };
+        }),
+    };
+
+    return description;
+  }
+
+  get ['~standard']() {
+    const schema = this;
+
+    const standard: StandardSchemaProps<
+      TType,
+      ResolveFlags<TType, TFlags, TDefault>
+    > = {
+      version: 1,
+      vendor: 'yup',
+      async validate(
+        value: unknown,
+      ): Promise<StandardResult<ResolveFlags<TType, TFlags, TDefault>>> {
+        try {
+          const result = await schema.validate(value, {
+            abortEarly: false,
+          });
+
+          return {
+            value: result as ResolveFlags<TType, TFlags, TDefault>,
+          };
+        } catch (err) {
+          if (err instanceof ValidationError) {
+            return {
+              issues: issuesFromValidationError(err),
+            };
+          }
+
+          throw err;
+        }
+      },
+    };
+
+    return standard;
+  }
+}
+
+export default interface Schema<
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  TType = any,
+  TContext = any,
+  TDefault = any,
+  TFlags extends Flags = '',
+  /* eslint-enable @typescript-eslint/no-unused-vars */
+> {
+  validateAt(
+    path: string,
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ): Promise<any>;
+  validateSyncAt(
+    path: string,
+    value: any,
+    options?: ValidateOptions<TContext>,
+  ): any;
+  equals: Schema['oneOf'];
+  is: Schema['oneOf'];
+  not: Schema['notOneOf'];
+  nope: Schema['notOneOf'];
+}
+
+// @ts-expect-error
+Schema.prototype.__isYupSchema__ = true;
+
+for (const method of ['validate', 'validateSync'])
+  Schema.prototype[`${method}At` as 'validateAt' | 'validateSyncAt'] =
+    function (path: string, value: any, options: ValidateOptions = {}) {
+      const { parent, parentPath, schema } = getIn(
+        this,
+        path,
+        value,
+        options.context,
+      );
+      return (schema as any)[method](parent && parent[parentPath], {
+        ...options,
+        parent,
+        path,
+      });
+    };
+
+for (const alias of ['equals', 'is'] as const)
+  Schema.prototype[alias] = Schema.prototype.oneOf;
+
+for (const alias of ['not', 'nope'] as const)
+  Schema.prototype[alias] = Schema.prototype.notOneOf;
+
+```
+
+### File: src/setLocale.ts
+```typescript
+import locale, { LocaleObject } from './locale';
+
+export type { LocaleObject };
+
+export default function setLocale(custom: LocaleObject) {
+  Object.keys(custom).forEach((type) => {
+    // @ts-ignore
+    Object.keys(custom[type]!).forEach((method) => {
+      // @ts-ignore
+      locale[type][method] = custom[type][method];
+    });
+  });
+}
+
+```
+
+### File: src/standardSchema.ts
+```typescript
+/**
+ * Copied from @standard-schema/spec to avoid having a dependency on it.
+ * https://github.com/standard-schema/standard-schema/blob/main/packages/spec/src/index.ts
+ */
+
+import ValidationError from './ValidationError';
+
+export interface StandardSchema<Input = unknown, Output = Input> {
+  readonly '~standard': StandardSchemaProps<Input, Output>;
+}
+
+export interface StandardSchemaProps<Input = unknown, Output = Input> {
+  readonly version: 1;
+  readonly vendor: string;
+  readonly validate: (
+    value: unknown,
+  ) => StandardResult<Output> | Promise<StandardResult<Output>>;
+  readonly types?: StandardTypes<Input, Output> | undefined;
+}
+
+export type StandardResult<Output> =
+  | StandardSuccessResult<Output>
+  | StandardFailureResult;
+
+export interface StandardSuccessResult<Output> {
+  readonly value: Output;
+  readonly issues?: undefined;
+}
+
+export interface StandardFailureResult {
+  readonly issues: ReadonlyArray<StandardIssue>;
+}
+
+export interface StandardIssue {
+  readonly message: string;
+  readonly path?: ReadonlyArray<PropertyKey | StandardPathSegment> | undefined;
+}
+
+export interface StandardPathSegment {
+  readonly key: PropertyKey;
+}
+
+export interface StandardTypes<Input, Output> {
+  readonly input: Input;
+  readonly output: Output;
+}
+
+export function createStandardPath(
+  path: string | undefined,
+): StandardIssue['path'] {
+  if (!path?.length) {
+    return undefined;
+  }
+
+  // Array to store the final path segments
+  const segments: string[] = [];
+  // Buffer for building the current segment
+  let currentSegment = '';
+  // Track if we're inside square brackets (array/property access)
+  let inBrackets = false;
+  // Track if we're inside quotes (for property names with special chars)
+  let inQuotes = false;
+
+  for (let i = 0; i < path.length; i++) {
+    const char = path[i];
+
+    if (char === '[' && !inQuotes) {
+      // When entering brackets, push any accumulated segment after splitting on dots
+      if (currentSegment) {
+        segments.push(...currentSegment.split('.').filter(Boolean));
+        currentSegment = '';
+      }
+      inBrackets = true;
+      continue;
+    }
+
+    if (char === ']' && !inQuotes) {
+      if (currentSegment) {
+        // Handle numeric indices (e.g. arr[0])
+        if (/^\d+$/.test(currentSegment)) {
+          segments.push(currentSegment);
+        } else {
+          // Handle quoted property names (e.g. obj["foo.bar"])
+          segments.push(currentSegment.replace(/^"|"$/g, ''));
+        }
+        currentSegment = '';
+      }
+      inBrackets = false;
+      continue;
+    }
+
+    if (char === '"') {
+      // Toggle quote state for handling quoted property names
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (char === '.' && !inBrackets && !inQuotes) {
+      // On dots outside brackets/quotes, push current segment
+      if (currentSegment) {
+        segments.push(currentSegment);
+        currentSegment = '';
+      }
+      continue;
+    }
+
+    currentSegment += char;
+  }
+
+  // Push any remaining segment after splitting on dots
+  if (currentSegment) {
+    segments.push(...currentSegment.split('.').filter(Boolean));
+  }
+
+  return segments;
+}
+
+export function createStandardIssues(
+  error: ValidationError,
+  parentPath?: string,
+): StandardIssue[] {
+  const path = parentPath ? `${parentPath}.${error.path}` : error.path;
+
+  return error.errors.map(
+    (err) =>
+      ({
+        message: err,
+        path: createStandardPath(path),
+      } satisfies StandardIssue),
+  );
+}
+
+export function issuesFromValidationError(
+  error: ValidationError,
+  parentPath?: string,
+): StandardIssue[] {
+  if (!error.inner?.length && error.errors.length) {
+    return createStandardIssues(error, parentPath);
+  }
+
+  const path = parentPath ? `${parentPath}.${error.path}` : error.path;
+
+  return error.inner.flatMap((err) => issuesFromValidationError(err, path));
+}
+
+```
+
+### File: src/string.ts
+```typescript
+import { MixedLocale, mixed as mixedLocale, string as locale } from './locale';
+import isAbsent from './util/isAbsent';
+import type Reference from './Reference';
+import type { Message, AnyObject, DefaultThunk } from './types';
+import type {
+  Concat,
+  Defined,
+  Flags,
+  NotNull,
+  SetFlag,
+  ToggleDefault,
+  UnsetFlag,
+  Maybe,
+  Optionals,
+} from './util/types';
+import Schema from './schema';
+import { parseDateStruct } from './util/parseIsoDate';
+
+// Taken from HTML spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address
+let rEmail =
+  // eslint-disable-next-line
+  /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+let rUrl =
+  // eslint-disable-next-line
+  /^((https?|ftp):)?\/\/(((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:)*@)?(((\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5]))|((([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|\d|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.)+(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])*([a-z]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])))\.?)(:\d*)?)(\/((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)+(\/(([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)*)*)?)?(\?((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|[\uE000-\uF8FF]|\/|\?)*)?(\#((([a-z]|\d|-|\.|_|~|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF])|(%[\da-f]{2})|[!\$&'\(\)\*\+,;=]|:|@)|\/|\?)*)?$/i;
+
+// eslint-disable-next-line
+let rUUID =
+  /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
+
+let yearMonthDay = '^\\d{4}-\\d{2}-\\d{2}';
+let hourMinuteSecond = '\\d{2}:\\d{2}:\\d{2}';
+let zOrOffset = '(([+-]\\d{2}(:?\\d{2})?)|Z)';
+let rIsoDateTime = new RegExp(
+  `${yearMonthDay}T${hourMinuteSecond}(\\.\\d+)?${zOrOffset}$`,
+);
+
+let isTrimmed = (value: Maybe<string>) =>
+  isAbsent(value) || value === value.trim();
+
+export type MatchOptions = {
+  excludeEmptyString?: boolean;
+  message: Message<{ regex: RegExp }>;
+  name?: string;
+};
+
+export type DateTimeOptions = {
+  message: Message<{ allowOffset?: boolean; precision?: number }>;
+  /** Allow a time zone offset. False requires UTC 'Z' timezone. (default: false) */
+  allowOffset?: boolean;
+  /** Require a certain sub-second precision on the date. (default: undefined -- any or no sub-second precision) */
+  precision?: number;
+};
+
+let objStringTag = {}.toString();
+
+function create(): StringSchema;
+function create<
+  T extends string,
+  TContext extends Maybe<AnyObject> = AnyObject,
+>(): StringSchema<T | undefined, TContext>;
+function create() {
+  return new StringSchema();
+}
+
+export { create };
+
+export default class StringSchema<
+  TType extends Maybe<string> = string | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  constructor() {
+    super({
+      type: 'string',
+      check(value): value is NonNullable<TType> {
+        if (value instanceof String) value = value.valueOf();
+        return typeof value === 'string';
+      },
+    });
+
+    this.withMutation(() => {
+      this.transform((value, _raw) => {
+        if (!this.spec.coerce || this.isType(value)) return value;
+
+        // don't ever convert arrays
+        if (Array.isArray(value)) return value;
+
+        const strValue =
+          value != null && value.toString ? value.toString() : value;
+
+        // no one wants plain objects converted to [Object object]
+        if (strValue === objStringTag) return value;
+
+        return strValue;
+      });
+    });
+  }
+
+  required(message?: Message<any>) {
+    return super.required(message).withMutation((schema: this) =>
+      schema.test({
+        message: message || mixedLocale.required,
+        name: 'required',
+        skipAbsent: true,
+        test: (value) => !!value!.length,
+      }),
+    );
+  }
+
+  notRequired() {
+    return super.notRequired().withMutation((schema: this) => {
+      schema.tests = schema.tests.filter((t) => t.OPTIONS!.name !== 'required');
+      return schema;
+    });
+  }
+
+  length(
+    length: number | Reference<number>,
+    message: Message<{ length: number }> = locale.length,
+  ) {
+    return this.test({
+      message,
+      name: 'length',
+      exclusive: true,
+      params: { length },
+      skipAbsent: true,
+      test(value: Maybe<string>) {
+        return value!.length === this.resolve(length);
+      },
+    });
+  }
+
+  min(
+    min: number | Reference<number>,
+    message: Message<{ min: number }> = locale.min,
+  ) {
+    return this.test({
+      message,
+      name: 'min',
+      exclusive: true,
+      params: { min },
+      skipAbsent: true,
+      test(value: Maybe<string>) {
+        return value!.length >= this.resolve(min);
+      },
+    });
+  }
+
+  max(
+    max: number | Reference<number>,
+    message: Message<{ max: number }> = locale.max,
+  ) {
+    return this.test({
+      name: 'max',
+      exclusive: true,
+      message,
+      params: { max },
+      skipAbsent: true,
+      test(value: Maybe<string>) {
+        return value!.length <= this.resolve(max);
+      },
+    });
+  }
+
+  matches(regex: RegExp, options?: MatchOptions | MatchOptions['message']) {
+    let excludeEmptyString = false;
+    let message;
+    let name;
+
+    if (options) {
+      if (typeof options === 'object') {
+        ({
+          excludeEmptyString = false,
+          message,
+          name,
+        } = options as MatchOptions);
+      } else {
+        message = options;
+      }
+    }
+
+    return this.test({
+      name: name || 'matches',
+      message: message || locale.matches,
+      params: { regex },
+      skipAbsent: true,
+      test: (value: Maybe<string>) =>
+        (value === '' && excludeEmptyString) || value!.search(regex) !== -1,
+    });
+  }
+
+  email(message = locale.email) {
+    return this.matches(rEmail, {
+      name: 'email',
+      message,
+      excludeEmptyString: true,
+    });
+  }
+
+  url(message = locale.url) {
+    return this.matches(rUrl, {
+      name: 'url',
+      message,
+      excludeEmptyString: true,
+    });
+  }
+
+  uuid(message = locale.uuid) {
+    return this.matches(rUUID, {
+      name: 'uuid',
+      message,
+      excludeEmptyString: false,
+    });
+  }
+
+  datetime(options?: DateTimeOptions | DateTimeOptions['message']) {
+    let message: DateTimeOptions['message'] = '';
+    let allowOffset: DateTimeOptions['allowOffset'];
+    let precision: DateTimeOptions['precision'];
+
+    if (options) {
+      if (typeof options === 'object') {
+        ({
+          message = '',
+          allowOffset = false,
+          precision = undefined,
+        } = options as DateTimeOptions);
+      } else {
+        message = options;
+      }
+    }
+
+    return this.matches(rIsoDateTime, {
+      name: 'datetime',
+      message: message || locale.datetime,
+      excludeEmptyString: true,
+    })
+      .test({
+        name: 'datetime_offset',
+        message: message || locale.datetime_offset,
+        params: { allowOffset },
+        skipAbsent: true,
+        test: (value: Maybe<string>) => {
+          if (!value || allowOffset) return true;
+          const struct = parseDateStruct(value);
+          if (!struct) return false;
+          return !!struct.z;
+        },
+      })
+      .test({
+        name: 'datetime_precision',
+        message: message || locale.datetime_precision,
+        params: { precision },
+        skipAbsent: true,
+        test: (value: Maybe<string>) => {
+          if (!value || precision == undefined) return true;
+          const struct = parseDateStruct(value);
+          if (!struct) return false;
+          return struct.precision === precision;
+        },
+      });
+  }
+
+  //-- transforms --
+  ensure(): StringSchema<NonNullable<TType>> {
+    return this.default('' as Defined<TType>).transform((val) =>
+      val === null ? '' : val,
+    ) as any;
+  }
+
+  trim(message = locale.trim) {
+    return this.transform((val) => (val != null ? val.trim() : val)).test({
+      message,
+      name: 'trim',
+      test: isTrimmed,
+    });
+  }
+
+  lowercase(message = locale.lowercase) {
+    return this.transform((value) =>
+      !isAbsent(value) ? value.toLowerCase() : value,
+    ).test({
+      message,
+      name: 'string_case',
+      exclusive: true,
+      skipAbsent: true,
+      test: (value: Maybe<string>) =>
+        isAbsent(value) || value === value.toLowerCase(),
+    });
+  }
+
+  uppercase(message = locale.uppercase) {
+    return this.transform((value) =>
+      !isAbsent(value) ? value.toUpperCase() : value,
+    ).test({
+      message,
+      name: 'string_case',
+      exclusive: true,
+      skipAbsent: true,
+      test: (value: Maybe<string>) =>
+        isAbsent(value) || value === value.toUpperCase(),
+    });
+  }
+}
+
+create.prototype = StringSchema.prototype;
+
+//
+// String Interfaces
+//
+
+export default interface StringSchema<
+  TType extends Maybe<string> = string | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  default<D extends Maybe<TType>>(
+    def: DefaultThunk<D, TContext>,
+  ): StringSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
+
+  oneOf<U extends TType>(
+    arrayOfValues: ReadonlyArray<U | Reference<U>>,
+    message?: MixedLocale['oneOf'],
+  ): StringSchema<U | Optionals<TType>, TContext, TDefault, TFlags>;
+  oneOf(
+    enums: ReadonlyArray<TType | Reference>,
+    message?: Message<{ values: any }>,
+  ): this;
+
+  concat<UType extends Maybe<string>, UContext, UDefault, UFlags extends Flags>(
+    schema: StringSchema<UType, UContext, UDefault, UFlags>,
+  ): StringSchema<
+    Concat<TType, UType>,
+    TContext & UContext,
+    UDefault,
+    TFlags | UFlags
+  >;
+  concat(schema: this): this;
+
+  defined(
+    msg?: Message,
+  ): StringSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): StringSchema<TType | undefined, TContext, TDefault, TFlags>;
+
+  required(
+    msg?: Message,
+  ): StringSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): StringSchema<Maybe<TType>, TContext, TDefault, TFlags>;
+
+  nullable(
+    msg?: Message,
+  ): StringSchema<TType | null, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message
+  ): StringSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): StringSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): StringSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+}
+
+```
+
+### File: src/tuple.ts
+```typescript
+// @ts-ignore
+
+import type {
+  AnyObject,
+  DefaultThunk,
+  InternalOptions,
+  ISchema,
+  Message,
+} from './types';
+import type {
+  Defined,
+  Flags,
+  NotNull,
+  SetFlag,
+  ToggleDefault,
+  UnsetFlag,
+  Maybe,
+} from './util/types';
+import type { ResolveOptions } from './Condition';
+import Schema, {
+  RunTest,
+  SchemaInnerTypeDescription,
+  SchemaSpec,
+} from './schema';
+import ValidationError from './ValidationError';
+import { tuple as tupleLocale } from './locale';
+
+type AnyTuple = [unknown, ...unknown[]];
+
+export function create<T extends AnyTuple>(schemas: {
+  [K in keyof T]: ISchema<T[K]>;
+}) {
+  return new TupleSchema<T | undefined>(schemas);
+}
+
+export default interface TupleSchema<
+  TType extends Maybe<AnyTuple> = AnyTuple | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  default<D extends Maybe<TType>>(
+    def: DefaultThunk<D, TContext>,
+  ): TupleSchema<TType, TContext, D, ToggleDefault<TFlags, D>>;
+
+  concat<TOther extends TupleSchema<any, any>>(schema: TOther): TOther;
+
+  defined(
+    msg?: Message,
+  ): TupleSchema<Defined<TType>, TContext, TDefault, TFlags>;
+  optional(): TupleSchema<TType | undefined, TContext, TDefault, TFlags>;
+
+  required(
+    msg?: Message,
+  ): TupleSchema<NonNullable<TType>, TContext, TDefault, TFlags>;
+  notRequired(): TupleSchema<Maybe<TType>, TContext, TDefault, TFlags>;
+
+  nullable(
+    msg?: Message,
+  ): TupleSchema<TType | null, TContext, TDefault, TFlags>;
+  nonNullable(
+    msg?: Message
+  ): TupleSchema<NotNull<TType>, TContext, TDefault, TFlags>;
+
+  strip(
+    enabled: false,
+  ): TupleSchema<TType, TContext, TDefault, UnsetFlag<TFlags, 's'>>;
+  strip(
+    enabled?: true,
+  ): TupleSchema<TType, TContext, TDefault, SetFlag<TFlags, 's'>>;
+}
+
+interface TupleSchemaSpec<T> extends SchemaSpec<any> {
+  types: T extends any[]
+    ? {
+        [K in keyof T]: ISchema<T[K]>;
+      }
+    : never;
+}
+
+export default class TupleSchema<
+  TType extends Maybe<AnyTuple> = AnyTuple | undefined,
+  TContext = AnyObject,
+  TDefault = undefined,
+  TFlags extends Flags = '',
+> extends Schema<TType, TContext, TDefault, TFlags> {
+  declare spec: TupleSchemaSpec<TType>;
+
+  constructor(schemas: [ISchema<any>, ...ISchema<any>[]]) {
+    super({
+      type: 'tuple',
+      spec: { types: schemas } as any,
+      check(v: any): v is NonNullable<TType> {
+        const types = (this.spec as TupleSchemaSpec<TType>).types;
+        return Array.isArray(v) && v.length === types.length;
+      },
+    });
+
+    this.withMutation(() => {
+      this.typeError(tupleLocale.notType);
+    });
+  }
+
+  protected _cast(inputValue: any, options: InternalOptions<TContext>) {
+    const { types } = this.spec;
+    const value = super._cast(inputValue, options);
+
+    if (!this._typeCheck(value)) {
+      return value;
+    }
+
+    let isChanged = false;
+    const castArray = types.map((type, idx) => {
+      const castElement = type.cast(value[idx], {
+        ...options,
+        path: `${options.path || ''}[${idx}]`,
+        parent: value,
+        originalValue: value[idx],
+        value: value[idx],
+        index: idx,
+      });
+      if (castElement !== value[idx]) isChanged = true;
+      return castElement;
+    });
+
+    return isChanged ? castArray : value;
+  }
+
+  protected _validate(
+    _value: any,
+    options: InternalOptions<TContext> = {},
+    panic: (err: Error, value: unknown) => void,
+    next: (err: ValidationError[], value: unknown) => void,
+  ) {
+    let itemTypes = this.spec.types;
+
+    super._validate(_value, options, panic, (tupleErrors, value) => {
+      // intentionally not respecting recursive
+      if (!this._typeCheck(value)) {
+        next(tupleErrors, value);
+        return;
+      }
+
+      let tests: RunTest[] = [];
+      for (let [index, itemSchema] of itemTypes.entries()) {
+        tests[index] = itemSchema!.asNestedTest({
+          options,
+          index,
+          parent: value,
+          parentPath: options.path,
+          originalParent: options.originalValue ?? _value,
+        });
+      }
+
+      this.runTests(
+        {
+          value,
+          tests,
+          originalValue: options.originalValue ?? _value,
+          options,
+        },
+        panic,
+        (innerTypeErrors) => next(innerTypeErrors.concat(tupleErrors), value),
+      );
+    });
+  }
+
+  describe(options?: ResolveOptions<TContext>) {
+    const next = (options ? this.resolve(options) : this).clone();
+    const base = super.describe(options) as SchemaInnerTypeDescription;
+    base.innerType = next.spec.types.map((schema, index) => {
+      let innerOptions = options;
+      if (innerOptions?.value) {
+        innerOptions = {
+          ...innerOptions,
+          parent: innerOptions.value,
+          value: innerOptions.value[index],
+        };
+      }
+      return schema.describe(innerOptions);
+    });
+    return base;
+  }
+}
+
+create.prototype = TupleSchema.prototype;
+
+```
+
+### File: src/types.ts
+```typescript
+import type { ResolveOptions } from './Condition';
+import type {
+  AnySchema,
+  CastOptionalityOptions,
+  CastOptions,
+  SchemaFieldDescription,
+  SchemaSpec,
+} from './schema';
+import type { Test } from './util/createValidation';
+import type { AnyObject } from './util/objectTypes';
+import type { Flags } from './util/types';
+
+export type { AnyObject, AnySchema };
+
+export interface ISchema<T, C = any, F extends Flags = any, D = any> {
+  __flags: F;
+  __context: C;
+  __outputType: T;
+  __default: D;
+
+  cast(value: any, options?: CastOptions<C>): T;
+  cast(value: any, options: CastOptionalityOptions<C>): T | null | undefined;
+
+  validate(value: any, options?: ValidateOptions<C>): Promise<T>;
+
+  asNestedTest(config: NestedTestConfig): Test;
+
+  describe(options?: ResolveOptions<C>): SchemaFieldDescription;
+  resolve(options: ResolveOptions<C>): ISchema<T, C, F>;
+}
+
+export type DefaultThunk<T, C = any> = T | ((options?: ResolveOptions<C>) => T);
+
+export type InferType<T extends ISchema<any, any>> = T['__outputType'];
+
+export type TransformFunction<T extends AnySchema, C = any> = (
+  this: T,
+  value: any,
+  originalValue: any,
+  schema: T,
+  options: CastOptions<C>,
+) => any;
+
+export interface Ancester<TContext> {
+  schema: ISchema<any, TContext>;
+  value: any;
+}
+export interface ValidateOptions<TContext = {}> {
+  /**
+   * Only validate the input, skipping type casting and transformation. Default - false
+   */
+  strict?: boolean;
+  /**
+   * Return from validation methods on the first error rather than after all validations run. Default - true
+   */
+  abortEarly?: boolean;
+  /**
+   * Remove unspecified keys from objects. Default - false
+   */
+  stripUnknown?: boolean;
+  /**
+   * When false validations will not descend into nested schema (relevant for objects or arrays). Default - true
+   */
+  recursive?: boolean;
+  /**
+   * When true ValidationError instance won't include stack trace information. Default - false
+   */
+  disableStackTrace?: boolean;
+  /**
+   * Any context needed for validating schema conditions (see: when())
+   */
+  context?: TContext;
+}
+
+export interface InternalOptions<TContext = any>
+  extends ValidateOptions<TContext> {
+  __validating?: boolean;
+  originalValue?: any;
+  index?: number;
+  key?: string;
+  parent?: any;
+  path?: string;
+  sync?: boolean;
+  from?: Ancester<TContext>[];
+}
+
+export interface MessageParams {
+  path: string;
+  value: any;
+  originalValue: any;
+  originalPath: string;
+  label: string;
+  type: string;
+  spec: SchemaSpec<any> & Record<string, unknown>;
+}
+
+export type Message<Extra extends Record<string, unknown> = any> =
+  | string
+  | ((params: Extra & MessageParams) => unknown)
+  | Record<PropertyKey, unknown>;
+
+export type ExtraParams = Record<string, unknown>;
+
+export type AnyMessageParams = MessageParams & ExtraParams;
+
+export interface NestedTestConfig {
+  options: InternalOptions<any>;
+  parent: any;
+  originalParent: any;
+  parentPath: string | undefined;
+  key?: string;
+  index?: number;
+}
+
+```
+
+### File: src/ValidationError.ts
+```typescript
+import printValue from './util/printValue';
+import toArray from './util/toArray';
+
+let strReg = /\$\{\s*(\w+)\s*\}/g;
+
+type Params = Record<string, unknown>;
+
+class ValidationErrorNoStack implements ValidationError {
+  name: string;
+  message: string;
+
+  value: any;
+  path?: string;
+  type?: string;
+  params?: Params;
+
+  errors: string[];
+  inner: ValidationError[];
+
+  constructor(
+    errorOrErrors: string | ValidationError | readonly ValidationError[],
+    value?: any,
+    field?: string,
+    type?: string,
+  ) {
+    this.name = 'ValidationError';
+    this.value = value;
+    this.path = field;
+    this.type = type;
+
+    this.errors = [];
+    this.inner = [];
+
+    toArray(errorOrErrors).forEach((err) => {
+      if (ValidationError.isError(err)) {
+        this.errors.push(...err.errors);
+        const innerErrors = err.inner.length ? err.inner : [err];
+        this.inner.push(...innerErrors);
+      } else {
+        this.errors.push(err);
+      }
+    });
+
+    this.message =
+      this.errors.length > 1
+        ? `${this.errors.length} errors occurred`
+        : this.errors[0];
+  }
+
+  [Symbol.toStringTag] = 'Error';
+}
+
+export default class ValidationError extends Error {
+  value: any;
+  path?: string;
+  type?: string;
+  params?: Params;
+
+  errors: string[] = [];
+  inner: ValidationError[] = [];
+
+  static formatError(
+    message: string | ((params: Params) => string) | unknown,
+    params: Params,
+  ) {
+    // Attempt to make the path more friendly for error message interpolation.
+    const path = params.label || params.path || 'this';
+    // Store the original path under `originalPath` so it isn't lost to custom
+    // message functions; e.g., ones provided in `setLocale()` calls.
+    params = { ...params, path, originalPath: params.path };
+
+    if (typeof message === 'string')
+      return message.replace(strReg, (_, key) => printValue(params[key]));
+    if (typeof message === 'function') return message(params);
+
+    return message;
+  }
+
+  static isError(err: any): err is ValidationError {
+    return err && err.name === 'ValidationError';
+  }
+
+  constructor(
+    errorOrErrors: string | ValidationError | readonly ValidationError[],
+    value?: any,
+    field?: string,
+    type?: string,
+    disableStack?: boolean,
+  ) {
+    const errorNoStack = new ValidationErrorNoStack(
+      errorOrErrors,
+      value,
+      field,
+      type,
+    );
+
+    if (disableStack) {
+      return errorNoStack;
+    }
+
+    super();
+
+    this.name = errorNoStack.name;
+    this.message = errorNoStack.message;
+    this.type = errorNoStack.type;
+    this.value = errorNoStack.value;
+    this.path = errorNoStack.path;
+    this.errors = errorNoStack.errors;
+    this.inner = errorNoStack.inner;
+
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ValidationError);
+    }
+  }
+
+  static [Symbol.hasInstance](inst: any) {
+    return (
+      ValidationErrorNoStack[Symbol.hasInstance](inst) ||
+      super[Symbol.hasInstance](inst)
+    );
+  }
+
+  [Symbol.toStringTag] = 'Error';
+}
+
+```
+
+### File: src/util/createValidation.ts
+```typescript
+import ValidationError from '../ValidationError';
+import Ref from '../Reference';
+import {
+  ValidateOptions,
+  Message,
+  InternalOptions,
+  ExtraParams,
+  ISchema,
+} from '../types';
+import Reference from '../Reference';
+import type { AnySchema } from '../schema';
+import isAbsent from './isAbsent';
+import { ResolveOptions } from '../Condition';
+
+export type PanicCallback = (err: Error) => void;
+
+export type NextCallback = (
+  err: ValidationError[] | ValidationError | null,
+) => void;
+
+export type CreateErrorOptions = {
+  path?: string;
+  message?: Message<any>;
+  params?: ExtraParams;
+  type?: string;
+  disableStackTrace?: boolean;
+};
+
+export type TestContext<TContext = {}> = {
+  path: string;
+  options: ValidateOptions<TContext>;
+  originalValue: any;
+  parent: any;
+  from?: Array<{ schema: ISchema<any, TContext>; value: any }>;
+  schema: any;
+  resolve: <T>(value: T | Reference<T>) => T;
+  createError: (params?: CreateErrorOptions) => ValidationError;
+};
+
+export type TestFunction<T = unknown, TContext = {}> = (
+  this: TestContext<TContext>,
+  value: T,
+  context: TestContext<TContext>,
+) => void | boolean | ValidationError | Promise<boolean | ValidationError>;
+
+export type TestOptions<TSchema extends AnySchema = AnySchema> = {
+  value: any;
+  path?: string;
+  options: InternalOptions;
+  originalValue: any;
+  schema: TSchema;
+};
+
+export type TestConfig<TValue = unknown, TContext = {}> = {
+  name?: string;
+  message?: Message<any>;
+  test: TestFunction<TValue, TContext>;
+  params?: ExtraParams;
+  exclusive?: boolean;
+  skipAbsent?: boolean;
+};
+
+export type Test = ((
+  opts: TestOptions,
+  panic: PanicCallback,
+  next: NextCallback,
+) => void) & {
+  OPTIONS?: TestConfig;
+};
+
+export default function createValidation(config: {
+  name?: string;
+  test: TestFunction;
+  params?: ExtraParams;
+  message?: Message<any>;
+  skipAbsent?: boolean;
+}) {
+  function validate<TSchema extends AnySchema = AnySchema>(
+    { value, path = '', options, originalValue, schema }: TestOptions<TSchema>,
+    panic: PanicCallback,
+    next: NextCallback,
+  ) {
+    const { name, test, params, message, skipAbsent } = config;
+    let {
+      parent,
+      context,
+      abortEarly = schema.spec.abortEarly,
+      disableStackTrace = schema.spec.disableStackTrace,
+    } = options;
+    const resolveOptions = { value, parent, context };
+    function createError(overrides: CreateErrorOptions = {}) {
+      const nextParams = resolveParams(
+        {
+          value,
+          originalValue,
+          label: schema.spec.label,
+          path: overrides.path || path,
+          spec: schema.spec,
+          disableStackTrace: overrides.disableStackTrace || disableStackTrace,
+          ...params,
+          ...overrides.params,
+        },
+        resolveOptions,
+      );
+
+      const error = new ValidationError(
+        ValidationError.formatError(overrides.message || message, nextParams),
+        value,
+        nextParams.path,
+        overrides.type || name,
+        nextParams.disableStackTrace,
+      );
+      error.params = nextParams;
+      return error;
+    }
+
+    const invalid = abortEarly ? panic : next;
+
+    let ctx = {
+      path,
+      parent,
+      type: name,
+      from: options.from,
+      createError,
+      resolve<T>(item: T | Reference<T>) {
+        return resolveMaybeRef(item, resolveOptions);
+      },
+      options,
+      originalValue,
+      schema,
+    };
+
+    const handleResult = (validOrError: ReturnType<TestFunction>) => {
+      if (ValidationError.isError(validOrError)) invalid(validOrError);
+      else if (!validOrError) invalid(createError());
+      else next(null);
+    };
+
+    const handleError = (err: any) => {
+      if (ValidationError.isError(err)) invalid(err);
+      else panic(err);
+    };
+
+    const shouldSkip = skipAbsent && isAbsent(value);
+
+    if (shouldSkip) {
+      return handleResult(true);
+    }
+
+    let result: ReturnType<TestFunction>;
+    try {
+      result = test.call(ctx, value, ctx);
+      if (typeof (result as any)?.then === 'function') {
+        if (options.sync) {
+          throw new Error(
+            `Validation test of type: "${ctx.type}" returned a Promise during a synchronous validate. ` +
+              `This test will finish after the validate call has returned`,
+          );
+        }
+        return Promise.resolve(result).then(handleResult, handleError);
+      }
+    } catch (err: any) {
+      handleError(err);
+      return;
+    }
+
+    handleResult(result);
+  }
+
+  validate.OPTIONS = config;
+
+  return validate;
+}
+
+// Warning: mutates the input
+export function resolveParams<T extends ExtraParams>(
+  params: T,
+  options: ResolveOptions,
+) {
+  if (!params) return params;
+
+  type Keys = (keyof typeof params)[];
+  for (const key of Object.keys(params) as Keys) {
+    params[key] = resolveMaybeRef(params[key], options);
+  }
+
+  return params;
+}
+
+function resolveMaybeRef<T>(item: T | Reference<T>, options: ResolveOptions) {
+  return Ref.isRef(item)
+    ? item.getValue(options.value, options.parent, options.context)
+    : item;
+}
+
+```
+
+### File: src/util/objectTypes.ts
+```typescript
+import type { Maybe, Optionals } from './types';
+import type Reference from '../Reference';
+import type { ISchema } from '../types';
+
+export type ObjectShape = { [k: string]: ISchema<any> | Reference };
+
+export type AnyObject = { [k: string]: any };
+
+export type ResolveStrip<T extends ISchema<any>> = T extends ISchema<
+  any,
+  any,
+  infer F
+>
+  ? Extract<F, 's'> extends never
+    ? T['__outputType']
+    : never
+  : T['__outputType'];
+
+export type TypeFromShape<S extends ObjectShape, _C> = {
+  [K in keyof S]: S[K] extends ISchema<any>
+    ? ResolveStrip<S[K]>
+    : S[K] extends Reference<infer T>
+    ? T
+    : unknown;
+};
+
+export type DefaultFromShape<Shape extends ObjectShape> = {
+  [K in keyof Shape]: Shape[K] extends ISchema<any>
+    ? Shape[K]['__default']
+    : undefined;
+};
+
+export type MergeObjectTypes<T extends Maybe<AnyObject>, U extends AnyObject> =
+  | ({ [P in keyof T]: P extends keyof U ? U[P] : T[P] } & U)
+  | Optionals<T>;
+
+export type ConcatObjectTypes<
+  T extends Maybe<AnyObject>,
+  U extends Maybe<AnyObject>,
+> =
+  | ({
+      [P in keyof T]: P extends keyof NonNullable<U> ? NonNullable<U>[P] : T[P];
+    } & U)
+  | Optionals<U>;
+
+export type PartialDeep<T> = T extends
+  | string
+  | number
+  | bigint
+  | boolean
+  | null
+  | undefined
+  | symbol
+  | Date
+  ? T | undefined
+  : T extends Array<infer ArrayType>
+  ? Array<PartialDeep<ArrayType>>
+  : T extends ReadonlyArray<infer ArrayType>
+  ? ReadonlyArray<ArrayType>
+  : { [K in keyof T]?: PartialDeep<T[K]> };
+
+type OptionalKeys<T extends {}> = {
+  [k in keyof T]: undefined extends T[k] ? k : never;
+}[keyof T];
+
+type RequiredKeys<T extends object> = Exclude<keyof T, OptionalKeys<T>>;
+
+export type MakePartial<T extends object> = {
+  [k in OptionalKeys<T> as T[k] extends never ? never : k]?: T[k];
+} & { [k in RequiredKeys<T> as T[k] extends never ? never : k]: T[k] };
+
+```
+
+### File: src/util/parseIsoDate.ts
+```typescript
+/**
+ * This file is a modified version of the file from the following repository:
+ * Date.parse with progressive enhancement for ISO 8601 <https://github.com/csnover/js-iso8601>
+ * NON-CONFORMANT EDITION.
+ * © 2011 Colin Snover <http://zetafleet.com>
+ * Released under MIT license.
+ */
+
+// prettier-ignore
+//                1 YYYY                2 MM        3 DD              4 HH     5 mm        6 ss           7 msec         8 Z 9 ±   10 tzHH    11 tzmm
+const isoReg = /^(\d{4}|[+-]\d{6})(?:-?(\d{2})(?:-?(\d{2}))?)?(?:[ T]?(\d{2}):?(\d{2})(?::?(\d{2})(?:[,.](\d{1,}))?)?(?:(Z)|([+-])(\d{2})(?::?(\d{2}))?)?)?$/;
+
+export function parseIsoDate(date: string): number {
+  const struct = parseDateStruct(date);
+  if (!struct) return Date.parse ? Date.parse(date) : Number.NaN;
+
+  // timestamps without timezone identifiers should be considered local time
+  if (struct.z === undefined && struct.plusMinus === undefined) {
+    return new Date(
+      struct.year,
+      struct.month,
+      struct.day,
+      struct.hour,
+      struct.minute,
+      struct.second,
+      struct.millisecond,
+    ).valueOf();
+  }
+
+  let totalMinutesOffset = 0;
+  if (struct.z !== 'Z' && struct.plusMinus !== undefined) {
+    totalMinutesOffset = struct.hourOffset * 60 + struct.minuteOffset;
+    if (struct.plusMinus === '+') totalMinutesOffset = 0 - totalMinutesOffset;
+  }
+
+  return Date.UTC(
+    struct.year,
+    struct.month,
+    struct.day,
+    struct.hour,
+    struct.minute + totalMinutesOffset,
+    struct.second,
+    struct.millisecond,
+  );
+}
+
+export function parseDateStruct(date: string) {
+  const regexResult = isoReg.exec(date);
+  if (!regexResult) return null;
+
+  // use of toNumber() avoids NaN timestamps caused by “undefined”
+  // values being passed to Date constructor
+  return {
+    year: toNumber(regexResult[1]),
+    month: toNumber(regexResult[2], 1) - 1,
+    day: toNumber(regexResult[3], 1),
+    hour: toNumber(regexResult[4]),
+    minute: toNumber(regexResult[5]),
+    second: toNumber(regexResult[6]),
+    millisecond: regexResult[7]
+      ? // allow arbitrary sub-second precision beyond milliseconds
+        toNumber(regexResult[7].substring(0, 3))
+      : 0,
+    precision: regexResult[7]?.length ?? undefined,
+    z: regexResult[8] || undefined,
+    plusMinus: regexResult[9] || undefined,
+    hourOffset: toNumber(regexResult[10]),
+    minuteOffset: toNumber(regexResult[11]),
+  };
+}
+
+function toNumber(str: string, defaultValue = 0) {
+  return Number(str) || defaultValue;
+}
+
+```
+
+### File: src/util/printValue.ts
+```typescript
+const toString = Object.prototype.toString;
+const errorToString = Error.prototype.toString;
+const regExpToString = RegExp.prototype.toString;
+const symbolToString =
+  typeof Symbol !== 'undefined' ? Symbol.prototype.toString : () => '';
+
+const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
+
+function printNumber(val: any) {
+  if (val != +val) return 'NaN';
+  const isNegativeZero = val === 0 && 1 / val < 0;
+  return isNegativeZero ? '-0' : '' + val;
+}
+
+function printSimpleValue(val: any, quoteStrings = false) {
+  if (val == null || val === true || val === false) return '' + val;
+
+  const typeOf = typeof val;
+  if (typeOf === 'number') return printNumber(val);
+  if (typeOf === 'string') return quoteStrings ? `"${val}"` : val;
+  if (typeOf === 'function')
+    return '[Function ' + (val.name || 'anonymous') + ']';
+  if (typeOf === 'symbol')
+    return symbolToString.call(val).replace(SYMBOL_REGEXP, 'Symbol($1)');
+
+  const tag = toString.call(val).slice(8, -1);
+  if (tag === 'Date')
+    return isNaN(val.getTime()) ? '' + val : val.toISOString(val);
+  if (tag === 'Error' || val instanceof Error)
+    return '[' + errorToString.call(val) + ']';
+  if (tag === 'RegExp') return regExpToString.call(val);
+
+  return null;
+}
+
+export default function printValue(value: any, quoteStrings?: boolean) {
+  let result = printSimpleValue(value, quoteStrings);
+  if (result !== null) return result;
+
+  return JSON.stringify(
+    value,
+    function (key, value) {
+      let result = printSimpleValue(this[key], quoteStrings);
+      if (result !== null) return result;
+      return value;
+    },
+    2,
+  );
+}
+
+```
+
+### File: src/util/reach.ts
+```typescript
+import { forEach } from 'property-expr';
+import type Reference from '../Reference';
+import type { InferType, ISchema } from '../types';
+import type { Get } from 'type-fest';
+
+export function getIn<C = any>(
+  schema: any,
+  path: string,
+  value?: any,
+  context: C = value,
+): {
+  schema: ISchema<any> | Reference<any>;
+  parent: any;
+  parentPath: string;
+} {
+  let parent: any, lastPart: string, lastPartDebug: string;
+
+  // root path: ''
+  if (!path) return { parent, parentPath: path, schema };
+
+  forEach(path, (_part, isBracket, isArray) => {
+    let part = isBracket ? _part.slice(1, _part.length - 1) : _part;
+
+    schema = schema.resolve({ context, parent, value });
+
+    let isTuple = schema.type === 'tuple';
+    let idx = isArray ? parseInt(part, 10) : 0;
+
+    if (schema.innerType || isTuple) {
+      if (isTuple && !isArray)
+        throw new Error(
+          `Yup.reach cannot implicitly index into a tuple type. the path part "${lastPartDebug}" must contain an index to the tuple element, e.g. "${lastPartDebug}[0]"`,
+        );
+      if (value && idx >= value.length) {
+        throw new Error(
+          `Yup.reach cannot resolve an array item at index: ${_part}, in the path: ${path}. ` +
+            `because there is no value at that index. `,
+        );
+      }
+      parent = value;
+      value = value && value[idx];
+      schema = isTuple ? schema.spec.types[idx] : schema.innerType!;
+    }
+
+    // sometimes the array index part of a path doesn't exist: "nested.arr.child"
+    // in these cases the current part is the next schema and should be processed
+    // in this iteration. For cases where the index signature is included this
+    // check will fail and we'll handle the `child` part on the next iteration like normal
+    if (!isArray) {
+      if (!schema.fields || !schema.fields[part])
+        throw new Error(
+          `The schema does not contain the path: ${path}. ` +
+            `(failed at: ${lastPartDebug} which is a type: "${schema.type}")`,
+        );
+
+      parent = value;
+      value = value && value[part];
+      schema = schema.fields[part];
+    }
+
+    lastPart = part;
+    lastPartDebug = isBracket ? '[' + _part + ']' : '.' + _part;
+  });
+
+  return { schema, parent, parentPath: lastPart! };
+}
+
+function reach<P extends string, S extends ISchema<any>>(
+  obj: S,
+  path: P,
+  value?: any,
+  context?: any,
+):
+  | Reference<Get<InferType<S>, P>>
+  | ISchema<Get<InferType<S>, P>, S['__context']> {
+  return getIn(obj, path, value, context).schema as any;
+}
+
+export default reach;
+
+```
+
+### File: src/util/ReferenceSet.ts
+```typescript
+import type { SchemaRefDescription } from '../schema';
+import Reference from '../Reference';
+
+export default class ReferenceSet extends Set<unknown | Reference> {
+  describe() {
+    const description = [] as Array<unknown | SchemaRefDescription>;
+
+    for (const item of this.values()) {
+      description.push(Reference.isRef(item) ? item.describe() : item);
+    }
+    return description;
+  }
+
+  resolveAll(resolve: (v: unknown | Reference) => unknown) {
+    let result = [] as unknown[];
+    for (const item of this.values()) {
+      result.push(resolve(item));
+    }
+    return result;
+  }
+
+  clone() {
+    return new ReferenceSet(this.values());
+  }
+
+  merge(newItems: ReferenceSet, removeItems: ReferenceSet) {
+    const next = this.clone();
+
+    newItems.forEach((value) => next.add(value));
+    removeItems.forEach((value) => next.delete(value));
+    return next;
+  }
+}
+
+```
+
+### File: src/util/sortByKeyOrder.ts
+```typescript
+import ValidationError from '../ValidationError';
+
+function findIndex(arr: readonly string[], err: ValidationError) {
+  let idx = Infinity;
+  arr.some((key, ii) => {
+    if (err.path?.includes(key)) {
+      idx = ii;
+      return true;
+    }
+  });
+  return idx;
+}
+
+export default function sortByKeyOrder(keys: readonly string[]) {
+  return (a: ValidationError, b: ValidationError) => {
+    return findIndex(keys, a) - findIndex(keys, b);
+  };
+}
+
+```
+
+### File: src/util/sortFields.ts
+```typescript
+// @ts-expect-error
+import toposort from 'toposort';
+import { split } from 'property-expr';
+
+import Ref from '../Reference';
+import isSchema from './isSchema';
+import { ObjectShape } from './objectTypes';
+
+export default function sortFields(
+  fields: ObjectShape,
+  excludedEdges: readonly [string, string][] = [],
+) {
+  let edges = [] as Array<[string, string]>;
+  let nodes = new Set<string>();
+  let excludes = new Set(excludedEdges.map(([a, b]) => `${a}-${b}`));
+
+  function addNode(depPath: string, key: string) {
+    let node = split(depPath)[0];
+
+    nodes.add(node);
+    if (!excludes.has(`${key}-${node}`)) edges.push([key, node]);
+  }
+
+  for (const key of Object.keys(fields)) {
+    let value = fields[key];
+
+    nodes.add(key);
+
+    if (Ref.isRef(value) && value.isSibling) addNode(value.path, key);
+    else if (isSchema(value) && 'deps' in value)
+      (value as any).deps.forEach((path: string) => addNode(path, key));
+  }
+
+  return toposort.array(Array.from(nodes), edges).reverse() as string[];
+}
+
+```
+
+### File: src/util/toArray.ts
+```typescript
+export default function toArray<T>(value?: null | T | readonly T[]) {
+  return value == null ? [] : ([] as T[]).concat(value);
+}
+
+```
+
+### File: src/util/types.ts
+```typescript
+export type IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
+
+export type Maybe<T> = T | null | undefined;
+
+export type Preserve<T, U> = T extends U ? U : never;
+
+export type Optionals<T> = Extract<T, null | undefined>;
+
+export type Defined<T> = T extends undefined ? never : T;
+
+export type NotNull<T> = T extends null ? never : T;
+
+/* this seems to force TS to show the full type instead of all the wrapped generics */
+export type _<T> = T extends {} ? { [k in keyof T]: T[k] } : T;
+
+//
+// Schema Config
+//
+
+export type Flags = 's' | 'd' | '';
+
+export type SetFlag<Old extends Flags, F extends Flags> = Exclude<Old, ''> | F;
+
+export type UnsetFlag<Old extends Flags, F extends Flags> = Exclude<
+  Old,
+  F
+> extends never
+  ? ''
+  : Exclude<Old, F>;
+
+export type ToggleDefault<F extends Flags, D> = Preserve<
+  D,
+  undefined
+> extends never
+  ? SetFlag<F, 'd'>
+  : UnsetFlag<F, 'd'>;
+
+export type ResolveFlags<T, F extends Flags, D = T> = Extract<
+  F,
+  'd'
+> extends never
+  ? T
+  : D extends undefined
+  ? T
+  : Defined<T>;
+
+export type Concat<T, U> = NonNullable<T> & NonNullable<U> extends never
+  ? never
+  : (NonNullable<T> & NonNullable<U>) | Optionals<U>;
+
+```
+
+### File: test/helpers.ts
+```typescript
+import { describe, it, expect } from 'vitest';
+import { ISchema } from '../src/types';
+import printValue from '../src/util/printValue';
+
+export let castAndShouldFail = (schema: ISchema<any>, value: any) => {
+  expect(() => schema.cast(value)).toThrowError(TypeError);
+};
+
+type Options = {
+  invalid?: any[];
+  valid?: any[];
+};
+export let castAll = (
+  inst: ISchema<any>,
+  { invalid = [], valid = [] }: Options,
+) => {
+  valid.forEach(([value, result, schema = inst]) => {
+    it(`should cast ${printValue(value)} to ${printValue(result)}`, () => {
+      expect(schema.cast(value)).toBe(result);
+    });
+  });
+
+  invalid.forEach((value) => {
+    it(`should not cast ${printValue(value)}`, () => {
+      castAndShouldFail(inst, value);
+    });
+  });
+};
+
+export let validateAll = (
+  inst: ISchema<any>,
+  { valid = [], invalid = [] }: Options,
+) => {
+  describe('valid:', () => {
+    runValidations(valid, true);
+  });
+
+  describe('invalid:', () => {
+    runValidations(invalid, false);
+  });
+
+  function runValidations(arr: any[], isValid: boolean) {
+    arr.forEach((config) => {
+      let message = '',
+        value = config,
+        schema = inst;
+
+      if (Array.isArray(config)) [value, schema, message = ''] = config;
+
+      it(`${printValue(value)}${message && `  (${message})`}`, async () => {
+        await expect((schema as any).isValid(value)).resolves.toEqual(isValid);
+      });
+    });
+  }
+};
+
+export function validationErrorWithMessages(...errors: any[]) {
+  return expect.objectContaining({
+    errors,
+  });
+}
+
+export function ensureSync(fn: () => Promise<any>) {
+  let run = false;
+  let resolve = (t: any) => {
+    if (!run) return t;
+    throw new Error('Did not execute synchronously');
+  };
+  let err = (t: any) => {
+    if (!run) throw t;
+    throw new Error('Did not execute synchronously');
+  };
+
+  let result = fn().then(resolve, err);
+
+  run = true;
+  return result;
+}
+
+```

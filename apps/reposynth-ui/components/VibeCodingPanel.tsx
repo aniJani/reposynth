@@ -19,33 +19,31 @@ export function VibeCodingPanel() {
     setVibePrompt,
     vibeMetadata,
     setVibeMetadata,
+    vibeFileList,
+    setVibeFileList,
     isGeneratingPrompt,
     setIsGeneratingPrompt,
   } = useStore();
 
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [fileList, setFileList] = useState<{ files: string[]; roots: string[] }>({
-    files: [],
-    roots: [],
-  });
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [bundleSubMode, setBundleSubMode] = useState<'file' | 'search'>('file');
 
   // Reset file list when job changes
   useEffect(() => {
-    setFileList({ files: [], roots: [] });
-  }, [currentJob?.id]);
+    setVibeFileList({ files: [], roots: [] });
+  }, [currentJob?.id, setVibeFileList]);
 
   // Fetch files when in bundle mode (only if not already loaded)
   useEffect(() => {
     if (vibeMode === 'bundle' && currentJob?.id) {
       // Only fetch if we don't have files yet to avoid re-fetching on sub-mode switch
-      if (fileList.files.length === 0) {
+      if (vibeFileList.files.length === 0) {
         setIsLoadingFiles(true);
         getJobFiles(currentJob.id)
           .then((data) => {
-            setFileList(data);
+            setVibeFileList(data);
             // Auto-select first root if available and no entry point set
             if (data.roots.length > 0 && !vibeEntryPoint) {
               setVibeEntryPoint(data.roots[0]);
@@ -55,7 +53,7 @@ export function VibeCodingPanel() {
           .finally(() => setIsLoadingFiles(false));
       }
     }
-  }, [vibeMode, currentJob?.id, fileList.files.length, vibeEntryPoint, setVibeEntryPoint]);
+  }, [vibeMode, currentJob?.id, vibeFileList.files.length, vibeEntryPoint, setVibeEntryPoint, setVibeFileList]);
 
   const handleGeneratePrompt = async () => {
     if (!currentJob || currentJob.status !== 'completed') {
@@ -149,26 +147,6 @@ export function VibeCodingPanel() {
             </div>
 
             <div className="space-y-6 pt-4">
-              {/* Focus Mode - Query */}
-              {vibeMode === 'focus' && (
-                <div>
-                  <label
-                    className="text-zinc-400 text-xs font-semibold tracking-wider"
-                    htmlFor="query-textarea"
-                  >
-                    FOCUS_MODE // QUERY
-                  </label>
-                  <textarea
-                    id="query-textarea"
-                    value={vibeQuery}
-                    onChange={(e) => setVibeQuery(e.target.value)}
-                    placeholder="e.g., 'Analyze the component structure and data flow...'"
-                    className="mt-2 form-textarea w-full resize-none bg-zinc-950 border border-zinc-800 rounded-md p-3 text-zinc-300 placeholder:text-zinc-600 focus:ring-2 focus:ring-cyber-blue focus:border-cyber-blue transition-colors"
-                    rows={5}
-                  />
-                </div>
-              )}
-
             {/* Mode-Specific Inputs */}
             {vibeMode === 'focus' && (
               <div>
@@ -227,9 +205,9 @@ export function VibeCodingPanel() {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
                       >
                         <option value="">Select a file...</option>
-                        {fileList.roots.length > 0 && (
+                        {vibeFileList.roots.length > 0 && (
                           <optgroup label="⭐ Suggested Entry Points">
-                            {fileList.roots.map((f) => (
+                            {vibeFileList.roots.map((f) => (
                               <option key={f} value={f}>
                                 {f}
                               </option>
@@ -237,7 +215,7 @@ export function VibeCodingPanel() {
                           </optgroup>
                         )}
                         <optgroup label="All Files">
-                          {fileList.files.map((f) => (
+                          {vibeFileList.files.map((f) => (
                             <option key={f} value={f}>
                               {f}
                             </option>
@@ -245,7 +223,7 @@ export function VibeCodingPanel() {
                         </optgroup>
                       </select>
                     )}
-                    {fileList.files.length === 0 && !isLoadingFiles && (
+                    {vibeFileList.files.length === 0 && !isLoadingFiles && (
                       <p className="text-sm text-amber-600 mt-2">
                         ⚠️ No files found in the analysis pack. The job might have completed without generating a graph.
                       </p>
@@ -267,7 +245,7 @@ export function VibeCodingPanel() {
                       rows={3}
                     />
                     <p className="text-sm text-gray-500 mt-2">
-                      We'll find the most relevant file and build the tree from there
+                      We&apos;ll find the most relevant file and build the tree from there
                     </p>
                   </div>
                 )}
@@ -301,20 +279,7 @@ export function VibeCodingPanel() {
                   Generate Prompt
                 </>
               )}
-
-              {/* Generate Button */}
-              <button
-                onClick={handleGeneratePrompt}
-                disabled={isGeneratingPrompt || !currentJob || currentJob.status !== 'completed'}
-                className={`w-full flex items-center justify-center h-10 px-4 font-bold text-sm rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-zinc-900 ${
-                  isGeneratingPrompt || !currentJob || currentJob.status !== 'completed'
-                    ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
-                    : 'bg-neon-purple text-white hover:bg-violet-600 focus:ring-neon-purple'
-                }`}
-              >
-                <PlayCircle className="h-4 w-4 mr-2" style={{ fontVariationSettings: "'wght' 600" }} />
-                {isGeneratingPrompt ? 'GENERATING...' : 'GENERATE PROMPT'}
-              </button>
+            </button>
 
               {/* Info/Error Messages */}
               {(!currentJob || currentJob.status !== 'completed') && (
