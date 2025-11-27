@@ -47,8 +47,14 @@ export function JobProgressPanel() {
     setToonError(null);
     
     try {
-      // Fetch the actual TOON file from result_url
-      const response = await fetch(currentJob.result_url);
+      // The result_url from worker contains internal hostname (minio:9000)
+      // Replace with public MinIO URL
+      const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'http://163.192.102.98:9000';
+      const fetchUrl = currentJob.result_url.replace(/http:\/\/(minio|localhost):9000/g, MINIO_PUBLIC_URL);
+      
+      console.log('Fetching TOON from:', fetchUrl);
+      
+      const response = await fetch(fetchUrl);
       if (!response.ok) {
         throw new Error(`Failed to fetch: ${response.status}`);
       }
@@ -84,6 +90,35 @@ export function JobProgressPanel() {
     setToonContent(null);
     setToonTokens(null);
     setToonError(null);
+  };
+
+  // Helper to convert MinIO internal URL to public URL
+  const getDownloadUrl = (resultUrl: string | undefined): string => {
+    if (!resultUrl) return '#';
+    // Replace internal minio hostname with public URL
+    const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'http://163.192.102.98:9000';
+    return resultUrl.replace(/http:\/\/(minio|localhost):9000/g, MINIO_PUBLIC_URL);
+  };
+
+  // Handle download with proper filename
+  const handleDownload = async (url: string, filename?: string) => {
+    try {
+      const downloadUrl = getDownloadUrl(url);
+      const response = await fetch(downloadUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = filename || downloadUrl.split('/').pop() || 'download';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Download failed:', err);
+      // Fallback: open in new tab
+      window.open(getDownloadUrl(url), '_blank');
+    }
   };
 
   const formatTokenCount = (count: number) => {
@@ -210,14 +245,13 @@ export function JobProgressPanel() {
             {/* ZIP Format Output */}
             {isZipFormat && (
               <div className="flex flex-col sm:flex-row gap-3">
-                <a
-                  href={currentJob.result_url}
-                  download
+                <button
+                  onClick={() => currentJob.result_url && handleDownload(currentJob.result_url)}
                   className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-500 transition-colors"
                 >
                   <Download className="h-5 w-5" />
                   Download ZIP Pack
-                </a>
+                </button>
               </div>
             )}
 
@@ -270,14 +304,13 @@ export function JobProgressPanel() {
                           </>
                         )}
                       </button>
-                      <a
-                        href={currentJob.result_url}
-                        download
+                      <button
+                        onClick={() => currentJob.result_url && handleDownload(currentJob.result_url)}
                         className="flex items-center gap-2 px-5 py-2.5 bg-zinc-800/80 text-zinc-200 font-semibold rounded-xl hover:bg-zinc-700 transition-colors"
                       >
                         <Download className="h-4 w-4" />
                         Download File
-                      </a>
+                      </button>
                       <button
                         onClick={() => setIsVibeDrawerOpen(true)}
                         className="flex items-center gap-2 px-5 py-2.5 bg-violet-500/10 text-violet-400 font-semibold rounded-xl hover:bg-violet-500/20 transition-colors border border-violet-500/20"

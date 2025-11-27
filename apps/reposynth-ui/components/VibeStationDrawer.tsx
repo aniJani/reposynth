@@ -121,6 +121,33 @@ export function VibeStationDrawer() {
 
   if (!isVibeDrawerOpen) return null;
 
+  // Replace internal minio hostname with public URL
+  const getDownloadUrl = (resultUrl: string | undefined): string => {
+    if (!resultUrl) return '#';
+    const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'http://163.192.102.98:9000';
+    return resultUrl.replace(/http:\/\/(minio|localhost):9000/g, MINIO_PUBLIC_URL);
+  };
+
+  // Handle download with proper filename
+  const handleDownload = async (url: string) => {
+    try {
+      const downloadUrl = getDownloadUrl(url);
+      const response = await fetch(downloadUrl);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = downloadUrl.split('/').pop() || 'download';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Download failed:', err);
+      window.open(getDownloadUrl(url), '_blank');
+    }
+  };
+
   const formatTokenCount = (count: number) => {
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(2)}M`;
@@ -362,14 +389,13 @@ export function VibeStationDrawer() {
                         )}
                       </button>
                       {currentJob?.result_url && (
-                        <a
-                          href={currentJob.result_url}
-                          download
+                        <button
+                          onClick={() => handleDownload(currentJob.result_url!)}
                           className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-zinc-800/80 text-zinc-200 hover:bg-zinc-700 transition-colors"
                         >
                           <Download className="h-4 w-4" />
                           Download
-                        </a>
+                        </button>
                       )}
                     </div>
                   </div>
