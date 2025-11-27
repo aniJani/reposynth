@@ -4,11 +4,12 @@
 import { useStore } from '@/lib/store';
 import { useEffect, useState } from 'react';
 import { getJobStatus } from '@/lib/api';
-import { Download, Copy, Check, Loader2, CheckCircle, XCircle, Clock, Zap, Hash, RefreshCw } from 'lucide-react';
+import { Download, Copy, Check, Loader2, CheckCircle, XCircle, Clock, Zap, Hash, RefreshCw, Share2 } from 'lucide-react';
 
 export function JobProgressPanel() {
   const { currentJob, setCurrentJob, config, setIsVibeDrawerOpen } = useStore();
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const [toonContent, setToonContent] = useState<string | null>(null);
   const [toonTokens, setToonTokens] = useState<number | null>(null);
   const [isLoadingToon, setIsLoadingToon] = useState(false);
@@ -85,6 +86,19 @@ export function JobProgressPanel() {
     }
   };
 
+  const handleCopyShareLink = async () => {
+    if (!currentJob) return;
+
+    try {
+      const shareUrl = `${window.location.origin}/results/${currentJob.id}`;
+      await navigator.clipboard.writeText(shareUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy link:', err);
+    }
+  };
+
   const handleStartNew = () => {
     setCurrentJob(null);
     setToonContent(null);
@@ -139,13 +153,35 @@ export function JobProgressPanel() {
       <div className="flex items-center justify-between">
         <p className="text-zinc-500 text-xs font-medium uppercase tracking-wider">Job Progress</p>
         {currentJob.status === 'completed' && (
-          <button
-            onClick={handleStartNew}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
-          >
-            <RefreshCw className="h-3 w-3" />
-            New Analysis
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleCopyShareLink}
+              className={`flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                linkCopied
+                  ? 'bg-emerald-500/10 text-emerald-400'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+              }`}
+            >
+              {linkCopied ? (
+                <>
+                  <Check className="h-3 w-3" />
+                  Link Copied!
+                </>
+              ) : (
+                <>
+                  <Share2 className="h-3 w-3" />
+                  Share
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleStartNew}
+              className="flex items-center gap-2 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
+            >
+              <RefreshCw className="h-3 w-3" />
+              New Analysis
+            </button>
+          </div>
         )}
       </div>
 

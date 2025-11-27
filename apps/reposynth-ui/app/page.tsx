@@ -8,19 +8,21 @@ import { VibeStationDrawer } from '@/components/VibeStationDrawer';
 import { Database, Sparkles } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const { currentJob, repoUrl, isVibeDrawerOpen, setIsVibeDrawerOpen } = useStore();
   const prevJobStatusRef = useRef<string | null>(null);
+  const router = useRouter();
 
-  // Auto-open Vibe Station when job completes (only for toon format)
+  // Auto-redirect to results page when job completes
   useEffect(() => {
     if (currentJob?.status === 'completed' && prevJobStatusRef.current !== 'completed') {
-      // Auto-open vibe drawer for toon format
-      setIsVibeDrawerOpen(true);
+      // Redirect to shareable results page
+      router.push(`/results/${currentJob.id}`);
     }
     prevJobStatusRef.current = currentJob?.status ?? null;
-  }, [currentJob?.status, setIsVibeDrawerOpen]);
+  }, [currentJob?.status, currentJob?.id, router]);
 
   const showVibeButton = currentJob?.status === 'completed';
   const showConfiguration = repoUrl.trim().length > 0;
