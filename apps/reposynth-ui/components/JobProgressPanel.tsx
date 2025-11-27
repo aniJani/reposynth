@@ -50,7 +50,7 @@ export function JobProgressPanel() {
     try {
       // The result_url from worker contains internal hostname (minio:9000)
       // Replace with public MinIO URL
-      const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'http://163.192.102.98:9000';
+      const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'https://reposynth.duckdns.org/storage';
       const fetchUrl = currentJob.result_url.replace(/http:\/\/(minio|localhost):9000/g, MINIO_PUBLIC_URL);
       
       console.log('Fetching TOON from:', fetchUrl);
@@ -110,7 +110,7 @@ export function JobProgressPanel() {
   const getDownloadUrl = (resultUrl: string | undefined): string => {
     if (!resultUrl) return '#';
     // Replace internal minio hostname with public URL
-    const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'http://163.192.102.98:9000';
+    const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'https://reposynth.duckdns.org/storage';
     return resultUrl.replace(/http:\/\/(minio|localhost):9000/g, MINIO_PUBLIC_URL);
   };
 

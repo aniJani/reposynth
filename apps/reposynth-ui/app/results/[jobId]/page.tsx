@@ -87,7 +87,7 @@ export default function ResultsPage() {
     setToonError(null);
 
     try {
-      const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'http://163.192.102.98:9000';
+      const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'https://reposynth.duckdns.org/storage';
       const fetchUrl = job.result_url.replace(/http:\/\/(minio|localhost):9000/g, MINIO_PUBLIC_URL);
 
       console.log('Fetching TOON from:', fetchUrl);
@@ -134,7 +134,7 @@ export default function ResultsPage() {
 
   const getDownloadUrl = (resultUrl: string | undefined): string => {
     if (!resultUrl) return '#';
-    const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'http://163.192.102.98:9000';
+    const MINIO_PUBLIC_URL = process.env.NEXT_PUBLIC_MINIO_URL || 'https://reposynth.duckdns.org/storage';
     return resultUrl.replace(/http:\/\/(minio|localhost):9000/g, MINIO_PUBLIC_URL);
   };
 
