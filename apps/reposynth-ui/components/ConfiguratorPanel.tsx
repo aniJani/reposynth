@@ -2,57 +2,13 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { Settings, Zap, Layers, BarChart, Shield, Brain } from 'lucide-react';
-import { useEffect, useCallback, useRef } from 'react';
-import { estimateTokens } from '@/lib/api';
+import { Zap, Layers, BarChart, Shield, Brain } from 'lucide-react';
 
 export function ConfiguratorPanel() {
   const {
     config,
     setConfig,
-    repoUrl,
-    setEstimate,
-    setIsEstimating,
-    setEstimateError,
   } = useStore();
-
-  // Use a ref to track the debounce timeout
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Debounced estimation
-  useEffect(() => {
-    if (!repoUrl) {
-      setEstimate(null);
-      return;
-    }
-
-    // Clear previous timeout
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Set new debounced call
-    debounceTimerRef.current = setTimeout(async () => {
-      setIsEstimating(true);
-      setEstimateError(null);
-      try {
-        const estimate = await estimateTokens({ repo_url: repoUrl, config });
-        setEstimate(estimate);
-      } catch (error) {
-        setEstimateError('Failed to fetch estimate');
-        console.error('Estimation error:', error);
-      } finally {
-        setIsEstimating(false);
-      }
-    }, 500);
-
-    // Cleanup on unmount or dependency change
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [repoUrl, config, setEstimate, setIsEstimating, setEstimateError]);
 
   const modeConfig = [
     { value: 'semantic', label: 'Semantic', time: '~30s', description: 'Lightweight analysis' },
@@ -62,7 +18,6 @@ export function ConfiguratorPanel() {
 
   const formatConfig = [
     { value: 'zip', label: 'ZIP' },
-    { value: 'markdown', label: 'Markdown' },
     { value: 'toon', label: 'TOON' },
   ] as const;
 
@@ -83,7 +38,7 @@ export function ConfiguratorPanel() {
       enable_complexity: false,
       enable_security: false,
       enable_embeddings: true,
-      output_format: 'markdown' as const,
+      output_format: 'toon' as const,
     },
     balanced: {
       mode: 'hybrid' as const,
@@ -92,7 +47,7 @@ export function ConfiguratorPanel() {
       enable_complexity: true,
       enable_security: false,
       enable_embeddings: true,
-      output_format: 'zip' as const,
+      output_format: 'toon' as const,
     },
     deepDive: {
       mode: 'full' as const,

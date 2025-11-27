@@ -2,20 +2,29 @@
 
 import { UrlInput } from '@/components/UrlInput';
 import { ConfiguratorPanel } from '@/components/ConfiguratorPanel';
-import { EstimatorDisplay } from '@/components/EstimatorDisplay';
 import { SubmitButton } from '@/components/SubmitButton';
-import { JobStatusDisplay } from '@/components/JobStatusDisplay';
+import { JobProgressPanel } from '@/components/JobProgressPanel';
 import { VibeStationDrawer } from '@/components/VibeStationDrawer';
 import { Database, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
 
 export default function Home() {
-  const [isVibeDrawerOpen, setIsVibeDrawerOpen] = useState(false);
-  const { currentJob, repoUrl } = useStore();
+  const { currentJob, repoUrl, isVibeDrawerOpen, setIsVibeDrawerOpen } = useStore();
+  const prevJobStatusRef = useRef<string | null>(null);
+
+  // Auto-open Vibe Station when job completes (only for toon format)
+  useEffect(() => {
+    if (currentJob?.status === 'completed' && prevJobStatusRef.current !== 'completed') {
+      // Auto-open vibe drawer for toon format
+      setIsVibeDrawerOpen(true);
+    }
+    prevJobStatusRef.current = currentJob?.status ?? null;
+  }, [currentJob?.status, setIsVibeDrawerOpen]);
 
   const showVibeButton = currentJob?.status === 'completed';
   const showConfiguration = repoUrl.trim().length > 0;
+  const hasActiveJob = currentJob && currentJob.status !== 'failed';
 
   return (
     <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
@@ -34,8 +43,12 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 pt-20">
+      {/* Main Content - slides left when vibe drawer opens */}
+      <main 
+        className={`flex-1 pt-20 transition-all duration-300 ease-in-out ${
+          isVibeDrawerOpen ? 'mr-[50%] lg:mr-[40%]' : 'mr-0'
+        }`}
+      >
         {!showConfiguration ? (
           /* Centered URL Input - Initial State */
           <div className="flex items-center justify-center min-h-[calc(100vh-5rem)] px-4">
@@ -52,7 +65,7 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          /* Configuration Panels - After URL Entry */
+          /* Configuration / Job Progress - After URL Entry */
           <div className="max-w-5xl mx-auto px-4 md:px-8 pb-16">
             <div className="space-y-8">
               {/* URL Input - Compact */}
@@ -60,27 +73,34 @@ export default function Home() {
                 <UrlInput />
               </div>
 
-              {/* Configuration Panel */}
-              <div className="w-full">
-                <ConfiguratorPanel />
-              </div>
+              {/* Show Configuration Panel OR Job Progress Panel */}
+              {!hasActiveJob ? (
+                <>
+                  {/* Configuration Panel */}
+                  <div className="w-full">
+                    <ConfiguratorPanel />
+                  </div>
 
-              {/* Estimator Display */}
-              <div className="w-full">
-                <EstimatorDisplay />
-              </div>
-
-              {/* Submit Button */}
-              <div className="w-full pt-4">
-                <SubmitButton />
-              </div>
+                  {/* Submit Button */}
+                  <div className="w-full pt-4">
+                    <SubmitButton />
+                  </div>
+                </>
+              ) : (
+                /* Job Progress Panel - replaces config when job is active */
+                <div className="w-full">
+                  <JobProgressPanel />
+                </div>
+              )}
             </div>
           </div>
         )}
       </main>
 
       {/* Footer - Minimal */}
-      <footer className="py-6 text-center border-t border-zinc-800/50 bg-zinc-950/50">
+      <footer className={`py-6 text-center border-t border-zinc-800/50 bg-zinc-950/50 transition-all duration-300 ease-in-out ${
+        isVibeDrawerOpen ? 'mr-[50%] lg:mr-[40%]' : 'mr-0'
+      }`}>
         <div className="flex items-center justify-center gap-6 text-xs text-zinc-600">
           <a href="#" className="hover:text-zinc-400 transition-colors">
             Documentation
@@ -96,29 +116,19 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Fixed Job Status Display - Bottom Left */}
-      {currentJob && (
-        <div className="fixed bottom-8 left-8 w-full max-w-2xl z-30">
-          <JobStatusDisplay />
-        </div>
-      )}
-
-      {/* Floating Vibe Station Button */}
-      {showVibeButton && (
+      {/* Floating Vibe Station Button - only show when drawer is closed */}
+      {showVibeButton && !isVibeDrawerOpen && (
         <button
           onClick={() => setIsVibeDrawerOpen(true)}
-          className="fixed bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-neon-purple to-violet-600 text-white rounded-full shadow-2xl hover:shadow-neon-purple/50 hover:scale-105 transition-all font-bold text-base z-30 glow-purple"
+          className="fixed bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-violet-600 text-white rounded-xl hover:bg-violet-500 transition-colors font-semibold text-base z-30"
         >
           <Sparkles className="h-5 w-5" />
           <span>Vibe Station</span>
         </button>
       )}
 
-      {/* Vibe Station Drawer */}
-      <VibeStationDrawer
-        isOpen={isVibeDrawerOpen}
-        onClose={() => setIsVibeDrawerOpen(false)}
-      />
+      {/* Vibe Station Drawer - no backdrop blur */}
+      <VibeStationDrawer />
     </div>
   );
 }
