@@ -10,6 +10,12 @@ export interface JobConfiguration {
   output_format: 'zip' | 'markdown' | 'json' | 'toon';
 }
 
+export interface RateLimitInfo {
+  limit: number;
+  remaining: number;
+  reset_at: string;
+}
+
 export interface EstimateResponse {
   estimated_tokens: number;
   estimated_time_seconds: number;
@@ -17,6 +23,7 @@ export interface EstimateResponse {
   mode: string;
   features_enabled: Record<string, boolean>;
   warnings: string[];
+  rate_limit?: RateLimitInfo;
 }
 
 export interface JobStatus {
@@ -40,6 +47,10 @@ export interface VibeMetadata {
 }
 
 interface StoreState {
+  // Rate Limit Info
+  rateLimit: RateLimitInfo | null;
+  setRateLimit: (rateLimit: RateLimitInfo | null) => void;
+
   // Repository URL
   repoUrl: string;
   setRepoUrl: (url: string) => void;
@@ -84,6 +95,10 @@ interface StoreState {
 }
 
 export const useStore = create<StoreState>((set) => ({
+  // Rate Limit Info
+  rateLimit: null,
+  setRateLimit: (rateLimit) => set({ rateLimit }),
+
   // Repository URL
   repoUrl: '',
   setRepoUrl: (url) => set({ repoUrl: url }),

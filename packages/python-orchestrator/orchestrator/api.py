@@ -3,14 +3,20 @@
 FastAPI application for RepoSynth.
 Week 6: Token estimation API endpoint.
 Week 8: Job queue and background processing.
+Week 10: Production security - Rate limiting, authentication, CORS.
 """
 
-from fastapi import FastAPI, HTTPException, status, Depends
+import logging
+import datetime
+from fastapi import FastAPI, HTTPException, status, Depends, Request, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from pathlib import Path
-import sys
 import os
 import uuid
 import boto3
@@ -38,8 +44,19 @@ from .estimator import estimate_tokens, TIKTOKEN_AVAILABLE, PYGOUNT_AVAILABLE
 from .git_utils import clone_repository, cleanup_cloned_repo
 
 # Week 8: Database and worker imports
-from .database import create_tables, get_db, Job
+from .database import create_tables, get_db, Job, RateLimitRecord
 from . import worker
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# ============================================================================
+# Configuration
+# ============================================================================
 
 # S3/MinIO Configuration
 S3_BUCKET = os.environ.get("S3_BUCKET", "reposynth-packs")
@@ -47,7 +64,29 @@ AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
 
+# API Configuration
+API_KEY = os.environ.get("REPOSYNTH_API_KEY", "")  # Optional API key for additional auth
+DAILY_RATE_LIMIT = int(os.environ.get("DAILY_RATE_LIMIT", "5"))  # Requests per day per IP
+
+# Allowed origins for CORS (production domains)
+ALLOWED_ORIGINS = [
+    "https://www.reposynth.com",
+    "https://reposynth.com",
+    "https://reposynth.vercel.app",
+]
+
+# Add localhost and development origins if enabled
+if os.environ.get("ALLOW_DEV_ORIGINS", "false").lower() == "true":
+    ALLOWED_ORIGINS.extend([
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+    ])
+    # Also allow any IP-based access (for local network development)
+    ALLOWED_ORIGINS.append("*")
+
 # Initialize S3 client
+s3_client = None
 try:
     s3_client = boto3.client(
         "s3",
@@ -56,11 +95,32 @@ try:
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
 except Exception as e:
-    print(f"Warning: Failed to initialize S3 client: {e}", file=sys.stderr)
-    s3_client = None
+    logger.warning(f"Failed to initialize S3 client: {e}")
 
 # Application metadata
-__version__ = "2.0.0"  # Week 8 update
+__version__ = "2.1.0"  # Week 10 update - Production security
+
+# ============================================================================
+# Rate Limiter Setup
+# ============================================================================
+
+def get_client_ip(request: Request) -> str:
+    """Extract client IP, considering proxy headers."""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    
+    real_ip = request.headers.get("X-Real-IP")
+    if real_ip:
+        return real_ip
+    
+    return request.client.host if request.client else "unknown"
+
+limiter = Limiter(key_func=get_client_ip)
+
+# ============================================================================
+# FastAPI Application
+# ============================================================================
 
 # Create FastAPI application
 app = FastAPI(
@@ -70,6 +130,9 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+# Add rate limiter to app state
+app.state.limiter = limiter
 
 # Mount worker_packs directory to serve generated files locally
 # This allows downloading packs without S3/MinIO if needed
@@ -87,32 +150,184 @@ else:
 worker_packs_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/packs", StaticFiles(directory=str(worker_packs_dir)), name="packs")
 
-# Enable CORS for future web UI
+# ============================================================================
+# Middleware
+# ============================================================================
+
+# CORS - Only allow specific origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Configure properly in production
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
 )
+
+# Rate limit middleware
+app.add_middleware(SlowAPIMiddleware)
+
+
+# ============================================================================
+# Rate Limit Helpers
+# ============================================================================
+
+def get_rate_limit_info(db: Session, ip_address: str) -> Dict:
+    """Get current rate limit status for an IP address."""
+    today = datetime.date.today()
+    
+    record = db.query(RateLimitRecord).filter(
+        RateLimitRecord.ip_address == ip_address,
+        RateLimitRecord.date == today
+    ).first()
+    
+    if not record:
+        return {
+            "limit": DAILY_RATE_LIMIT,
+            "remaining": DAILY_RATE_LIMIT,
+            "reset_at": datetime.datetime.combine(
+                today + datetime.timedelta(days=1),
+                datetime.time.min
+            ).isoformat() + "Z"
+        }
+    
+    remaining = max(0, DAILY_RATE_LIMIT - record.request_count)
+    reset_at = datetime.datetime.combine(
+        today + datetime.timedelta(days=1),
+        datetime.time.min
+    )
+    
+    return {
+        "limit": DAILY_RATE_LIMIT,
+        "remaining": remaining,
+        "reset_at": reset_at.isoformat() + "Z"
+    }
+
+
+def check_and_increment_rate_limit(db: Session, ip_address: str) -> Dict:
+    """Check rate limit and increment counter. Raises HTTPException if exceeded."""
+    today = datetime.date.today()
+    
+    record = db.query(RateLimitRecord).filter(
+        RateLimitRecord.ip_address == ip_address,
+        RateLimitRecord.date == today
+    ).first()
+    
+    reset_at = datetime.datetime.combine(
+        today + datetime.timedelta(days=1),
+        datetime.time.min
+    )
+    
+    if not record:
+        record = RateLimitRecord(
+            ip_address=ip_address,
+            date=today,
+            request_count=1,
+            last_request_at=datetime.datetime.utcnow()
+        )
+        db.add(record)
+        db.commit()
+        
+        return {
+            "limit": DAILY_RATE_LIMIT,
+            "remaining": DAILY_RATE_LIMIT - 1,
+            "reset_at": reset_at.isoformat() + "Z"
+        }
+    
+    if record.request_count >= DAILY_RATE_LIMIT:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail={
+                "error": "Rate limit exceeded",
+                "message": f"You have exceeded the daily limit of {DAILY_RATE_LIMIT} API calls.",
+                "limit": DAILY_RATE_LIMIT,
+                "remaining": 0,
+                "reset_at": reset_at.isoformat() + "Z"
+            }
+        )
+    
+    record.request_count += 1
+    record.last_request_at = datetime.datetime.utcnow()
+    db.commit()
+    
+    return {
+        "limit": DAILY_RATE_LIMIT,
+        "remaining": DAILY_RATE_LIMIT - record.request_count,
+        "reset_at": reset_at.isoformat() + "Z"
+    }
+
+
+# ============================================================================
+# Authentication
+# ============================================================================
+
+def verify_origin(request: Request):
+    """Verify the request comes from an allowed origin."""
+    origin = request.headers.get("origin") or request.headers.get("referer")
+    
+    # Allow requests without origin header (direct API calls, health checks)
+    if not origin:
+        return True
+    
+    # Check if origin matches allowed list
+    for allowed in ALLOWED_ORIGINS:
+        if origin.startswith(allowed):
+            return True
+    
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Origin not allowed"
+    )
+
+
+def verify_api_key(x_api_key: Optional[str] = Header(None)):
+    """Verify API key if configured."""
+    if not API_KEY:
+        return True
+    
+    if not x_api_key or x_api_key != API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing API key"
+        )
+    return True
+
+
+# ============================================================================
+# Exception Handlers
+# ============================================================================
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    """Handle rate limit exceeded errors from SlowAPI."""
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={
+            "detail": "Rate limit exceeded. Please try again later."
+        }
+    )
 
 
 @app.on_event("startup")
 def on_startup():
     """Initialize database tables on application startup."""
-    print("🚀 Starting RepoSynth API...")
+    logger.info("Starting RepoSynth API...")
     create_tables()
-    print("✓ Database initialized")
+    logger.info("Database initialized")
 
 
 @app.exception_handler(ValueError)
-async def value_error_handler(request, exc):
+async def value_error_handler(request: Request, exc: ValueError):
     """Handle validation errors with proper HTTP status."""
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"detail": str(exc)}
     )
 
+
+# ============================================================================
+# Public Endpoints (No Rate Limit)
+# ============================================================================
 
 @app.get("/", tags=["Root"])
 async def root():
@@ -131,26 +346,21 @@ async def root():
 
 @app.get("/health", response_model=HealthResponse, tags=["Health"])
 async def health_check(db: Session = Depends(get_db)):
-    """
-    Health check endpoint.
-    Returns the status of the API and its dependencies.
-    """
-    # Test database connection
+    """Health check endpoint. Returns the status of the API and its dependencies."""
     database_healthy = False
     try:
         db.execute(text("SELECT 1"))
         database_healthy = True
-    except Exception as e:
-        print(f"Database health check failed: {e}", file=sys.stderr)
+    except Exception:
+        pass
 
     dependencies: Dict[str, bool] = {
         "tiktoken": TIKTOKEN_AVAILABLE,
         "pygount": PYGOUNT_AVAILABLE,
         "database": database_healthy,
-        "worker_queue": True,  # TODO: Add Redis health check
+        "worker_queue": True,
     }
 
-    # Overall health: healthy if all critical dependencies are available
     is_healthy = PYGOUNT_AVAILABLE and database_healthy
 
     return HealthResponse(
@@ -160,32 +370,40 @@ async def health_check(db: Session = Depends(get_db)):
     )
 
 
+@app.get("/rate-limit-status", tags=["Rate Limiting"])
+async def get_rate_limit_status(request: Request, db: Session = Depends(get_db)):
+    """Get current rate limit status for your IP address."""
+    ip = get_client_ip(request)
+    rate_info = get_rate_limit_info(db, ip)
+    
+    return {
+        "ip_address": ip,
+        "daily_limit": rate_info["limit"],
+        "remaining_calls": rate_info["remaining"],
+        "reset_at": rate_info["reset_at"],
+        "message": f"You have {rate_info['remaining']} API calls remaining today."
+    }
+
+
+# ============================================================================
+# Rate-Limited Endpoints
+# ============================================================================
+
 @app.post("/estimate-tokens", response_model=EstimateResponse, tags=["Estimation"])
-async def estimate_tokens_endpoint(request: EstimateRequest):
+async def estimate_tokens_endpoint(
+    request: EstimateRequest,
+    req: Request = None,
+    db: Session = Depends(get_db),
+    _origin: bool = Depends(verify_origin)
+):
     """
     Estimate tokens and time for repository analysis.
-
-    This endpoint performs a fast analysis of the repository to estimate:
-    - Total tokens (base code + feature overhead)
-    - Estimated processing time for each pipeline stage
-    - Language breakdown with LoC statistics
-    - Warnings about expensive operations
-
-    The estimation is accurate (uses tiktoken sampling) but fast (< 5 seconds
-    for most repositories).
-
-    Args:
-        request: EstimateRequest with repo_path and config
-
-    Returns:
-        EstimateResponse with detailed estimates
-
-    Raises:
-        HTTPException: If repository doesn't exist or estimation fails
     """
+    ip = get_client_ip(req)
+    rate_info = check_and_increment_rate_limit(db, ip)
+    
     repo_path = Path(request.repo_path)
 
-    # Validate repository exists (should be caught by Pydantic, but double-check)
     if not repo_path.exists():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -199,10 +417,8 @@ async def estimate_tokens_endpoint(request: EstimateRequest):
         )
 
     try:
-        # Run estimation
         result = estimate_tokens(repo_path, request.config.model_dump())
 
-        # Convert dataclasses to Pydantic models
         language_breakdown = {
             lang: LanguageStatsSchema(
                 files=stats.files,
@@ -234,7 +450,8 @@ async def estimate_tokens_endpoint(request: EstimateRequest):
             language_breakdown=language_breakdown,
             feature_breakdown=feature_breakdown,
             summary=result.summary,
-            warnings=result.warnings
+            warnings=result.warnings,
+            rate_limit=rate_info
         )
 
     except ImportError as e:
@@ -243,8 +460,7 @@ async def estimate_tokens_endpoint(request: EstimateRequest):
             detail=f"Missing required dependency: {str(e)}"
         )
     except Exception as e:
-        # Log the error (in production, use proper logging)
-        print(f"Error during estimation: {e}", file=sys.stderr)
+        logger.error(f"Error during estimation: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Estimation failed: {str(e)}"
@@ -252,28 +468,16 @@ async def estimate_tokens_endpoint(request: EstimateRequest):
 
 
 @app.post("/estimate-tokens-from-github", response_model=EstimateResponse, tags=["Estimation"])
-async def estimate_tokens_from_github_endpoint(request: GitHubEstimateRequest):
-    """
-    Estimate tokens and time for a GitHub repository.
-
-    This endpoint:
-    1. Clones the repository from GitHub (shallow clone)
-    2. Runs token estimation
-    3. Optionally cleans up the cloned repository
-
-    This is useful for quickly estimating the cost of analyzing a public GitHub
-    repository without manually cloning it first.
-
-    Args:
-        request: GitHubEstimateRequest with repo_url, config, and cleanup flag
-
-    Returns:
-        EstimateResponse with detailed estimates
-
-    Raises:
-        HTTPException: If cloning fails or estimation fails
-    """
-    # Get project root (api.py is in orchestrator/, project root is 3 levels up)
+async def estimate_tokens_from_github_endpoint(
+    request: GitHubEstimateRequest,
+    req: Request = None,
+    db: Session = Depends(get_db),
+    _origin: bool = Depends(verify_origin)
+):
+    """Estimate tokens and time for a GitHub repository."""
+    ip = get_client_ip(req)
+    rate_info = check_and_increment_rate_limit(db, ip)
+    
     project_root = Path(__file__).parent.parent.parent.parent
     temp_repos_dir = project_root / "temp_repos"
     temp_repos_dir.mkdir(parents=True, exist_ok=True)
@@ -281,18 +485,14 @@ async def estimate_tokens_from_github_endpoint(request: GitHubEstimateRequest):
     cloned_repo_path = None
 
     try:
-        # Clone the repository
-        print(f"Cloning repository from {request.repo_url}...", file=sys.stderr)
         cloned_repo_path = clone_repository(
             git_url=request.repo_url,
             temp_dir=temp_repos_dir,
-            force_reclone=True  # Always get fresh copy
+            force_reclone=True
         )
 
-        # Run estimation on cloned repo
         result = estimate_tokens(cloned_repo_path, request.config.model_dump())
 
-        # Convert dataclasses to Pydantic models
         language_breakdown = {
             lang: LanguageStatsSchema(
                 files=stats.files,
@@ -324,11 +524,11 @@ async def estimate_tokens_from_github_endpoint(request: GitHubEstimateRequest):
             language_breakdown=language_breakdown,
             feature_breakdown=feature_breakdown,
             summary=result.summary,
-            warnings=result.warnings
+            warnings=result.warnings,
+            rate_limit=rate_info
         )
 
     except ValueError as e:
-        # Git clone or validation error
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
@@ -339,41 +539,32 @@ async def estimate_tokens_from_github_endpoint(request: GitHubEstimateRequest):
             detail=f"Missing required dependency: {str(e)}"
         )
     except Exception as e:
-        # Log the error (in production, use proper logging)
-        print(f"Error during GitHub estimation: {e}", file=sys.stderr)
+        logger.error(f"Error during GitHub estimation: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Estimation failed: {str(e)}"
         )
     finally:
-        # Cleanup cloned repository if requested
         if request.cleanup and cloned_repo_path and cloned_repo_path.exists():
             try:
                 cleanup_cloned_repo(cloned_repo_path)
             except Exception as e:
-                print(f"Warning: Failed to cleanup cloned repo: {e}", file=sys.stderr)
+                logger.warning(f"Failed to cleanup cloned repo: {e}")
 
 
 @app.post("/estimate", response_model=ConfiguratorEstimateResponse, tags=["Estimation"])
-async def estimate_from_config(request: ConfiguratorEstimateRequest):
-    """
-    Estimate tokens and cost based on configuration without cloning the repository.
+async def estimate_from_config(
+    request: ConfiguratorEstimateRequest,
+    req: Request = None,
+    db: Session = Depends(get_db),
+    _origin: bool = Depends(verify_origin)
+):
+    """Estimate tokens and cost based on configuration without cloning the repository."""
+    ip = get_client_ip(req)
+    rate_info = check_and_increment_rate_limit(db, ip)
     
-    This endpoint provides fast, deterministic estimates based on:
-    - Analysis mode (semantic, hybrid, full)
-    - Feature toggles (AST, imports, complexity, security, embeddings)
-    
-    No actual cloning or analysis is performed - this is for UI feedback only.
-    
-    Args:
-        request: ConfiguratorEstimateRequest with repo_url and config
-    
-    Returns:
-        ConfiguratorEstimateResponse with estimated tokens, time, and cost
-    """
     config = request.config
     
-    # Base estimates (these are rough heuristics - you can refine them)
     base_estimates = {
         "semantic": {"tokens": 50000, "time": 30},
         "hybrid": {"tokens": 100000, "time": 60},
@@ -384,7 +575,6 @@ async def estimate_from_config(request: ConfiguratorEstimateRequest):
     estimated_tokens = estimate["tokens"]
     estimated_time = float(estimate["time"])
     
-    # Feature multipliers
     feature_overhead = {
         "enable_ast": 0.3,
         "enable_imports": 0.2,
@@ -420,7 +610,8 @@ async def estimate_from_config(request: ConfiguratorEstimateRequest):
         estimated_cost_usd=round(estimated_cost, 6),
         mode=config.mode,
         features_enabled=features_enabled,
-        warnings=warnings
+        warnings=warnings,
+        rate_limit=rate_info
     )
 
 
@@ -431,63 +622,40 @@ async def estimate_from_config(request: ConfiguratorEstimateRequest):
 @app.post("/jobs", status_code=status.HTTP_202_ACCEPTED, tags=["Jobs"])
 async def create_job(
     repo_url: str,
+    request: Request,
     config: Optional[JobConfiguration] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    _origin: bool = Depends(verify_origin)
 ):
-    """
-    Submit a repository analysis job for background processing.
+    """Submit a repository analysis job for background processing."""
+    ip = get_client_ip(request)
+    rate_info = check_and_increment_rate_limit(db, ip)
     
-    This endpoint:
-    1. Creates a new job record in the database with configuration
-    2. Enqueues the job for processing by a worker
-    3. Returns immediately with the job ID
-    
-    The actual analysis runs asynchronously. Use GET /jobs/{job_id} to check status.
-    
-    Args:
-        repo_url: Git repository URL (e.g., https://github.com/user/repo)
-        config: Optional job configuration (mode, features). If not provided, defaults are used.
-        db: Database session (injected)
-    
-    Returns:
-        JSON with job_id and status
-    
-    Example:
-        POST /jobs?repo_url=https://github.com/jquense/yup
-        Body: {"mode": "hybrid", "enable_ast": true, ...}
-        Response: {"job_id": "abc-123", "status": "pending"}
-    """
-    # Use config if provided, otherwise use defaults
     if config is None:
         config = JobConfiguration()
     
-    # Extract mode for backward compatibility
     mode = config.mode
     
-    # Validate mode
     if mode not in ["semantic", "hybrid", "full"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid mode '{mode}'. Must be 'semantic', 'hybrid', or 'full'."
         )
     
-    # Validate URL format
     if not repo_url.startswith(("http://", "https://")):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid repository URL. Must start with http:// or https://"
         )
     
-    # Generate unique job ID
     job_id = str(uuid.uuid4())
     
-    # Create job record with configuration
     new_job = Job(
         id=job_id,
         repo_url=repo_url,
         mode=mode,
         status="pending",
-        config=config.model_dump()  # Store full config as JSON
+        config=config.model_dump()
     )
     
     try:
@@ -495,11 +663,9 @@ async def create_job(
         db.commit()
         db.refresh(new_job)
         
-        # Enqueue job for background processing with full config
-        # Note: worker.process_repository signature needs to accept config dict
         worker.process_repository.send(job_id, repo_url, config.model_dump())
         
-        print(f"✓ Created job {job_id} for {repo_url} (mode: {mode})")
+        logger.info(f"Created job {job_id} for {repo_url} (mode: {mode})")
         
         return {
             "job_id": job_id,
@@ -507,12 +673,13 @@ async def create_job(
             "repo_url": repo_url,
             "mode": mode,
             "config": config.model_dump(),
-            "message": "Job submitted successfully. Use GET /jobs/{job_id} to check status."
+            "message": "Job submitted successfully. Use GET /jobs/{job_id} to check status.",
+            "rate_limit": rate_info
         }
         
     except Exception as e:
         db.rollback()
-        print(f"✗ Failed to create job: {e}", file=sys.stderr)
+        logger.error(f"Failed to create job: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to create job: {str(e)}"
@@ -521,33 +688,7 @@ async def create_job(
 
 @app.get("/jobs/{job_id}", tags=["Jobs"])
 async def get_job_status(job_id: str, db: Session = Depends(get_db)):
-    """
-    Get the status of a submitted job.
-    
-    Returns detailed information about the job including:
-    - Current status (pending, processing, completed, failed)
-    - Timestamps (created, started, finished)
-    - Result URL (when completed)
-    - Error message (if failed)
-    - Processing statistics
-    
-    Args:
-        job_id: Unique job identifier returned from POST /jobs
-        db: Database session (injected)
-    
-    Returns:
-        JSON with complete job details
-    
-    Example:
-        GET /jobs/abc-123
-        Response: {
-            "id": "abc-123",
-            "status": "completed",
-            "repo_url": "https://github.com/jquense/yup",
-            "result_url": "http://minio:9000/reposynth-packs/abc-123.zip",
-            ...
-        }
-    """
+    """Get the status of a submitted job."""
     job = db.query(Job).filter(Job.id == job_id).first()
     
     if not job:
@@ -566,25 +707,9 @@ async def list_jobs(
     offset: int = 0,
     db: Session = Depends(get_db)
 ):
-    """
-    List all jobs with optional filtering.
-    
-    Args:
-        status_filter: Filter by status (pending, processing, completed, failed)
-        limit: Maximum number of jobs to return (default: 50, max: 200)
-        offset: Number of jobs to skip for pagination (default: 0)
-        db: Database session (injected)
-    
-    Returns:
-        JSON with list of jobs and pagination info
-    
-    Example:
-        GET /jobs?status_filter=completed&limit=10
-    """
-    # Validate and limit pagination
+    """List all jobs with optional filtering."""
     limit = min(limit, 200)
     
-    # Build query
     query = db.query(Job)
     
     if status_filter:
@@ -595,10 +720,8 @@ async def list_jobs(
             )
         query = query.filter(Job.status == status_filter)
     
-    # Get total count
     total = query.count()
     
-    # Apply pagination and ordering
     jobs = query.order_by(Job.created_at.desc()).offset(offset).limit(limit).all()
     
     return {
@@ -612,18 +735,12 @@ async def list_jobs(
 
 @app.get("/jobs/{job_id}/files", tags=["Jobs"])
 async def get_job_files(job_id: str):
-    """
-    Get list of files and suggested entry points for a job.
-    Useful for populating UI dropdowns in Bundle Mode.
-    """
-    # Locate pack (adjust path if using S3 vs local)
-    # Try local first
+    """Get list of files and suggested entry points for a job."""
     pack_path = worker_packs_dir / job_id
     
-    # Check multiple locations for import_graph.json
     graph_candidates = [
-        pack_path / "import_graph.json",  # Preserved directly in job folder
-        pack_path / "pack" / "import_graph.json",  # Unzipped pack folder
+        pack_path / "import_graph.json",
+        pack_path / "pack" / "import_graph.json",
     ]
     
     graph_path = None
@@ -658,14 +775,13 @@ async def get_job_files(job_id: str):
                                 "roots": suggest_entry_points(graph_data)
                             }
             except Exception as e:
-                print(f"Error reading zip file: {e}", file=sys.stderr)
+                logger.warning(f"Error reading zip file: {e}")
         
         return {"files": [], "roots": []}
         
     try:
         graph = json.loads(graph_path.read_text(encoding='utf-8'))
         
-        # Handle edges format for file list
         if "edges" in graph:
              files = set()
              for edge in graph["edges"]:
@@ -680,7 +796,7 @@ async def get_job_files(job_id: str):
             "roots": suggest_entry_points(graph)
         }
     except Exception as e:
-        print(f"Error reading job files: {e}", file=sys.stderr)
+        logger.warning(f"Error reading job files: {e}")
         return {"files": [], "roots": []}
 
 
@@ -689,21 +805,18 @@ async def get_job_files(job_id: str):
 # ============================================================================
 
 @app.post("/vibe-prompt", response_model=VibePromptResponse, tags=["Vibe Coding"])
-async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session = Depends(get_db)):
-    """
-    Generate an LLM-optimized prompt from a completed job's pack.
-
-    This endpoint supports three compression modes:
-    - **Blueprint Mode**: Structure only (5-10K tokens) - No source code, just architecture
-    - **Focus Mode**: Structure + relevant files (20-50K tokens) - Query-based file selection
-    - **Bundle Mode**: Structure + dependency slice (50-200K+ tokens) - Full dependency tree
-
-    The job must be completed (status='completed') and have a result pack available.
-    """
-    # Import engine function locally to avoid name conflict if any
+async def generate_vibe_prompt_endpoint(
+    request: VibePromptRequest,
+    req: Request,
+    db: Session = Depends(get_db),
+    _origin: bool = Depends(verify_origin)
+):
+    """Generate an LLM-optimized prompt from a completed job's pack."""
+    ip = get_client_ip(req)
+    rate_info = check_and_increment_rate_limit(db, ip)
+    
     from .prompt_engine import generate_vibe_prompt as engine_generate_prompt
 
-    # Get job from database
     job = db.query(Job).filter(Job.id == request.job_id).first()
 
     if not job:
@@ -724,7 +837,6 @@ async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session 
             detail=f"No result pack found for job {request.job_id}"
         )
 
-    # Validate mode-specific requirements
     if request.mode == "focus" and not request.query:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -738,36 +850,25 @@ async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session 
         )
 
     try:
-        # Check if the pack exists locally (shared volume)
         local_job_dir = worker_packs_dir / request.job_id
         local_pack_path = None
         
         if local_job_dir.exists():
-            # Check if essential pack files exist directly in the job directory
-            # (This is the new format after cleanup preserves essential files)
             if (local_job_dir / "name_registry.json").exists():
-                # Use the job directory itself as the pack path
                 local_pack_path = local_job_dir
-                print(f"Found local pack (directory with essential files): {local_pack_path}")
             else:
-                # Fallback to finding pack files
-                # Priority: TOON > ZIP > JSON
                 toons = list(local_job_dir.glob("*.toon"))
                 zips = list(local_job_dir.glob("*.zip"))
-                jsons = list(local_job_dir.glob("pack*.json"))  # Only match pack.json, not import_graph.json
+                jsons = list(local_job_dir.glob("pack*.json"))
                 
                 if toons:
                     local_pack_path = toons[0]
-                    print(f"Found local pack (toon): {local_pack_path}")
                 elif zips:
                     local_pack_path = zips[0]
-                    print(f"Found local pack (zip): {local_pack_path}")
                 elif jsons:
                     local_pack_path = jsons[0]
-                    print(f"Found local pack (json): {local_pack_path}")
 
         if local_pack_path and local_pack_path.exists():
-            # Use local file directly
             result = engine_generate_prompt(
                 pack_path=str(local_pack_path),
                 mode=request.mode,
@@ -775,45 +876,37 @@ async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session 
                 entry_point=request.entry_point,
                 max_files=request.max_files,
                 max_depth=request.max_depth,
-                repo_url=job.repo_url  # Pass repo_url for fallback source reading
+                repo_url=job.repo_url
             )
             
             return VibePromptResponse(
                 prompt=result["prompt"],
-                metadata=result["metadata"]
+                metadata=result["metadata"],
+                rate_limit=rate_info
             )
             
-        # Fallback to S3 download if not found locally
         with tempfile.TemporaryDirectory(prefix="vibe_prompt_") as temp_dir:
-            # Parse S3 URL to get bucket and key
             result_url = job.result_url
             
             if not result_url:
                  raise ValueError("No result URL found for job")
 
-            # Extract bucket and key from URL
             parts = result_url.split('/')
             
-            # Handle local file URLs (http://localhost:8000/packs/...)
             if "/packs/" in result_url:
                  raise ValueError("Local pack file not found on disk")
 
             bucket_name = parts[-3] if len(parts) >= 3 else S3_BUCKET
-            s3_key = "/".join(parts[-2:])  # job_id/filename.zip
+            s3_key = "/".join(parts[-2:])
             
-            # Determine file extension from key
             file_ext = Path(s3_key).suffix
             temp_pack_path = Path(temp_dir) / f"pack{file_ext}"
-
-            print(f"Downloading pack from S3: bucket={bucket_name}, key={s3_key}")
 
             if s3_client is None:
                 raise RuntimeError("S3 client not initialized and local file not found")
 
-            # Download from S3
             s3_client.download_file(bucket_name, s3_key, str(temp_pack_path))
 
-            # Generate prompt using prompt engine
             result = engine_generate_prompt(
                 pack_path=str(temp_pack_path),
                 mode=request.mode,
@@ -825,11 +918,12 @@ async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session 
 
             return VibePromptResponse(
                 prompt=result["prompt"],
-                metadata=result["metadata"]
+                metadata=result["metadata"],
+                rate_limit=rate_info
             )
 
     except Exception as e:
-        print(f"Error generating vibe prompt: {e}", file=sys.stderr)
+        logger.error(f"Error generating vibe prompt: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to generate prompt: {str(e)}"

@@ -45,3 +45,7 @@ uvicorn[standard]==0.34.0
 
 # Week 7: Security scanning dependencies
 detect-secrets==1.5.0
+
+# Week 10: Production security
+slowapi==0.1.9
+python-multipart==0.0.9

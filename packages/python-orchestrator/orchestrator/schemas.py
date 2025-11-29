@@ -2,11 +2,19 @@
 """
 Pydantic models for the RepoSynth API.
 Week 6: Token estimation and configuration schemas.
+Week 10: Rate limiting response fields.
 """
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 from typing import Dict, Optional, Any
 from pathlib import Path
+
+
+class RateLimitInfo(BaseModel):
+    """Rate limit information included in API responses."""
+    limit: int = Field(..., description="Maximum API calls per day")
+    remaining: int = Field(..., description="Remaining API calls for today")
+    reset_at: str = Field(..., description="ISO timestamp when rate limit resets")
 
 
 class ConfigModel(BaseModel):
@@ -115,6 +123,9 @@ class EstimateResponse(BaseModel):
 
     # Warnings (e.g., "Large repo - embeddings may take 10+ minutes")
     warnings: list[str] = Field(default_factory=list, description="Estimation warnings")
+    
+    # Rate limit info
+    rate_limit: Optional[RateLimitInfo] = Field(None, description="Rate limit status")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -324,6 +335,7 @@ class ConfiguratorEstimateResponse(BaseModel):
     mode: str = Field(..., description="Analysis mode used")
     features_enabled: Dict[str, bool] = Field(..., description="Map of feature names to enabled status")
     warnings: list[str] = Field(default_factory=list, description="Configuration warnings")
+    rate_limit: Optional[RateLimitInfo] = Field(None, description="Rate limit status")
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -401,6 +413,7 @@ class VibePromptResponse(BaseModel):
     """Response with generated Vibe Coding prompt."""
     prompt: str = Field(..., description="Generated prompt optimized for LLMs")
     metadata: Dict[str, Any] = Field(..., description="Metadata about the prompt")
+    rate_limit: Optional[RateLimitInfo] = Field(None, description="Rate limit status")
 
     model_config = ConfigDict(
         json_schema_extra={

@@ -5,6 +5,7 @@ import { ConfiguratorPanel } from '@/components/ConfiguratorPanel';
 import { SubmitButton } from '@/components/SubmitButton';
 import { JobProgressPanel } from '@/components/JobProgressPanel';
 import { VibeStationDrawer } from '@/components/VibeStationDrawer';
+import { RateLimitBanner } from '@/components/RateLimitBanner';
 import { Database, Sparkles } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
@@ -33,14 +34,17 @@ export default function Home() {
       {/* Fixed Header - Top Left */}
       <header className="fixed top-0 left-0 right-0 z-20 bg-zinc-950/80 backdrop-blur-md">
         <div className="px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Database className="text-primary h-6 w-6" />
-            <div>
-              <h1 className="text-lg font-bold font-display tracking-tight text-zinc-200">
-                RepoSynth
-              </h1>
-              <p className="text-xs text-zinc-500">Repository Synthesis & LLM Context Engine</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Database className="text-primary h-6 w-6" />
+              <div>
+                <h1 className="text-lg font-bold font-display tracking-tight text-zinc-200">
+                  RepoSynth
+                </h1>
+                <p className="text-xs text-zinc-500">Repository Synthesis & LLM Context Engine</p>
+              </div>
             </div>
+            <RateLimitBanner />
           </div>
         </div>
       </header>

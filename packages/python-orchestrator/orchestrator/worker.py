@@ -12,6 +12,7 @@ import subprocess
 import datetime
 import zipfile
 import json
+import logging
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -19,6 +20,13 @@ import dramatiq
 import boto3
 from dramatiq.brokers.redis import RedisBroker
 from sqlalchemy.orm import Session
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -38,6 +46,7 @@ AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
 
 # Initialize S3 client
+s3_client = None
 try:
     s3_client = boto3.client(
         "s3",
@@ -46,8 +55,7 @@ try:
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
 except Exception as e:
-    print(f"Warning: Failed to initialize S3 client: {e}", file=sys.stderr)
-    s3_client = None
+    logger.warning(f"Failed to initialize S3 client: {e}")
 
 
 def update_job_status(job_id: str, status: str, **kwargs):
@@ -82,12 +90,12 @@ def update_job_status(job_id: str, status: str, **kwargs):
                     setattr(job, key, value)
             
             db.commit()
-            print(f"✓ Updated job {job_id}: status={status}")
+            logger.info(f"Updated job {job_id}: status={status}")
         else:
-            print(f"✗ Job not found: {job_id}", file=sys.stderr)
+            logger.warning(f"Job not found: {job_id}")
     except Exception as e:
         db.rollback()
-        print(f"✗ Failed to update job status: {e}", file=sys.stderr)
+        logger.error(f"Failed to update job status: {e}")
     finally:
         db.close()
 
@@ -116,11 +124,11 @@ def clone_repository(repo_url: str, target_dir: Path) -> Path:
     
     # Remove existing clone if present
     if clone_path.exists():
-        print(f"Removing existing clone at {clone_path}")
+        logger.info(f"Removing existing clone at {clone_path}")
         shutil.rmtree(clone_path)
     
     # Clone the repository
-    print(f"Cloning {repo_url}...")
+    logger.info(f"Cloning {repo_url}...")
     try:
         subprocess.run(
             ["git", "clone", "--depth=1", "--no-tags", repo_url, str(clone_path)],
@@ -129,7 +137,7 @@ def clone_repository(repo_url: str, target_dir: Path) -> Path:
             text=True,
             timeout=300  # 5 minute timeout
         )
-        print(f"✓ Repository cloned to {clone_path}")
+        logger.info(f"Repository cloned to {clone_path}")
         return clone_path
     except subprocess.CalledProcessError as e:
         raise RuntimeError(f"Git clone failed: {e.stderr}")
@@ -154,7 +162,7 @@ def upload_to_s3(file_path: Path, s3_key: str) -> str:
         RuntimeError: If upload fails
     """
     try:
-        print(f"Uploading {file_path.name} to S3 bucket {S3_BUCKET}...")
+        logger.info(f"Uploading {file_path.name} to S3 bucket {S3_BUCKET}...")
         
         # Upload file
         s3_client.upload_file(
@@ -174,7 +182,7 @@ def upload_to_s3(file_path: Path, s3_key: str) -> str:
             # AWS S3 URL format
             result_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{s3_key}"
         
-        print(f"✓ Uploaded to: {result_url}")
+        logger.info(f"Uploaded to: {result_url}")
         return result_url
         
     except Exception as e:
@@ -645,12 +653,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
     
     mode = config.get("mode", "semantic")
     
-    print(f"\n{'='*60}")
-    print(f"🔧 Starting job {job_id}")
-    print(f"   Repository: {repo_url}")
-    print(f"   Mode: {mode}")
-    print(f"   Config: {config}")
-    print(f"{'='*60}\n")
+    logger.info(f"Starting job {job_id} for {repo_url} (mode: {mode})")
     
     # Update status to processing
     update_job_status(job_id, "processing")
@@ -723,7 +726,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
         output_pack_dir = worker_root / "pack"
         daemon_path = "/app/packages/rust-parser-daemon/target/release/rust-parser-daemon"
         
-        print(f"\n🔄 Running pipeline with config: {pipeline_config}")
+        logger.info(f"Running pipeline with config: {pipeline_config}")
         pipeline = Pipeline(
             repo_path=str(cloned_repo_path),
             output_path=str(output_pack_dir),
@@ -732,7 +735,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
         
         pipeline.run(config=pipeline_config)
         
-        print(f"✓ Pipeline completed successfully")
+        logger.info("Pipeline completed successfully")
         
         # Step 4: Package results based on output format
         repo_name = cloned_repo_path.name
@@ -749,7 +752,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                     extract_dir = worker_root / "extracted_pack"
                     extract_dir.mkdir(exist_ok=True)
                     
-                    print(f"📦 Extracting {zip_path.name} for markdown generation...")
+                    logger.info(f"Extracting {zip_path.name} for markdown generation...")
                     with zipfile.ZipFile(zip_path, 'r') as zf:
                         zf.extractall(extract_dir)
                     
@@ -761,7 +764,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                         output_pack_dir = extract_dir
             
             # Generate markdown output
-            print(f"📄 Generating markdown output...")
+            logger.info("Generating markdown output...")
             markdown_content = generate_markdown_output(output_pack_dir, repo_name)
             pack_filename = f"reposynth_{repo_name}_{mode}_{job_id}.md"
             pack_path = worker_root / pack_filename
@@ -779,7 +782,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                     extract_dir = worker_root / "extracted_pack"
                     extract_dir.mkdir(exist_ok=True)
                     
-                    print(f"📦 Extracting {zip_path.name} for JSON generation...")
+                    logger.info(f"Extracting {zip_path.name} for JSON generation...")
                     with zipfile.ZipFile(zip_path, 'r') as zf:
                         zf.extractall(extract_dir)
                     
@@ -790,7 +793,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                         output_pack_dir = extract_dir
             
             # Generate JSON output
-            print(f"📄 Generating JSON output...")
+            logger.info("Generating JSON output...")
             json_content = generate_json_output(output_pack_dir, repo_name)
             pack_filename = f"reposynth_{repo_name}_{mode}_{job_id}.json"
             pack_path = worker_root / pack_filename
@@ -808,7 +811,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                     extract_dir = worker_root / "extracted_pack"
                     extract_dir.mkdir(exist_ok=True)
                     
-                    print(f"📦 Extracting {zip_path.name} for TOON retrieval...")
+                    logger.info(f"Extracting {zip_path.name} for TOON retrieval")
                     with zipfile.ZipFile(zip_path, 'r') as zf:
                         # We only need pack.toon if it exists
                         try:
@@ -824,14 +827,14 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                         output_pack_dir = extract_dir
 
             # Retrieve TOON output
-            print(f"📄 Retrieving TOON output...")
+            logger.info("Retrieving TOON output")
             toon_path = output_pack_dir / "pack.toon"
             
             if toon_path.exists():
                 toon_content = toon_path.read_text(encoding='utf-8')
             else:
                 # Fallback: Generate it if missing
-                print("Warning: pack.toon not found, generating on the fly...")
+                logger.warning("pack.toon not found, generating on the fly")
                 try:
                     from orchestrator.toon_formatter import generate_toon_blueprint, convert_source_to_toon
                     
@@ -862,12 +865,12 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
             
             if mode == "semantic":
                 # Create zip archive from loose files
-                print(f"📦 Creating semantic pack archive...")
+                logger.info("Creating semantic pack archive")
                 with zipfile.ZipFile(pack_path, "w", zipfile.ZIP_DEFLATED) as zf:
                     for file in output_pack_dir.glob("*"):
                         if file.is_file():
                             zf.write(file, arcname=f"pack/{file.name}")
-                            print(f"   ✓ Added: {file.name}")
+                            logger.debug(f"Added: {file.name}")
             else:
                 # For hybrid/full, the zip was created by the pipeline
                 existing_zip = list(worker_root.glob("reposynth_*.zip"))
@@ -878,7 +881,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                     pack_path = pack_path.rename(pack_path.parent / new_name)
                 else:
                     # Fallback: create from pack directory
-                    print(f"📦 Creating {mode} pack archive...")
+                    logger.info(f"Creating {mode} pack archive")
                     with zipfile.ZipFile(pack_path, "w", zipfile.ZIP_DEFLATED) as zf:
                         for file in output_pack_dir.rglob("*"):
                             if file.is_file():
@@ -887,7 +890,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
         
         # Get pack size
         pack_size = pack_path.stat().st_size
-        print(f"✓ Pack created: {pack_path.name} ({pack_size / 1024 / 1024:.2f} MB)")
+        logger.info(f"Pack created: {pack_path.name} ({pack_size / 1024 / 1024:.2f} MB)")
         
         # Step 5: Upload to S3 or use local storage
         s3_key = f"{job_id}/{pack_filename}"
@@ -896,7 +899,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
         # Try S3 upload first
         if s3_client:
             try:
-                print(f"Uploading {pack_path.name} to S3 bucket {S3_BUCKET}...")
+                logger.info(f"Uploading {pack_path.name} to S3 bucket {S3_BUCKET}")
                 
                 # Set content type and disposition based on format
                 extra_args = {"ContentType": content_type}
@@ -923,10 +926,10 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                 else:
                     result_url = f"https://{S3_BUCKET}.s3.amazonaws.com/{s3_key}"
                 
-                print(f"✓ Uploaded to: {result_url}")
+                logger.info(f"Uploaded to: {result_url}")
                 
             except Exception as e:
-                print(f"Warning: S3 upload failed: {e}", file=sys.stderr)
+                logger.warning(f"S3 upload failed: {e}")
                 # Fallback to local URL
         
         # If S3 upload failed or client not available, use local URL
@@ -937,7 +940,7 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
             # Note: This assumes API is accessible at localhost:8000
             api_base = os.environ.get("API_PUBLIC_URL", "http://localhost:8000")
             result_url = f"{api_base}/packs/{job_id}/{pack_filename}"
-            print(f"✓ Using local storage URL: {result_url}")
+            logger.info(f"Using local storage URL: {result_url}")
         
         # Step 6: Mark job as completed
         update_job_status(
@@ -947,18 +950,12 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
             pack_size_bytes=pack_size
         )
         
-        print(f"\n{'='*60}")
-        print(f"✅ Job {job_id} completed successfully!")
-        print(f"   Result URL: {result_url}")
-        print(f"{'='*60}\n")
+        logger.info(f"Job {job_id} completed successfully! Result URL: {result_url}")
         
     except Exception as e:
         # Log error and update job status
         error_msg = f"Job failed: {str(e)}"
-        print(f"\n{'='*60}")
-        print(f"❌ Job {job_id} failed!")
-        print(f"   Error: {error_msg}")
-        print(f"{'='*60}\n", file=sys.stderr)
+        logger.error(f"Job {job_id} failed! Error: {error_msg}")
         
         update_job_status(
             job_id,
@@ -972,15 +969,15 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
         # Cleanup: Remove cloned repository
         if cloned_repo_path and cloned_repo_path.exists():
             try:
-                print(f"🧹 Cleaning up cloned repository...")
+                logger.info("Cleaning up cloned repository")
                 shutil.rmtree(cloned_repo_path)
             except Exception as e:
-                print(f"Warning: Failed to cleanup cloned repo: {e}", file=sys.stderr)
+                logger.warning(f"Failed to cleanup cloned repo: {e}")
         
         # Cleanup: Remove worker directory BUT keep essential pack files for vibe prompts
         try:
             if worker_root.exists():
-                print(f"🧹 Cleaning up worker directory (preserving essential pack files)...")
+                logger.info("Cleaning up worker directory (preserving essential pack files)")
                 
                 # Essential files needed for vibe prompts:
                 # - import_graph.json (for file listing and dependencies)
@@ -1035,15 +1032,15 @@ def process_repository(job_id: str, repo_url: str, config: dict = None):
                             file_path.write_bytes(content)
                         else:
                             file_path.write_text(content, encoding='utf-8')
-                    print(f"✓ Preserved {len(preserved_files)} essential files for vibe prompts")
+                    logger.info(f"Preserved {len(preserved_files)} essential files for vibe prompts")
                     
         except Exception as e:
-            print(f"Warning: Failed to cleanup worker directory: {e}", file=sys.stderr)
+            logger.warning(f"Failed to cleanup worker directory: {e}")
 
 
 if __name__ == "__main__":
     # This allows testing the worker locally
-    print("Dramatiq worker for RepoSynth")
-    print(f"Redis URL: {REDIS_URL}")
-    print(f"S3 Bucket: {S3_BUCKET}")
-    print("Run with: dramatiq orchestrator.worker")
+    logger.info("Dramatiq worker for RepoSynth")
+    logger.info(f"Redis URL: {REDIS_URL}")
+    logger.info(f"S3 Bucket: {S3_BUCKET}")
+    logger.info("Run with: dramatiq orchestrator.worker")

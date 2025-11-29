@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { JobConfiguration, EstimateResponse, JobStatus, VibeMetadata } from './store';
+import type { JobConfiguration, EstimateResponse, JobStatus, VibeMetadata, RateLimitInfo } from './store';
 
 // API base URL - defaults to localhost:8000, can be overridden via environment variable
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -10,6 +10,27 @@ const apiClient = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// ============================================================================
+// Rate Limit API
+// ============================================================================
+
+export interface RateLimitStatusResponse {
+  ip_address: string;
+  daily_limit: number;
+  remaining_calls: number;
+  reset_at: string;
+  message: string;
+}
+
+export async function getRateLimitStatus(): Promise<RateLimitInfo> {
+  const response = await apiClient.get<RateLimitStatusResponse>('/rate-limit-status');
+  return {
+    limit: response.data.daily_limit,
+    remaining: response.data.remaining_calls,
+    reset_at: response.data.reset_at,
+  };
+}
 
 // ============================================================================
 // Estimation API
