@@ -6,10 +6,12 @@ import { SubmitButton } from '@/components/SubmitButton';
 import { JobProgressPanel } from '@/components/JobProgressPanel';
 import { VibeStationDrawer } from '@/components/VibeStationDrawer';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
-import { Database, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Home() {
   const { currentJob, repoUrl, isVibeDrawerOpen, setIsVibeDrawerOpen } = useStore();
@@ -30,13 +32,18 @@ export default function Home() {
   const hasActiveJob = currentJob && currentJob.status !== 'failed';
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <div className="relative flex h-screen w-full flex-col overflow-hidden">
       {/* Fixed Header - Top Left */}
       <header className="fixed top-0 left-0 right-0 z-20 bg-zinc-950/80 backdrop-blur-md">
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Database className="text-primary h-6 w-6" />
+              <Image 
+                src="/logo.png" 
+                alt="RepoSynth Logo" 
+                width={32} 
+                height={32}
+              />
               <div>
                 <h1 className="text-lg font-bold font-display tracking-tight text-zinc-200">
                   RepoSynth
@@ -51,13 +58,13 @@ export default function Home() {
 
       {/* Main Content - slides left when vibe drawer opens */}
       <main 
-        className={`flex-1 pt-20 transition-all duration-300 ease-in-out ${
+        className={`flex-1 pt-20 overflow-y-auto transition-all duration-300 ease-in-out ${
           isVibeDrawerOpen ? 'mr-[50%] lg:mr-[40%]' : 'mr-0'
         }`}
       >
         {!showConfiguration ? (
           /* Centered URL Input - Initial State */
-          <div className="flex items-center justify-center min-h-[calc(100vh-5rem)] px-4">
+          <div className="flex items-center justify-center h-full px-4">
             <div className="w-full max-w-2xl">
               <div className="text-center mb-8">
                 <h2 className="text-4xl md:text-5xl font-bold text-zinc-200 mb-4 font-display tracking-tight">
@@ -72,8 +79,8 @@ export default function Home() {
           </div>
         ) : (
           /* Configuration / Job Progress - After URL Entry */
-          <div className="max-w-5xl mx-auto px-4 md:px-8 pb-16">
-            <div className="space-y-8">
+          <div className="max-w-5xl mx-auto px-4 md:px-8 py-4">
+            <div className="space-y-6">
               {/* URL Input - Compact */}
               <div className="w-full">
                 <UrlInput />
@@ -88,7 +95,7 @@ export default function Home() {
                   </div>
 
                   {/* Submit Button */}
-                  <div className="w-full pt-4">
+                  <div className="w-full pt-2">
                     <SubmitButton />
                   </div>
                 </>
@@ -104,21 +111,13 @@ export default function Home() {
       </main>
 
       {/* Footer - Minimal */}
-      <footer className={`py-6 text-center border-t border-zinc-800/50 bg-zinc-950/50 transition-all duration-300 ease-in-out ${
+      <footer className={`py-4 text-center border-t border-zinc-800/50 bg-zinc-950/50 transition-all duration-300 ease-in-out ${
         isVibeDrawerOpen ? 'mr-[50%] lg:mr-[40%]' : 'mr-0'
       }`}>
-        <div className="flex items-center justify-center gap-6 text-xs text-zinc-600">
-          <a href="#" className="hover:text-zinc-400 transition-colors">
-            Documentation
-          </a>
-          <span>•</span>
-          <a href="#" className="hover:text-zinc-400 transition-colors">
+        <div className="text-xs text-zinc-600">
+          <Link href="/about" className="hover:text-zinc-400 transition-colors">
             About
-          </a>
-          <span>•</span>
-          <a href="#" className="hover:text-zinc-400 transition-colors">
-            GitHub
-          </a>
+          </Link>
         </div>
       </footer>
 

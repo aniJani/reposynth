@@ -15,6 +15,11 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: 'RepoSynth - Repository Synthesis & LLM Context Engine',
   description: 'AI-Powered Repository Analysis and Documentation Generation',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
