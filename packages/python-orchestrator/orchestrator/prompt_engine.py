@@ -355,23 +355,56 @@ class PromptEngine:
         if not entry_point:
             raise ValueError("Either entry_point or query must be provided for bundle mode")
 
-        # Start with blueprint
-        toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph)
-
         # Traverse dependency graph from entry point using helper
         bundled_files = get_recursive_dependencies(self.import_graph, entry_point)
+        
+        # Determine if we should include the full blueprint based on token budget
+        # For tight budgets (< 32K), skip or minimize the blueprint to save tokens
+        include_full_blueprint = True
+        toon_structure = ""
+        blueprint_tokens = 0
+        
+        if token_limit and token_limit < 32000:
+            # For small context windows, skip the large blueprint
+            include_full_blueprint = False
+            blueprint_tokens = 0
+        else:
+            # Generate full blueprint for larger context windows
+            toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph)
+            blueprint_tokens = estimate_tokens(toon_structure)
+        
+        # Calculate overhead tokens (blueprint + headers + formatting)
+        # Base overhead for headers, code fences, file names, etc.
+        base_overhead = 300 + (len(bundled_files) * 50)  # ~50 tokens per file for headers/fences
+        estimated_overhead = blueprint_tokens + base_overhead
 
         # Apply context optimization if token_limit is provided
         pruning_report = None
-        if token_limit and self.token_map:
-            optimized_files, pruning_report = optimize_context(
-                candidate_files=bundled_files,
-                import_graph=self.import_graph,
-                token_map=self.token_map,
-                max_tokens=token_limit,
-                seed_files=[entry_point]
-            )
-            bundled_files = optimized_files
+        effective_token_limit = None
+        if token_limit:
+            # Subtract overhead from token limit to get budget for source files
+            effective_token_limit = max(token_limit - estimated_overhead, 1000)  # Minimum 1000 tokens for source
+            
+            # Generate token_map on-the-fly if not available
+            token_map_to_use = self.token_map
+            if not token_map_to_use:
+                token_map_to_use = {}
+                for file_path in bundled_files:
+                    source_code = self._read_source_file(file_path)
+                    if source_code:
+                        token_map_to_use[file_path] = estimate_tokens(source_code)
+                    else:
+                        token_map_to_use[file_path] = 0
+            
+            if token_map_to_use:
+                optimized_files, pruning_report = optimize_context(
+                    candidate_files=bundled_files,
+                    import_graph=self.import_graph,
+                    token_map=token_map_to_use,
+                    max_tokens=effective_token_limit,
+                    seed_files=[entry_point]
+                )
+                bundled_files = optimized_files
 
         # Assemble prompt
         prompt_parts = []
@@ -382,8 +415,11 @@ class PromptEngine:
         # Add pruning report at the top if optimization was applied
         if pruning_report:
             prompt_parts.append("## Context Optimization Report\n")
-            prompt_parts.append(f"Token Budget: {pruning_report.token_budget:,}\n")
-            prompt_parts.append(f"Tokens Used: {pruning_report.total_tokens_included:,}\n")
+            prompt_parts.append(f"Target Token Limit: {token_limit:,}\n")
+            if not include_full_blueprint:
+                prompt_parts.append("Blueprint: Skipped (tight budget)\n")
+            prompt_parts.append(f"Source Code Budget: {effective_token_limit:,}\n")
+            prompt_parts.append(f"Source Code Used: {pruning_report.total_tokens_included:,}\n")
             prompt_parts.append(f"Files Included: {len(pruning_report.included_files)}\n")
             prompt_parts.append(f"Files Pruned: {len(pruning_report.pruned_files)}\n")
             if pruning_report.pruned_files:
@@ -393,17 +429,18 @@ class PromptEngine:
                 if len(pruning_report.pruned_files) > 10:
                     prompt_parts.append(f"- ... and {len(pruning_report.pruned_files) - 10} more\n")
             prompt_parts.append("\n")
-            
-        prompt_parts.append("## Structural Blueprint\n")
-        prompt_parts.append(toon_structure)
-        prompt_parts.append("\n")
+        
+        # Only include blueprint if we have room for it
+        if include_full_blueprint and toon_structure:
+            prompt_parts.append("## Structural Blueprint\n")
+            prompt_parts.append(toon_structure)
+            prompt_parts.append("\n")
 
-        # Add dependency tree visualization
+        # Add dependency tree visualization (compact)
         prompt_parts.append("## Dependency Tree\n")
         prompt_parts.append(f"Entry Point: {entry_point}\n")
-        prompt_parts.append(f"Dependencies: {len(bundled_files) - 1}\n\n")
-        for i, file_path in enumerate(bundled_files):
-            # Simple list for now since recursive helper flattens it
+        prompt_parts.append(f"Files: {len(bundled_files)}\n\n")
+        for file_path in bundled_files:
             prompt_parts.append(f"- {file_path}\n")
         prompt_parts.append("\n")
 
@@ -436,12 +473,15 @@ class PromptEngine:
         # Add optimization info if applicable
         if pruning_report:
             metadata["optimization"] = {
+                "optimization_applied": True,
                 "token_limit": token_limit,
-                "token_budget": pruning_report.token_budget,
-                "tokens_used": pruning_report.total_tokens_included,
+                "token_budget": token_limit,  # User's requested limit
+                "effective_budget": effective_token_limit,  # After overhead subtraction
+                "tokens_used": pruning_report.total_tokens_included + estimated_overhead,  # Total prompt tokens
+                "source_tokens_used": pruning_report.total_tokens_included,
+                "overhead_tokens": estimated_overhead,
                 "files_pruned": len(pruning_report.pruned_files),
                 "pruned_files": [pf["file_path"] for pf in pruning_report.pruned_files],
-                "optimization_applied": True
             }
         else:
             metadata["optimization"] = {

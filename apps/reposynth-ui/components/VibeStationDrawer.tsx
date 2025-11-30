@@ -4,7 +4,19 @@
 import { useStore } from '@/lib/store';
 import { generateVibePrompt, getJobFiles } from '@/lib/api';
 import { useState, useEffect } from 'react';
-import { X, Copy, CheckCircle, PlayCircle, AlertCircle, Loader2, Sparkles, Hash, FileText, Layers, Download } from 'lucide-react';
+import { X, Copy, CheckCircle, PlayCircle, AlertCircle, Loader2, Sparkles, Hash, FileText, Layers, Download, Zap, ChevronDown } from 'lucide-react';
+
+// Context window presets for different LLM models
+const CONTEXT_PRESETS = {
+  unlimited: { label: 'Unlimited', tokens: null, description: 'No optimization - include all files' },
+  'gpt-4': { label: 'GPT-4', tokens: 8192, description: '8K context' },
+  'gpt-4-32k': { label: 'GPT-4 32K', tokens: 32768, description: '32K context' },
+  'claude-haiku': { label: 'Claude Haiku', tokens: 200000, description: '200K context' },
+  'gpt-4-turbo': { label: 'GPT-4 Turbo', tokens: 128000, description: '128K context' },
+  'gemini-1.5': { label: 'Gemini 1.5', tokens: 1000000, description: '1M context' },
+} as const;
+
+type ContextPresetKey = keyof typeof CONTEXT_PRESETS;
 
 export function VibeStationDrawer() {
   const {
@@ -31,6 +43,15 @@ export function VibeStationDrawer() {
   const [error, setError] = useState<string | null>(null);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [bundleSubMode, setBundleSubMode] = useState<'file' | 'search'>('file');
+  const [contextPreset, setContextPreset] = useState<ContextPresetKey>('unlimited');
+  const [showAllPresets, setShowAllPresets] = useState(false);
+
+  // Get effective token limit from preset
+  const getEffectiveTokenLimit = (): number | undefined => {
+    if (contextPreset === 'unlimited') return undefined;
+    const preset = CONTEXT_PRESETS[contextPreset];
+    return preset.tokens ?? undefined;
+  };
 
   useEffect(() => {
     if (vibeMode === 'bundle' && currentJob?.id) {
@@ -76,6 +97,8 @@ export function VibeStationDrawer() {
     setVibePrompt('');
 
     try {
+      const tokenLimit = getEffectiveTokenLimit();
+      
       const response = await generateVibePrompt({
         job_id: currentJob.id,
         mode: vibeMode,
@@ -83,6 +106,7 @@ export function VibeStationDrawer() {
         entry_point: (vibeMode === 'bundle' && bundleSubMode === 'file') ? vibeEntryPoint : undefined,
         max_files: 5,
         max_depth: 3,
+        token_limit: tokenLimit,
       });
 
       setVibePrompt(response.prompt);
@@ -207,6 +231,54 @@ export function VibeStationDrawer() {
                 {vibeMode === 'blueprint' && 'Structure only (5-10K tokens) - Architecture overview'}
                 {vibeMode === 'focus' && 'Query-based (20-50K tokens) - Relevant files only'}
                 {vibeMode === 'bundle' && 'Dependency tree (50-200K+ tokens) - Full context'}
+              </p>
+            </div>
+
+            {/* Context Window Optimizer - Available for all modes */}
+            <div className="space-y-3 p-4 border border-zinc-800/50 rounded-xl bg-zinc-900/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-yellow-400" />
+                  <p className="text-zinc-400 text-xs font-medium uppercase tracking-wider">Target Context Window</p>
+                </div>
+                {contextPreset !== 'unlimited' && (
+                  <span className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full">
+                    Optimization Active
+                  </span>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-3 gap-2">
+                {(Object.keys(CONTEXT_PRESETS) as ContextPresetKey[]).slice(0, showAllPresets ? undefined : 3).map((key) => (
+                  <button
+                    key={key}
+                    onClick={() => setContextPreset(key)}
+                    className={`px-3 py-2.5 text-xs font-medium rounded-lg transition-all ${
+                      contextPreset === key
+                        ? 'bg-blue-600 text-white ring-2 ring-blue-400/50'
+                        : 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/50'
+                    }`}
+                  >
+                    {CONTEXT_PRESETS[key].label}
+                  </button>
+                ))}
+              </div>
+              
+              {!showAllPresets && (
+                <button
+                  onClick={() => setShowAllPresets(true)}
+                  className="w-full flex items-center justify-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 py-1 transition-colors"
+                >
+                  <ChevronDown className="h-3 w-3" />
+                  Show more models
+                </button>
+              )}
+              
+              <p className="text-xs text-zinc-500">
+                {CONTEXT_PRESETS[contextPreset].description}
+                {contextPreset !== 'unlimited' && (
+                  <span className="text-yellow-400/80"> • Graph-Knapsack will optimize file selection</span>
+                )}
               </p>
             </div>
 
@@ -419,21 +491,42 @@ export function VibeStationDrawer() {
 
                 {/* Metadata Footer */}
                 {vibeMetadata && (
-                  <div className="flex items-center gap-6 text-xs text-zinc-500 px-1">
-                    <div className="flex items-center gap-1">
-                      <Layers className="h-3 w-3" />
-                      <span>Mode: {vibeMetadata.mode}</span>
+                  <div className="space-y-2">
+                    {/* Optimization Stats */}
+                    {vibeMetadata.optimization?.optimization_applied && (
+                      <div className="flex items-center gap-3 p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-lg">
+                        <Zap className="h-4 w-4 text-yellow-400" />
+                        <div className="flex-1 text-xs">
+                          <span className="text-yellow-400 font-medium">Context Optimized: </span>
+                          <span className="text-zinc-300">
+                            {vibeMetadata.files_included} files included
+                            {vibeMetadata.optimization.files_pruned > 0 && (
+                              <span className="text-zinc-500"> • {vibeMetadata.optimization.files_pruned} pruned</span>
+                            )}
+                            {vibeMetadata.optimization.tokens_used && (
+                              <span className="text-zinc-500"> • {formatTokenCount(vibeMetadata.optimization.tokens_used)} of {formatTokenCount(vibeMetadata.optimization.token_budget || 0)} used</span>
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center gap-6 text-xs text-zinc-500 px-1">
+                      <div className="flex items-center gap-1">
+                        <Layers className="h-3 w-3" />
+                        <span>Mode: {vibeMetadata.mode}</span>
+                      </div>
+                      {vibeMetadata.query && (
+                        <div className="truncate max-w-xs">
+                          Query: &quot;{vibeMetadata.query}&quot;
+                        </div>
+                      )}
+                      {vibeMetadata.entry_point && (
+                        <div className="truncate max-w-xs">
+                          Entry: {vibeMetadata.entry_point}
+                        </div>
+                      )}
                     </div>
-                    {vibeMetadata.query && (
-                      <div className="truncate max-w-xs">
-                        Query: &quot;{vibeMetadata.query}&quot;
-                      </div>
-                    )}
-                    {vibeMetadata.entry_point && (
-                      <div className="truncate max-w-xs">
-                        Entry: {vibeMetadata.entry_point}
-                      </div>
-                    )}
                   </div>
                 )}
               </div>
