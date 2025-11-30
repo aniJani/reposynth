@@ -17,6 +17,7 @@ from typing import Dict, List, Any, Optional, Tuple
 
 from .toon_formatter import generate_toon_blueprint, estimate_tokens, summarize_toon
 from .retriever import retrieve_relevant_symbols, hybrid_search
+from .context_optimizer import optimize_context, PruningReport, get_context_window_presets
 
 
 class PromptEngine:
@@ -100,6 +101,14 @@ class PromptEngine:
         else:
             self.variable_registry = {}
 
+        # Load token_map.json (optional, for context optimization)
+        token_map_path = work_dir / "token_map.json"
+        if token_map_path.exists():
+            with open(token_map_path, 'r', encoding='utf-8') as f:
+                self.token_map = json.load(f)
+        else:
+            self.token_map = {}
+
         # Store work directory for file reading
         self.work_dir = work_dir
 
@@ -111,6 +120,7 @@ class PromptEngine:
         self.name_registry = data.get('name_registry', {})
         self.import_graph = self._normalize_graph(data.get('import_graph', {}))
         self.variable_registry = data.get('variable_registry', {})
+        self.token_map = data.get('token_map', {})
         
         # Store source files if available
         self.source_files = data.get('source_files', {})
@@ -130,6 +140,7 @@ class PromptEngine:
         self.name_registry = {}
         self.import_graph = {}
         self.source_files = {}
+        self.token_map = {}  # TOON packs don't include token map
         
         # Parse symbols
         import re
@@ -317,15 +328,17 @@ class PromptEngine:
             }
         }
 
-    def generate_bundle(self, entry_point: Optional[str] = None, query: Optional[str] = None, max_depth: int = 3) -> Dict[str, Any]:
+    def generate_bundle(self, entry_point: Optional[str] = None, query: Optional[str] = None, max_depth: int = 3, token_limit: Optional[int] = None) -> Dict[str, Any]:
         """
         Generate Bundle Mode prompt (structure + dependency slice from entry point).
         Supports "Focused Tree Mode" if query is provided instead of entry_point.
+        Supports context optimization if token_limit is provided.
 
         Args:
             entry_point: Starting file path (e.g., "src/auth/AuthService.ts")
             query: Search query to find entry point (if entry_point is None)
             max_depth: Maximum dependency depth to traverse
+            token_limit: Optional token budget for context optimization
 
         Returns:
             Dict with 'prompt' (str) and 'metadata' (dict)
@@ -346,15 +359,40 @@ class PromptEngine:
         toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph)
 
         # Traverse dependency graph from entry point using helper
-        # Note: max_depth is ignored by get_recursive_dependencies for now as it does full traversal
-        # We can slice it if needed, but user asked for recursive traversal
         bundled_files = get_recursive_dependencies(self.import_graph, entry_point)
+
+        # Apply context optimization if token_limit is provided
+        pruning_report = None
+        if token_limit and self.token_map:
+            optimized_files, pruning_report = optimize_context(
+                candidate_files=bundled_files,
+                import_graph=self.import_graph,
+                token_map=self.token_map,
+                max_tokens=token_limit,
+                seed_files=[entry_point]
+            )
+            bundled_files = optimized_files
 
         # Assemble prompt
         prompt_parts = []
         prompt_parts.append(f"# CODEBASE BUNDLE: {entry_point}\n\n")
         if query:
             prompt_parts.append(f"Query: {query}\n\n")
+        
+        # Add pruning report at the top if optimization was applied
+        if pruning_report:
+            prompt_parts.append("## Context Optimization Report\n")
+            prompt_parts.append(f"Token Budget: {pruning_report.token_budget:,}\n")
+            prompt_parts.append(f"Tokens Used: {pruning_report.total_tokens_included:,}\n")
+            prompt_parts.append(f"Files Included: {len(pruning_report.included_files)}\n")
+            prompt_parts.append(f"Files Pruned: {len(pruning_report.pruned_files)}\n")
+            if pruning_report.pruned_files:
+                prompt_parts.append("\n**Pruned Files (not included due to budget):**\n")
+                for pf in pruning_report.pruned_files[:10]:  # Show top 10
+                    prompt_parts.append(f"- `{pf['file_path']}` ({pf['tokens']:,} tokens) - {pf['reason']}\n")
+                if len(pruning_report.pruned_files) > 10:
+                    prompt_parts.append(f"- ... and {len(pruning_report.pruned_files) - 10} more\n")
+            prompt_parts.append("\n")
             
         prompt_parts.append("## Structural Blueprint\n")
         prompt_parts.append(toon_structure)
@@ -383,18 +421,36 @@ class PromptEngine:
 
         prompt = "".join(prompt_parts)
 
+        # Build metadata
+        metadata = {
+            "mode": "bundle",
+            "token_estimate": estimate_tokens(prompt),
+            "entry_point": entry_point,
+            "query": query,
+            "files_included": len(bundled_files),
+            "file_list": bundled_files,
+            "max_depth": max_depth,
+            "description": f"Complete dependency bundle for: {entry_point}"
+        }
+        
+        # Add optimization info if applicable
+        if pruning_report:
+            metadata["optimization"] = {
+                "token_limit": token_limit,
+                "token_budget": pruning_report.token_budget,
+                "tokens_used": pruning_report.total_tokens_included,
+                "files_pruned": len(pruning_report.pruned_files),
+                "pruned_files": [pf["file_path"] for pf in pruning_report.pruned_files],
+                "optimization_applied": True
+            }
+        else:
+            metadata["optimization"] = {
+                "optimization_applied": False
+            }
+        
         return {
             "prompt": prompt,
-            "metadata": {
-                "mode": "bundle",
-                "token_estimate": estimate_tokens(prompt),
-                "entry_point": entry_point,
-                "query": query,
-                "files_included": len(bundled_files),
-                "file_list": bundled_files,
-                "max_depth": max_depth,
-                "description": f"Complete dependency bundle for: {entry_point}"
-            }
+            "metadata": metadata
         }
 
     def _read_source_file(self, file_path: str) -> Optional[str]:
@@ -614,7 +670,8 @@ def generate_vibe_prompt(
     entry_point: Optional[str] = None,
     max_files: int = 5,
     max_depth: int = 3,
-    repo_url: Optional[str] = None
+    repo_url: Optional[str] = None,
+    token_limit: Optional[int] = None
 ) -> Dict[str, Any]:
     """
     Convenience function to generate a vibe coding prompt.
@@ -627,6 +684,7 @@ def generate_vibe_prompt(
         max_files: Max files to include in focus mode
         max_depth: Max dependency depth in bundle mode
         repo_url: Optional URL of the repository (for fallback source reading)
+        token_limit: Optional token budget for context optimization (bundle mode only)
 
     Returns:
         Dict with 'prompt' and 'metadata'
@@ -648,7 +706,12 @@ def generate_vibe_prompt(
         elif mode == "bundle":
             if not entry_point and not query:
                 raise ValueError("Entry point or query is required for bundle mode")
-            return engine.generate_bundle(entry_point=entry_point, query=query, max_depth=max_depth)
+            return engine.generate_bundle(
+                entry_point=entry_point, 
+                query=query, 
+                max_depth=max_depth,
+                token_limit=token_limit
+            )
 
         else:
             raise ValueError(f"Invalid mode: {mode}. Must be 'blueprint', 'focus', or 'bundle'")

@@ -37,6 +37,15 @@ export interface JobStatus {
   processing_time_seconds?: number;
 }
 
+export interface VibeOptimizationInfo {
+  optimization_applied: boolean;
+  token_limit?: number;
+  token_budget?: number;
+  tokens_used?: number;
+  files_pruned?: number;
+  pruned_files?: string[];
+}
+
 export interface VibeMetadata {
   mode: string;
   token_estimate: number;
@@ -44,6 +53,7 @@ export interface VibeMetadata {
   description?: string;
   query?: string;
   entry_point?: string;
+  optimization?: VibeOptimizationInfo;
 }
 
 interface StoreState {

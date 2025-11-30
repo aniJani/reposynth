@@ -387,6 +387,10 @@ class VibePromptRequest(BaseModel):
         default=3,
         description="Maximum dependency depth in bundle mode"
     )
+    token_limit: Optional[int] = Field(
+        default=None,
+        description="Optional token budget for context optimization (bundle mode only). If set, uses Graph-Knapsack algorithm to select files."
+    )
 
     @field_validator('mode')
     @classmethod

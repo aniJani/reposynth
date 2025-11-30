@@ -4,7 +4,20 @@
 import { useStore } from '@/lib/store';
 import { generateVibePrompt, getJobFiles } from '@/lib/api';
 import { useState, useEffect } from 'react';
-import { Sparkles, Loader2, Copy, CheckCircle, PlayCircle, AlertCircle } from 'lucide-react';
+import { Sparkles, Loader2, Copy, CheckCircle, PlayCircle, AlertCircle, Settings2, Zap } from 'lucide-react';
+
+// Context window presets for different LLM models
+const CONTEXT_PRESETS = {
+  unlimited: { label: 'Unlimited', tokens: null, description: 'No optimization - include all files' },
+  'gpt-4': { label: 'GPT-4', tokens: 8192, description: '8K context window' },
+  'gpt-4-32k': { label: 'GPT-4 32K', tokens: 32768, description: '32K context window' },
+  'gpt-4-turbo': { label: 'GPT-4 Turbo', tokens: 128000, description: '128K context window' },
+  'claude-3-haiku': { label: 'Claude Haiku', tokens: 200000, description: '200K context window' },
+  'claude-3-sonnet': { label: 'Claude Sonnet', tokens: 200000, description: '200K context window' },
+  'gemini-1.5': { label: 'Gemini 1.5', tokens: 1000000, description: '1M context window' },
+} as const;
+
+type ContextPresetKey = keyof typeof CONTEXT_PRESETS;
 
 export function VibeCodingPanel() {
   const {
@@ -29,6 +42,9 @@ export function VibeCodingPanel() {
   const [error, setError] = useState<string | null>(null);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [bundleSubMode, setBundleSubMode] = useState<'file' | 'search'>('file');
+  const [contextPreset, setContextPreset] = useState<ContextPresetKey>('unlimited');
+  const [showAdvancedContext, setShowAdvancedContext] = useState(false);
+  const [customTokenLimit, setCustomTokenLimit] = useState<string>('');
 
   // Reset file list when job changes
   useEffect(() => {
@@ -54,6 +70,13 @@ export function VibeCodingPanel() {
       }
     }
   }, [vibeMode, currentJob?.id, vibeFileList.files.length, vibeEntryPoint, setVibeEntryPoint, setVibeFileList]);
+
+  // Get effective token limit from preset or custom value
+  const getEffectiveTokenLimit = (): number | undefined => {
+    if (contextPreset === 'unlimited') return undefined;
+    const preset = CONTEXT_PRESETS[contextPreset];
+    return preset.tokens ?? undefined;
+  };
 
   const handleGeneratePrompt = async () => {
     if (!currentJob || currentJob.status !== 'completed') {
@@ -82,6 +105,8 @@ export function VibeCodingPanel() {
     setVibePrompt('');
 
     try {
+      const tokenLimit = getEffectiveTokenLimit();
+      
       const response = await generateVibePrompt({
         job_id: currentJob.id,
         mode: vibeMode,
@@ -89,6 +114,7 @@ export function VibeCodingPanel() {
         entry_point: (vibeMode === 'bundle' && bundleSubMode === 'file') ? vibeEntryPoint : undefined,
         max_files: 5,
         max_depth: 3,
+        token_limit: tokenLimit,
       });
 
       setVibePrompt(response.prompt);
@@ -249,6 +275,66 @@ export function VibeCodingPanel() {
                     </p>
                   </div>
                 )}
+
+                {/* Context Window Optimizer */}
+                <div className="border border-zinc-700 rounded-lg p-3 bg-zinc-800/50">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-yellow-400" />
+                      <span className="text-sm font-medium text-zinc-200">Context Optimizer</span>
+                    </div>
+                    <button
+                      onClick={() => setShowAdvancedContext(!showAdvancedContext)}
+                      className="text-xs text-zinc-400 hover:text-zinc-200 flex items-center gap-1"
+                    >
+                      <Settings2 className="h-3 w-3" />
+                      {showAdvancedContext ? 'Hide' : 'Advanced'}
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {(Object.keys(CONTEXT_PRESETS) as ContextPresetKey[]).slice(0, 4).map((key) => (
+                      <button
+                        key={key}
+                        onClick={() => setContextPreset(key)}
+                        className={`px-3 py-2 text-xs rounded-md transition-all ${
+                          contextPreset === key
+                            ? 'bg-purple-600 text-white ring-2 ring-purple-400'
+                            : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                        }`}
+                      >
+                        {CONTEXT_PRESETS[key].label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {showAdvancedContext && (
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      {(Object.keys(CONTEXT_PRESETS) as ContextPresetKey[]).slice(4).map((key) => (
+                        <button
+                          key={key}
+                          onClick={() => setContextPreset(key)}
+                          className={`px-3 py-2 text-xs rounded-md transition-all ${
+                            contextPreset === key
+                              ? 'bg-purple-600 text-white ring-2 ring-purple-400'
+                              : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                          }`}
+                        >
+                          {CONTEXT_PRESETS[key].label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-zinc-500 mt-2">
+                    {CONTEXT_PRESETS[contextPreset].description}
+                    {contextPreset !== 'unlimited' && (
+                      <span className="text-yellow-400 ml-1">
+                        (Graph-Knapsack optimization active)
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
             )}
 
@@ -363,6 +449,29 @@ export function VibeCodingPanel() {
                     <p>
                       <span className="text-zinc-500">Files:</span> {vibeMetadata.files_included}
                     </p>
+                  )}
+                  
+                  {/* Optimization Stats */}
+                  {vibeMetadata.optimization?.optimization_applied && (
+                    <div className="mt-2 pt-2 border-t border-zinc-700">
+                      <p className="text-yellow-400 text-xs font-semibold mb-1">
+                        ⚡ Context Optimization Applied
+                      </p>
+                      <p>
+                        <span className="text-zinc-500">Budget:</span>{' '}
+                        {vibeMetadata.optimization.token_budget?.toLocaleString() ?? 'N/A'} tokens
+                      </p>
+                      <p>
+                        <span className="text-zinc-500">Used:</span>{' '}
+                        {vibeMetadata.optimization.tokens_used?.toLocaleString() ?? 'N/A'} tokens
+                      </p>
+                      {vibeMetadata.optimization.files_pruned !== undefined && vibeMetadata.optimization.files_pruned > 0 && (
+                        <p className="text-amber-400">
+                          <span className="text-zinc-500">Pruned:</span>{' '}
+                          {vibeMetadata.optimization.files_pruned} files
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>

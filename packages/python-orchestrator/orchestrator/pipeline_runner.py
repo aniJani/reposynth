@@ -24,6 +24,7 @@ from collections import defaultdict
 # Local imports
 from .parser_client import ParserClient
 from .language_adapter import get_adapter
+from .token_utils import generate_token_map, count_tokens_in_file
 import zipfile
 
 def get_file_hash(file_path: Path) -> str:
@@ -110,6 +111,12 @@ class Pipeline:
         if config.get("build_graphs"):
             print("\n--- Running Stage 2: Building Graphs & Name Registry ---")
             self.build_graphs_and_registry(config=config)
+
+        # Always generate token map after graphs are built
+        # This is needed for the Context Optimizer
+        if config.get("build_graphs") or config.get("build_variable_registry"):
+            print("\n--- Running Stage 2.1: Generating Token Map ---")
+            self.generate_token_map(config=config)
 
         if config.get("build_variable_registry"):
             print("\n--- Running Stage 2.5 (Hybrid): Building Variable Registry ---")
@@ -465,6 +472,59 @@ class Pipeline:
         print("Finished building graphs and name registry.")
         if self.top_level_statements:
             print(f"Captured {sum(len(stmts) for stmts in self.top_level_statements.values())} top-level statements across {len(self.top_level_statements)} files.")
+
+    def generate_token_map(self, config: dict = None):
+        """
+        Stage 2.1: Generate token counts for all source files.
+        Creates token_map.json which is used by the Context Optimizer.
+        """
+        config = config or {}
+
+        # Get list of files from import_graph (these are the files we care about)
+        files_in_graph = list(self.import_graph.keys())
+        
+        if not files_in_graph:
+            print("Warning: No files in import graph. Skipping token map generation.", file=sys.stderr)
+            # Create empty token map
+            with open(self.output_path / "token_map.json", "w") as f:
+                json.dump({}, f, indent=2)
+            return
+
+        # Create cache key based on file list and commit
+        files_hash = hashlib.sha256(json.dumps(sorted(files_in_graph)).encode()).hexdigest()
+        cache_key = self._get_cache_key("token_map", {"files_hash": files_hash})
+        cache_token_map = self.cache_dir / f"token_map_{cache_key}.json"
+
+        # Try to load from cache
+        if not config.get("no_cache") and cache_token_map.exists():
+            print("⚡ CACHE HIT: Loading token map from cache...")
+            shutil.copy(cache_token_map, self.output_path / "token_map.json")
+            print("✓ Token map loaded from cache (instant)")
+            return
+
+        # Cache miss - generate token map
+        print(f"Generating token counts for {len(files_in_graph)} files...")
+        
+        token_map = {}
+        total_tokens = 0
+        
+        for rel_path in files_in_graph:
+            file_path = self.repo_path / rel_path
+            if file_path.exists():
+                tokens = count_tokens_in_file(file_path)
+                token_map[rel_path] = tokens
+                total_tokens += tokens
+        
+        # Save token map
+        with open(self.output_path / "token_map.json", "w") as f:
+            json.dump(token_map, f, indent=2)
+
+        # Save to cache
+        if not config.get("no_cache"):
+            with open(cache_token_map, "w") as f:
+                json.dump(token_map, f, indent=2)
+
+        print(f"✓ Token map generated: {len(token_map)} files, {total_tokens:,} total tokens")
 
     def build_variable_registry(self, config: dict = None):
         config = config or {}

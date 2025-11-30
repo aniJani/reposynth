@@ -88,6 +88,7 @@ export interface GenerateVibePromptRequest {
   entry_point?: string;
   max_files?: number;
   max_depth?: number;
+  token_limit?: number;  // Optional token budget for context optimization
 }
 
 export interface GenerateVibePromptResponse {
