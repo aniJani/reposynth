@@ -23,8 +23,8 @@ export function SubmitButton() {
       return;
     }
 
-    // Check if rate limit is exhausted
-    if (rateLimit && rateLimit.remaining <= 0) {
+    // Check if rate limit is exhausted (skip check if unlimited, indicated by -1)
+    if (rateLimit && rateLimit.remaining !== -1 && rateLimit.remaining <= 0) {
       setSubmitError('Daily API limit reached. Please wait for reset.');
       return;
     }
@@ -75,7 +75,8 @@ export function SubmitButton() {
     }
   };
 
-  const isRateLimitExhausted = rateLimit ? rateLimit.remaining <= 0 : false;
+  // Rate limit is exhausted only if remaining is 0 or less (but not -1 which means unlimited)
+  const isRateLimitExhausted = rateLimit ? (rateLimit.remaining !== -1 && rateLimit.remaining <= 0) : false;
   const isDisabled = !repoUrl || isSubmitting || isRateLimitExhausted;
 
   return (

@@ -14,7 +14,7 @@ class RateLimitInfo(BaseModel):
     """Rate limit information included in API responses."""
     limit: int = Field(..., description="Maximum API calls per day")
     remaining: int = Field(..., description="Remaining API calls for today")
-    reset_at: str = Field(..., description="ISO timestamp when rate limit resets")
+    reset_at: Optional[str] = Field(None, description="ISO timestamp when rate limit resets (null when unlimited)")
 
 
 class ConfigModel(BaseModel):
@@ -389,7 +389,7 @@ class VibePromptRequest(BaseModel):
     )
     token_limit: Optional[int] = Field(
         default=None,
-        description="Optional token budget for context optimization (bundle mode only). If set, uses Graph-Knapsack algorithm to select files."
+        description="Optional token budget for context optimization. Uses intelligent truncation for blueprint/focus modes, and Graph-Knapsack algorithm for bundle mode."
     )
 
     @field_validator('mode')

@@ -4,6 +4,29 @@ import type { JobConfiguration, EstimateResponse, JobStatus, VibeMetadata, RateL
 // API base URL - defaults to localhost:8000, can be overridden via environment variable
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+/**
+ * Generate or retrieve a unique device ID for rate limiting.
+ * This helps distinguish different devices behind the same IP (NAT/proxy).
+ * The ID is stored in localStorage and persists across sessions.
+ */
+function getDeviceId(): string {
+  if (typeof window === 'undefined') {
+    // Server-side rendering - return empty string
+    return '';
+  }
+  
+  const STORAGE_KEY = 'reposynth_device_id';
+  let deviceId = localStorage.getItem(STORAGE_KEY);
+  
+  if (!deviceId) {
+    // Generate a new unique device ID
+    deviceId = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    localStorage.setItem(STORAGE_KEY, deviceId);
+  }
+  
+  return deviceId;
+}
+
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -11,23 +34,42 @@ const apiClient = axios.create({
   },
 });
 
+// Add device ID header to all requests (for unique device tracking behind same IP)
+apiClient.interceptors.request.use((config) => {
+  const deviceId = getDeviceId();
+  if (deviceId) {
+    config.headers['X-Device-ID'] = deviceId;
+  }
+  return config;
+});
+
 // ============================================================================
 // Rate Limit API
 // ============================================================================
 
 export interface RateLimitStatusResponse {
-  ip_address: string;
-  daily_limit: number;
-  remaining_calls: number;
-  reset_at: string;
+  client_id: string;
+  daily_limit: number | string;  // Can be "unlimited" in dev mode
+  remaining_calls: number | string;  // Can be "unlimited" in dev mode
+  reset_at: string | null;
   message: string;
 }
 
 export async function getRateLimitStatus(): Promise<RateLimitInfo> {
   const response = await apiClient.get<RateLimitStatusResponse>('/rate-limit-status');
+  
+  // Handle unlimited (dev mode) response
+  if (response.data.daily_limit === 'unlimited' || response.data.daily_limit === -1) {
+    return {
+      limit: -1,
+      remaining: -1,
+      reset_at: null,
+    };
+  }
+  
   return {
-    limit: response.data.daily_limit,
-    remaining: response.data.remaining_calls,
+    limit: response.data.daily_limit as number,
+    remaining: response.data.remaining_calls as number,
     reset_at: response.data.reset_at,
   };
 }
@@ -83,7 +125,7 @@ export async function getJobStatus(jobId: string): Promise<JobStatus> {
 
 export interface GenerateVibePromptRequest {
   job_id: string;
-  mode: 'blueprint' | 'focus' | 'bundle';
+  mode: 'blueprint' | 'focus' | 'bundle';  // Backend modes - frontend maps to these
   query?: string;
   entry_point?: string;
   max_files?: number;

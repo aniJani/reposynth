@@ -67,6 +67,7 @@ AWS_ENDPOINT_URL = os.environ.get("AWS_ENDPOINT_URL")
 # API Configuration
 API_KEY = os.environ.get("REPOSYNTH_API_KEY", "")  # Optional API key for additional auth
 DAILY_RATE_LIMIT = int(os.environ.get("DAILY_RATE_LIMIT", "5"))  # Requests per day per IP
+DISABLE_RATE_LIMIT = os.environ.get("DISABLE_RATE_LIMIT", "false").lower() == "true"  # Disable for local dev
 
 # Allowed origins for CORS (production domains)
 ALLOWED_ORIGINS = [
@@ -115,6 +116,40 @@ def get_client_ip(request: Request) -> str:
         return real_ip
     
     return request.client.host if request.client else "unknown"
+
+
+def get_client_identifier(request: Request) -> str:
+    """
+    Get a unique client identifier combining IP and device fingerprint.
+    This helps distinguish different devices behind the same IP (NAT/proxy).
+    
+    The client can send an X-Device-ID header with a unique browser fingerprint
+    (generated client-side using localStorage or fingerprint.js).
+    """
+    ip = get_client_ip(request)
+    
+    # Check for device ID header (should be set by frontend)
+    device_id = request.headers.get("X-Device-ID")
+    
+    if device_id:
+        # Combine IP and device ID for unique identification
+        return f"{ip}:{device_id}"
+    
+    # Fallback to user-agent as a weak differentiator
+    user_agent = request.headers.get("User-Agent", "")
+    if user_agent:
+        # Use a hash of user-agent to keep the identifier shorter
+        import hashlib
+        ua_hash = hashlib.md5(user_agent.encode()).hexdigest()[:8]
+        return f"{ip}:{ua_hash}"
+    
+    return ip
+
+
+def is_localhost(request: Request) -> bool:
+    """Check if request is from localhost."""
+    ip = get_client_ip(request)
+    return ip in ["127.0.0.1", "localhost", "::1"]
 
 limiter = Limiter(key_func=get_client_ip)
 
@@ -172,12 +207,37 @@ app.add_middleware(SlowAPIMiddleware)
 # Rate Limit Helpers
 # ============================================================================
 
-def get_rate_limit_info(db: Session, ip_address: str) -> Dict:
-    """Get current rate limit status for an IP address."""
+def get_rate_limit_info(db: Session, client_id: str, request: Request = None) -> Dict:
+    """
+    Get current rate limit status for a client.
+    
+    Args:
+        db: Database session
+        client_id: Unique client identifier (IP + device fingerprint)
+        request: Optional request object to check for localhost bypass
+    """
+    # Check if rate limiting is disabled
+    if DISABLE_RATE_LIMIT:
+        return {
+            "limit": -1,
+            "remaining": -1,
+            "reset_at": None,
+            "unlimited": True
+        }
+    
+    # Skip rate limiting entirely when dev origins are allowed (development mode)
+    if os.environ.get("ALLOW_DEV_ORIGINS", "false").lower() == "true":
+        return {
+            "limit": -1,
+            "remaining": -1,
+            "reset_at": None,
+            "unlimited": True
+        }
+    
     today = datetime.date.today()
     
     record = db.query(RateLimitRecord).filter(
-        RateLimitRecord.ip_address == ip_address,
+        RateLimitRecord.ip_address == client_id,
         RateLimitRecord.date == today
     ).first()
     
@@ -204,12 +264,37 @@ def get_rate_limit_info(db: Session, ip_address: str) -> Dict:
     }
 
 
-def check_and_increment_rate_limit(db: Session, ip_address: str) -> Dict:
-    """Check rate limit and increment counter. Raises HTTPException if exceeded."""
+def check_and_increment_rate_limit(db: Session, client_id: str, request: Request = None) -> Dict:
+    """
+    Check rate limit and increment counter. Raises HTTPException if exceeded.
+    
+    Args:
+        db: Database session
+        client_id: Unique client identifier (IP + device fingerprint)
+        request: Optional request object to check for localhost bypass
+    """
+    # Bypass rate limiting if disabled or if localhost and dev mode
+    if DISABLE_RATE_LIMIT:
+        return {
+            "limit": -1,  # -1 indicates unlimited
+            "remaining": -1,
+            "reset_at": None,
+            "unlimited": True
+        }
+    
+    # Skip rate limiting entirely when dev origins are allowed (development mode)
+    if os.environ.get("ALLOW_DEV_ORIGINS", "false").lower() == "true":
+        return {
+            "limit": -1,
+            "remaining": -1,
+            "reset_at": None,
+            "unlimited": True
+        }
+    
     today = datetime.date.today()
     
     record = db.query(RateLimitRecord).filter(
-        RateLimitRecord.ip_address == ip_address,
+        RateLimitRecord.ip_address == client_id,
         RateLimitRecord.date == today
     ).first()
     
@@ -220,7 +305,7 @@ def check_and_increment_rate_limit(db: Session, ip_address: str) -> Dict:
     
     if not record:
         record = RateLimitRecord(
-            ip_address=ip_address,
+            ip_address=client_id,
             date=today,
             request_count=1,
             last_request_at=datetime.datetime.utcnow()
@@ -372,12 +457,22 @@ async def health_check(db: Session = Depends(get_db)):
 
 @app.get("/rate-limit-status", tags=["Rate Limiting"])
 async def get_rate_limit_status(request: Request, db: Session = Depends(get_db)):
-    """Get current rate limit status for your IP address."""
-    ip = get_client_ip(request)
-    rate_info = get_rate_limit_info(db, ip)
+    """Get current rate limit status for your IP/device."""
+    client_id = get_client_identifier(request)
+    rate_info = get_rate_limit_info(db, client_id, request)
+    
+    # Check if unlimited (dev mode)
+    if rate_info.get("unlimited"):
+        return {
+            "client_id": client_id,
+            "daily_limit": "unlimited",
+            "remaining_calls": "unlimited",
+            "reset_at": None,
+            "message": "Rate limiting is disabled (development mode)."
+        }
     
     return {
-        "ip_address": ip,
+        "client_id": client_id,
         "daily_limit": rate_info["limit"],
         "remaining_calls": rate_info["remaining"],
         "reset_at": rate_info["reset_at"],
@@ -399,8 +494,8 @@ async def estimate_tokens_endpoint(
     """
     Estimate tokens and time for repository analysis.
     """
-    ip = get_client_ip(req)
-    rate_info = check_and_increment_rate_limit(db, ip)
+    client_id = get_client_identifier(req)
+    rate_info = check_and_increment_rate_limit(db, client_id, req)
     
     repo_path = Path(request.repo_path)
 
@@ -475,8 +570,8 @@ async def estimate_tokens_from_github_endpoint(
     _origin: bool = Depends(verify_origin)
 ):
     """Estimate tokens and time for a GitHub repository."""
-    ip = get_client_ip(req)
-    rate_info = check_and_increment_rate_limit(db, ip)
+    client_id = get_client_identifier(req)
+    rate_info = check_and_increment_rate_limit(db, client_id, req)
     
     project_root = Path(__file__).parent.parent.parent.parent
     temp_repos_dir = project_root / "temp_repos"
@@ -560,8 +655,8 @@ async def estimate_from_config(
     _origin: bool = Depends(verify_origin)
 ):
     """Estimate tokens and cost based on configuration without cloning the repository."""
-    ip = get_client_ip(req)
-    rate_info = check_and_increment_rate_limit(db, ip)
+    client_id = get_client_identifier(req)
+    rate_info = check_and_increment_rate_limit(db, client_id, req)
     
     config = request.config
     
@@ -628,8 +723,8 @@ async def create_job(
     _origin: bool = Depends(verify_origin)
 ):
     """Submit a repository analysis job for background processing."""
-    ip = get_client_ip(request)
-    rate_info = check_and_increment_rate_limit(db, ip)
+    client_id = get_client_identifier(request)
+    rate_info = check_and_increment_rate_limit(db, client_id, request)
     
     if config is None:
         config = JobConfiguration()
@@ -812,8 +907,8 @@ async def generate_vibe_prompt_endpoint(
     _origin: bool = Depends(verify_origin)
 ):
     """Generate an LLM-optimized prompt from a completed job's pack."""
-    ip = get_client_ip(req)
-    rate_info = check_and_increment_rate_limit(db, ip)
+    client_id = get_client_identifier(req)
+    rate_info = check_and_increment_rate_limit(db, client_id, req)
     
     from .prompt_engine import generate_vibe_prompt as engine_generate_prompt
 

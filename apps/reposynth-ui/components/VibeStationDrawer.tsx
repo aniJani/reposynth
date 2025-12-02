@@ -4,7 +4,7 @@
 import { useStore } from '@/lib/store';
 import { generateVibePrompt, getJobFiles } from '@/lib/api';
 import { useState, useEffect } from 'react';
-import { X, Copy, CheckCircle, PlayCircle, AlertCircle, Loader2, Sparkles, Hash, FileText, Layers, Download, Zap, ChevronDown } from 'lucide-react';
+import { X, Copy, CheckCircle, PlayCircle, AlertCircle, Loader2, Sparkles, Hash, FileText, Layers, Download, Zap, ChevronDown, MessageSquare } from 'lucide-react';
 
 // Context window presets for different LLM models
 const CONTEXT_PRESETS = {
@@ -17,6 +17,26 @@ const CONTEXT_PRESETS = {
 } as const;
 
 type ContextPresetKey = keyof typeof CONTEXT_PRESETS;
+
+// Slider range: 1K to 1M tokens (logarithmic scale)
+const MIN_TOKENS = 1000;
+const MAX_TOKENS = 1000000;
+
+// Convert slider value (0-100) to token count (logarithmic)
+const sliderToTokens = (value: number): number => {
+  const minLog = Math.log10(MIN_TOKENS);
+  const maxLog = Math.log10(MAX_TOKENS);
+  const logValue = minLog + (value / 100) * (maxLog - minLog);
+  return Math.round(Math.pow(10, logValue));
+};
+
+// Convert token count to slider value (0-100)
+const tokensToSlider = (tokens: number): number => {
+  const minLog = Math.log10(MIN_TOKENS);
+  const maxLog = Math.log10(MAX_TOKENS);
+  const logValue = Math.log10(Math.max(tokens, MIN_TOKENS));
+  return Math.round(((logValue - minLog) / (maxLog - minLog)) * 100);
+};
 
 export function VibeStationDrawer() {
   const {
@@ -42,19 +62,57 @@ export function VibeStationDrawer() {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
-  const [bundleSubMode, setBundleSubMode] = useState<'file' | 'search'>('file');
   const [contextPreset, setContextPreset] = useState<ContextPresetKey>('unlimited');
   const [showAllPresets, setShowAllPresets] = useState(false);
+  const [customTokens, setCustomTokens] = useState<number | null>(null); // null = use preset
+  const [sliderValue, setSliderValue] = useState(50); // 0-100
 
-  // Get effective token limit from preset
+  // Handle preset selection - updates slider too
+  const handlePresetClick = (key: ContextPresetKey) => {
+    setContextPreset(key);
+    if (key === 'unlimited') {
+      setCustomTokens(null);
+      setSliderValue(100);
+    } else {
+      const tokens = CONTEXT_PRESETS[key].tokens;
+      if (tokens) {
+        setCustomTokens(tokens);
+        setSliderValue(tokensToSlider(tokens));
+      }
+    }
+  };
+
+  // Handle slider change - clears preset selection
+  const handleSliderChange = (value: number) => {
+    setSliderValue(value);
+    const tokens = sliderToTokens(value);
+    setCustomTokens(tokens);
+    
+    // Find matching preset or set to custom
+    const matchingPreset = (Object.entries(CONTEXT_PRESETS) as [ContextPresetKey, typeof CONTEXT_PRESETS[ContextPresetKey]][]).find(
+      ([, preset]) => preset.tokens && Math.abs(preset.tokens - tokens) < tokens * 0.1
+    );
+    if (matchingPreset) {
+      setContextPreset(matchingPreset[0]);
+    } else if (value === 100) {
+      setContextPreset('unlimited');
+      setCustomTokens(null);
+    } else {
+      // No matching preset - show as custom
+      setContextPreset('unlimited'); // Clear visual selection
+    }
+  };
+
+  // Get effective token limit
   const getEffectiveTokenLimit = (): number | undefined => {
+    if (customTokens !== null) return customTokens;
     if (contextPreset === 'unlimited') return undefined;
     const preset = CONTEXT_PRESETS[contextPreset];
     return preset.tokens ?? undefined;
   };
 
   useEffect(() => {
-    if (vibeMode === 'bundle' && currentJob?.id) {
+    if (vibeMode === 'file' && currentJob?.id) {
       if (vibeFileList.files.length === 0) {
         setIsLoadingFiles(true);
         getJobFiles(currentJob.id)
@@ -76,20 +134,10 @@ export function VibeStationDrawer() {
       return;
     }
 
-    if (vibeMode === 'focus' && !vibeQuery.trim()) {
-      setError('Please enter a query for Focus mode');
+    // File mode requires a file selection
+    if (vibeMode === 'file' && !vibeEntryPoint.trim()) {
+      setError('Please select an entry point file');
       return;
-    }
-
-    if (vibeMode === 'bundle') {
-      if (bundleSubMode === 'file' && !vibeEntryPoint.trim()) {
-        setError('Please select an entry point file for Bundle mode');
-        return;
-      }
-      if (bundleSubMode === 'search' && !vibeQuery.trim()) {
-        setError('Please enter a search query for Bundle mode');
-        return;
-      }
     }
 
     setIsGeneratingPrompt(true);
@@ -99,11 +147,32 @@ export function VibeStationDrawer() {
     try {
       const tokenLimit = getEffectiveTokenLimit();
       
+      // Map frontend modes to backend modes:
+      // - 'prompt' mode with query -> 'focus' (search-based)
+      // - 'prompt' mode without query -> 'blueprint' (full project overview)
+      // - 'file' mode -> 'bundle' (dependency tree from file)
+      let backendMode: 'blueprint' | 'focus' | 'bundle';
+      let query: string | undefined;
+      let entryPoint: string | undefined;
+
+      if (vibeMode === 'prompt') {
+        if (vibeQuery.trim()) {
+          backendMode = 'focus';
+          query = vibeQuery;
+        } else {
+          backendMode = 'blueprint';
+        }
+      } else {
+        // file mode
+        backendMode = 'bundle';
+        entryPoint = vibeEntryPoint;
+      }
+
       const response = await generateVibePrompt({
         job_id: currentJob.id,
-        mode: vibeMode,
-        query: (vibeMode === 'focus' || (vibeMode === 'bundle' && bundleSubMode === 'search')) ? vibeQuery : undefined,
-        entry_point: (vibeMode === 'bundle' && bundleSubMode === 'file') ? vibeEntryPoint : undefined,
+        mode: backendMode,
+        query,
+        entry_point: entryPoint,
         max_files: 5,
         max_depth: 3,
         token_limit: tokenLimit,
@@ -209,52 +278,83 @@ export function VibeStationDrawer() {
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
-            {/* Mode Tabs */}
+            {/* Mode Tabs - Only 2 modes now */}
             <div className="space-y-3">
-              <p className="text-zinc-500 text-xs font-medium uppercase tracking-wider">Compression Mode</p>
+              <p className="text-zinc-500 text-xs font-medium uppercase tracking-wider">Generation Mode</p>
               <div className="flex border border-zinc-800/50 rounded-xl overflow-hidden bg-zinc-900/30">
-                {(['blueprint', 'focus', 'bundle'] as const).map((mode) => (
-                  <button
-                    key={mode}
-                    onClick={() => setVibeMode(mode)}
-                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                      vibeMode === mode
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
-                    }`}
-                  >
-                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
-                  </button>
-                ))}
+                <button
+                  onClick={() => setVibeMode('prompt')}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                    vibeMode === 'prompt'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
+                  }`}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Prompt
+                </button>
+                <button
+                  onClick={() => setVibeMode('file')}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                    vibeMode === 'file'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-white'
+                  }`}
+                >
+                  <FileText className="h-4 w-4" />
+                  File Selection
+                </button>
               </div>
               <p className="text-xs text-zinc-600 px-1">
-                {vibeMode === 'blueprint' && 'Structure only (5-10K tokens) - Architecture overview'}
-                {vibeMode === 'focus' && 'Query-based (20-50K tokens) - Relevant files only'}
-                {vibeMode === 'bundle' && 'Dependency tree (50-200K+ tokens) - Full context'}
+                {vibeMode === 'prompt' && 'Query-based or full project overview'}
+                {vibeMode === 'file' && 'Dependency tree from selected entry point'}
               </p>
             </div>
 
             {/* Context Window Optimizer - Available for all modes */}
-            <div className="space-y-3 p-4 border border-zinc-800/50 rounded-xl bg-zinc-900/30">
+            <div className="space-y-4 p-4 border border-zinc-800/50 rounded-xl bg-zinc-900/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Zap className="h-4 w-4 text-yellow-400" />
                   <p className="text-zinc-400 text-xs font-medium uppercase tracking-wider">Target Context Window</p>
                 </div>
-                {contextPreset !== 'unlimited' && (
+                {(customTokens !== null || contextPreset !== 'unlimited') && (
                   <span className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full">
-                    Optimization Active
+                    {customTokens !== null ? formatTokenCount(customTokens) : 'Optimization Active'}
                   </span>
                 )}
               </div>
               
+              {/* Token Slider */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs text-zinc-500">
+                  <span>1K</span>
+                  <span className="text-zinc-300 font-mono">
+                    {customTokens !== null ? formatTokenCount(customTokens) : 'Unlimited'}
+                  </span>
+                  <span>1M</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={sliderValue}
+                  onChange={(e) => handleSliderChange(parseInt(e.target.value))}
+                  className="w-full h-2 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                  style={{
+                    background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${sliderValue}%, #27272a ${sliderValue}%, #27272a 100%)`
+                  }}
+                />
+              </div>
+              
+              {/* Model Presets */}
               <div className="grid grid-cols-3 gap-2">
                 {(Object.keys(CONTEXT_PRESETS) as ContextPresetKey[]).slice(0, showAllPresets ? undefined : 3).map((key) => (
                   <button
                     key={key}
-                    onClick={() => setContextPreset(key)}
+                    onClick={() => handlePresetClick(key)}
                     className={`px-3 py-2.5 text-xs font-medium rounded-lg transition-all ${
-                      contextPreset === key
+                      contextPreset === key && (customTokens === null || customTokens === CONTEXT_PRESETS[key].tokens)
                         ? 'bg-blue-600 text-white ring-2 ring-blue-400/50'
                         : 'bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700 border border-zinc-700/50'
                     }`}
@@ -275,114 +375,93 @@ export function VibeStationDrawer() {
               )}
               
               <p className="text-xs text-zinc-500">
-                {CONTEXT_PRESETS[contextPreset].description}
-                {contextPreset !== 'unlimited' && (
+                {customTokens !== null 
+                  ? `Target: ${formatTokenCount(customTokens)} tokens`
+                  : CONTEXT_PRESETS[contextPreset].description
+                }
+                {(customTokens !== null || contextPreset !== 'unlimited') && (
                   <span className="text-yellow-400/80"> • Graph-Knapsack will optimize file selection</span>
                 )}
               </p>
             </div>
 
             {/* Mode-Specific Inputs */}
-            {vibeMode === 'focus' && (
+            {vibeMode === 'prompt' && (
               <div className="space-y-3 p-4 border border-zinc-800/50 rounded-xl bg-zinc-900/30">
-                <p className="text-zinc-500 text-xs font-medium uppercase tracking-wider">Focus Query</p>
+                <p className="text-zinc-500 text-xs font-medium uppercase tracking-wider">
+                  Query <span className="text-zinc-600">(optional)</span>
+                </p>
                 <textarea
                   value={vibeQuery}
                   onChange={(e) => setVibeQuery(e.target.value)}
-                  placeholder="e.g., How does authentication work? or Fix the login bug..."
+                  placeholder="Leave empty for full project context, or describe what you're working on..."
                   className="w-full resize-none bg-[#0d1117] border border-zinc-800/50 rounded-xl p-4 text-zinc-300 placeholder:text-zinc-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-colors font-mono text-sm"
                   rows={4}
                 />
+                <p className="text-xs text-zinc-500">
+                  {vibeQuery.trim() 
+                    ? '🔍 Will search for relevant code based on your query'
+                    : '📦 Will generate a compressed overview of the entire project'
+                  }
+                </p>
               </div>
             )}
 
-            {vibeMode === 'bundle' && (
+            {vibeMode === 'file' && (
               <div className="space-y-4 p-4 border border-zinc-800/50 rounded-xl bg-zinc-900/30">
-                <p className="text-zinc-500 text-xs font-medium uppercase tracking-wider">Bundle Config</p>
-                <div className="flex rounded-xl bg-[#0d1117] p-1 border border-zinc-800/50">
-                  <button
-                    onClick={() => setBundleSubMode('file')}
-                    className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      bundleSubMode === 'file'
-                        ? 'bg-zinc-800 text-white'
-                        : 'text-zinc-500 hover:text-zinc-300'
-                    }`}
-                  >
-                    Select File
-                  </button>
-                  <button
-                    onClick={() => setBundleSubMode('search')}
-                    className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                      bundleSubMode === 'search'
-                        ? 'bg-zinc-800 text-white'
-                        : 'text-zinc-500 hover:text-zinc-300'
-                    }`}
-                  >
-                    Search Tree
-                  </button>
-                </div>
-
-                {bundleSubMode === 'file' ? (
-                  <div>
-                    {isLoadingFiles ? (
-                      <div className="flex items-center gap-2 text-zinc-500 px-4 py-3 border border-zinc-800/50 rounded-xl bg-[#0d1117]">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Loading file list...
-                      </div>
-                    ) : (
-                      <select
-                        value={vibeEntryPoint}
-                        onChange={(e) => setVibeEntryPoint(e.target.value)}
-                        className="w-full bg-[#0d1117] border border-zinc-800/50 rounded-xl p-3 text-zinc-300 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-colors"
-                      >
-                        <option value="">Select entry point...</option>
-                        {vibeFileList.roots.length > 0 && (
-                          <optgroup label="Suggested Entry Points">
-                            {vibeFileList.roots.map((f) => (
-                              <option key={f} value={f}>
-                                {f}
-                              </option>
-                            ))}
-                          </optgroup>
-                        )}
-                        <optgroup label="All Files">
-                          {vibeFileList.files.map((f) => (
-                            <option key={f} value={f}>
-                              {f}
-                            </option>
-                          ))}
-                        </optgroup>
-                      </select>
-                    )}
-                    {vibeFileList.files.length === 0 && !isLoadingFiles && (
-                      <p className="text-sm text-amber-500 mt-2">
-                        ⚠️ No files found. The job might have completed without generating a graph.
-                      </p>
-                    )}
+                <p className="text-zinc-500 text-xs font-medium uppercase tracking-wider">Entry Point File</p>
+                {isLoadingFiles ? (
+                  <div className="flex items-center gap-2 text-zinc-500 px-4 py-3 border border-zinc-800/50 rounded-xl bg-[#0d1117]">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading file list...
                   </div>
                 ) : (
-                  <div>
-                    <textarea
-                      value={vibeQuery}
-                      onChange={(e) => setVibeQuery(e.target.value)}
-                      placeholder="e.g., Payment Service or Auth Controller"
-                      className="w-full resize-none bg-[#0d1117] border border-zinc-800/50 rounded-xl p-4 text-zinc-300 placeholder:text-zinc-600 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-colors font-mono text-sm"
-                      rows={2}
-                    />
-                    <p className="text-xs text-zinc-500 mt-2">
-                      We&apos;ll find the most relevant file and build the tree from there
-                    </p>
-                  </div>
+                  <select
+                    value={vibeEntryPoint}
+                    onChange={(e) => setVibeEntryPoint(e.target.value)}
+                    className="w-full bg-[#0d1117] border border-zinc-800/50 rounded-xl p-3 text-zinc-300 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-colors"
+                  >
+                    <option value="">Select entry point...</option>
+                    {vibeFileList.roots.length > 0 && (
+                      <optgroup label="Suggested Entry Points">
+                        {vibeFileList.roots.map((f) => (
+                          <option key={f} value={f}>
+                            {f}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    <optgroup label="All Files">
+                      {vibeFileList.files.map((f) => (
+                        <option key={f} value={f}>
+                          {f}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
                 )}
+                {vibeFileList.files.length === 0 && !isLoadingFiles && (
+                  <p className="text-sm text-amber-500 mt-2">
+                    ⚠️ No files found. The job might have completed without generating a graph.
+                  </p>
+                )}
+                <p className="text-xs text-zinc-500">
+                  📂 Will build a dependency tree starting from the selected file
+                </p>
               </div>
             )}
 
             {/* Generate Button */}
             <button
               onClick={handleGeneratePrompt}
-              disabled={isGeneratingPrompt || !currentJob || currentJob.status !== 'completed'}
+              disabled={
+                isGeneratingPrompt || 
+                !currentJob || 
+                currentJob.status !== 'completed' ||
+                (vibeMode === 'file' && !vibeEntryPoint.trim())
+              }
               className={`w-full flex items-center justify-center h-12 px-4 font-semibold text-base rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0d1117] ${
-                isGeneratingPrompt || !currentJob || currentJob.status !== 'completed'
+                isGeneratingPrompt || !currentJob || currentJob.status !== 'completed' || (vibeMode === 'file' && !vibeEntryPoint.trim())
                   ? 'bg-zinc-800/50 text-zinc-500 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-500 focus:ring-blue-500'
               }`}

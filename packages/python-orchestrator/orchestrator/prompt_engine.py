@@ -111,6 +111,40 @@ class PromptEngine:
 
         # Store work directory for file reading
         self.work_dir = work_dir
+        
+        # Pre-load source files cache to avoid repeated disk reads
+        self._source_cache = {}
+        self._source_cache_loaded = False
+
+    def _ensure_source_cache(self):
+        """Load all source files into cache once."""
+        if self._source_cache_loaded:
+            return
+        
+        self._source_cache_loaded = True
+        
+        # Try to load from source_spans.json first (fastest)
+        if self.work_dir:
+            spans_json_path = self.work_dir / "source_spans.json"
+            if spans_json_path.exists():
+                try:
+                    with open(spans_json_path, 'r', encoding='utf-8') as f:
+                        spans_data = json.load(f)
+                    
+                    if isinstance(spans_data, list):
+                        for file_data in spans_data:
+                            fp = file_data.get('file_path')
+                            if fp:
+                                self._source_cache[fp] = file_data.get('source_code', file_data.get('full_source', ''))
+                    elif isinstance(spans_data, dict):
+                        for fp, data in spans_data.items():
+                            if isinstance(data, dict):
+                                self._source_cache[fp] = data.get('source_code', data.get('full_source', ''))
+                            else:
+                                self._source_cache[fp] = str(data)
+                    return
+                except Exception as e:
+                    print(f"Error loading source_spans.json into cache: {e}", file=sys.stderr)
 
     def _load_from_json(self):
         """Load artifacts from a single JSON pack file."""
@@ -224,15 +258,25 @@ class PromptEngine:
             import shutil
             shutil.rmtree(self.temp_extract_dir)
 
-    def generate_blueprint(self) -> Dict[str, Any]:
+    def generate_blueprint(self, token_limit: int = None) -> Dict[str, Any]:
         """
-        Generate Blueprint Mode prompt (structure only, no source code).
+        Generate Blueprint Mode prompt (structure + optionally source code if budget allows).
+
+        Args:
+            token_limit: Optional token budget - fills with source code if there's room
 
         Returns:
             Dict with 'prompt' (str) and 'metadata' (dict)
         """
-        # Generate TOON structure
+        # Generate full TOON structure first (we'll use as much as fits)
         toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph)
+        toon_tokens = estimate_tokens(toon_structure)
+        
+        # If no limit or structure already exceeds limit, truncate structure
+        if token_limit and toon_tokens > token_limit * 0.8:
+            # Structure is too big, use limited version
+            toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph, max_tokens=int(token_limit * 0.8))
+            toon_tokens = estimate_tokens(toon_structure)
 
         # Assemble prompt
         prompt_parts = []
@@ -246,37 +290,109 @@ class PromptEngine:
         prompt_parts.append("- **symbols** table shows all functions, classes, and variables\n")
         prompt_parts.append("- **dependencies** table shows file-to-file imports\n")
         prompt_parts.append("- Use this to navigate the codebase structure\n")
-        prompt_parts.append("- For specific code, request a Focus or Bundle mode prompt\n")
+        
+        base_prompt = "".join(prompt_parts)
+        base_tokens = estimate_tokens(base_prompt)
+        
+        # If we have a token limit and there's remaining budget, add key source files
+        files_included = []
+        if token_limit and base_tokens < token_limit * 0.9:
+            remaining_budget = token_limit - base_tokens - 200  # Reserve 200 for safety
+            
+            if remaining_budget > 1000:
+                prompt_parts.append("\n## Key Source Files\n")
+                prompt_parts.append("Below are important files from the codebase:\n\n")
+                
+                # Get key files from import graph (most connected = most important)
+                file_import_counts = {}
+                for source, targets in self.import_graph.items():
+                    file_import_counts[source] = file_import_counts.get(source, 0) + len(targets) if isinstance(targets, list) else 1
+                    if isinstance(targets, list):
+                        for target in targets:
+                            file_import_counts[target] = file_import_counts.get(target, 0) + 1
+                
+                # Sort by importance (most connections first), limit to top 100 files
+                sorted_files = sorted(file_import_counts.items(), key=lambda x: -x[1])[:100]
+                
+                source_tokens_used = 0
+                files_checked = 0
+                max_files_to_check = 50  # Limit how many files we try to read
+                
+                for file_path, _ in sorted_files:
+                    if source_tokens_used >= remaining_budget:
+                        break
+                    if files_checked >= max_files_to_check:
+                        break
+                    
+                    files_checked += 1
+                    source_code = self._read_source_file(file_path)
+                    if source_code:
+                        file_tokens = estimate_tokens(source_code)
+                        
+                        # Check if this file fits
+                        if source_tokens_used + file_tokens + 100 > remaining_budget:
+                            continue  # Skip large files, try smaller ones
+                        
+                        lang = self._detect_language(file_path)
+                        prompt_parts.append(f"### File: {file_path}\n")
+                        prompt_parts.append(f"```{lang}\n")
+                        prompt_parts.append(source_code)
+                        prompt_parts.append("\n```\n\n")
+                        
+                        source_tokens_used += file_tokens + 50
+                        files_included.append(file_path)
 
         prompt = "".join(prompt_parts)
 
         # Generate metadata
         stats = summarize_toon(toon_structure)
+        
+        metadata = {
+            "mode": "blueprint",
+            "token_estimate": estimate_tokens(prompt),
+            "symbol_count": stats["tables"].get("symbols", 0),
+            "dependency_count": stats["tables"].get("dependencies", 0),
+            "files_included": len(files_included),
+            "description": "Structural blueprint" + (f" with {len(files_included)} key source files" if files_included else " (structure only)")
+        }
+        
+        if token_limit:
+            metadata["token_limit"] = token_limit
+            metadata["optimization"] = {
+                "optimization_applied": True,
+                "token_budget": token_limit,
+                "tokens_used": estimate_tokens(prompt),
+                "files_pruned": 0
+            }
 
         return {
             "prompt": prompt,
-            "metadata": {
-                "mode": "blueprint",
-                "token_estimate": stats["estimated_tokens"],
-                "symbol_count": stats["tables"].get("symbols", 0),
-                "dependency_count": stats["tables"].get("dependencies", 0),
-                "description": "Structure-only view (no source code)"
-            }
+            "metadata": metadata
         }
 
-    def generate_focus(self, query: str, max_files: int = 5) -> Dict[str, Any]:
+    def generate_focus(self, query: str, max_files: int = 5, token_limit: int = None) -> Dict[str, Any]:
         """
         Generate Focus Mode prompt (structure + relevant files based on query).
 
         Args:
             query: User's question or task (e.g., "Fix login logic")
             max_files: Maximum number of files to include
+            token_limit: Optional token budget for optimization
 
         Returns:
             Dict with 'prompt' (str) and 'metadata' (dict)
         """
-        # Start with blueprint
-        toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph)
+        # Calculate how much budget for structure vs source
+        if token_limit:
+            # Reserve ~30% for structure, 70% for source files
+            structure_budget = int(token_limit * 0.3)
+            source_budget = int(token_limit * 0.7)
+        else:
+            structure_budget = None
+            source_budget = None
+        
+        # Start with blueprint (with optional budget)
+        toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph, max_tokens=structure_budget)
 
         # Use hybrid_search to find relevant symbols/files
         # Pass pack_path (if it's a dir) or work_dir
@@ -301,31 +417,54 @@ class PromptEngine:
         prompt_parts.append(toon_structure)
         prompt_parts.append("\n")
 
-        # Add source code for relevant files
+        # Add source code for relevant files (with budget if set)
         prompt_parts.append(f"## Relevant Source Files ({len(relevant_files)} files)\n\n")
 
+        source_tokens_used = 0
+        files_included = 0
         for file_path in relevant_files:
             source_code = self._read_source_file(file_path)
             if source_code:
+                file_tokens = estimate_tokens(source_code)
+                
+                # Check if we have budget and would exceed it
+                if source_budget and (source_tokens_used + file_tokens) > source_budget and files_included > 0:
+                    prompt_parts.append(f"# ... {len(relevant_files) - files_included} more files truncated for token budget\n")
+                    break
+                
                 # Detect language from file extension
                 lang = self._detect_language(file_path)
                 prompt_parts.append(f"### File: {file_path}\n")
                 prompt_parts.append(f"```{lang}\n")
                 prompt_parts.append(source_code)
                 prompt_parts.append("\n```\n\n")
+                
+                source_tokens_used += file_tokens
+                files_included += 1
 
         prompt = "".join(prompt_parts)
+        
+        metadata = {
+            "mode": "focus",
+            "token_estimate": estimate_tokens(prompt),
+            "query": query,
+            "files_included": files_included,
+            "file_list": relevant_files[:files_included],
+            "description": f"Focused context for: {query}"
+        }
+        
+        if token_limit:
+            metadata["token_limit"] = token_limit
+            metadata["optimization"] = {
+                "optimization_applied": True,
+                "token_budget": token_limit,
+                "tokens_used": estimate_tokens(prompt),
+                "files_pruned": len(relevant_files) - files_included
+            }
 
         return {
             "prompt": prompt,
-            "metadata": {
-                "mode": "focus",
-                "token_estimate": estimate_tokens(prompt),
-                "query": query,
-                "files_included": len(relevant_files),
-                "file_list": relevant_files,
-                "description": f"Focused context for: {query}"
-            }
+            "metadata": metadata
         }
 
     def generate_bundle(self, entry_point: Optional[str] = None, query: Optional[str] = None, max_depth: int = 3, token_limit: Optional[int] = None) -> Dict[str, Any]:
@@ -368,33 +507,37 @@ class PromptEngine:
             # For small context windows, skip the large blueprint
             include_full_blueprint = False
             blueprint_tokens = 0
+        elif token_limit:
+            # Generate a truncated blueprint for medium context windows
+            toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph, max_tokens=min(token_limit // 4, 8000))
+            blueprint_tokens = estimate_tokens(toon_structure)
         else:
-            # Generate full blueprint for larger context windows
+            # No limit - generate full blueprint
             toon_structure = generate_toon_blueprint(self.name_registry, self.import_graph)
             blueprint_tokens = estimate_tokens(toon_structure)
         
-        # Calculate overhead tokens (blueprint + headers + formatting)
-        # Base overhead for headers, code fences, file names, etc.
-        base_overhead = 300 + (len(bundled_files) * 50)  # ~50 tokens per file for headers/fences
-        estimated_overhead = blueprint_tokens + base_overhead
-
-        # Apply context optimization if token_limit is provided
+        # Apply context optimization FIRST if token_limit is provided
+        # This way we calculate overhead based on actual files that will be included
         pruning_report = None
         effective_token_limit = None
+        
         if token_limit:
-            # Subtract overhead from token limit to get budget for source files
-            effective_token_limit = max(token_limit - estimated_overhead, 1000)  # Minimum 1000 tokens for source
-            
-            # Generate token_map on-the-fly if not available
-            token_map_to_use = self.token_map
+            # First, build token map for all candidate files
+            token_map_to_use = self.token_map if self.token_map else {}
             if not token_map_to_use:
-                token_map_to_use = {}
                 for file_path in bundled_files:
                     source_code = self._read_source_file(file_path)
                     if source_code:
                         token_map_to_use[file_path] = estimate_tokens(source_code)
                     else:
                         token_map_to_use[file_path] = 0
+            
+            # Calculate effective budget for source files
+            # Reserve space for: blueprint + headers (~50 tokens per file) + base overhead
+            base_overhead = 500 + blueprint_tokens
+            # Estimate files we might include (will be refined by optimizer)
+            estimated_file_overhead = min(len(bundled_files), 20) * 60  # ~60 tokens per file for headers/fences
+            effective_token_limit = max(token_limit - base_overhead - estimated_file_overhead, 1000)
             
             if token_map_to_use:
                 optimized_files, pruning_report = optimize_context(
@@ -444,17 +587,33 @@ class PromptEngine:
             prompt_parts.append(f"- {file_path}\n")
         prompt_parts.append("\n")
 
-        # Add source code for all bundled files
-        prompt_parts.append(f"## Source Code ({len(bundled_files)} files)\n\n")
 
+        # Add source code for bundled files (with token limit enforcement)
+        prompt_parts.append(f"## Source Code ({len(bundled_files)} files)\n\n")
+        
+        source_tokens_used = 0
+        files_actually_included = 0
         for file_path in bundled_files:
             source_code = self._read_source_file(file_path)
             if source_code:
+                file_tokens = estimate_tokens(source_code)
+                
+                # Hard enforce token limit if set
+                if token_limit and effective_token_limit:
+                    if source_tokens_used + file_tokens > effective_token_limit and files_actually_included > 0:
+                        # Stop adding files - we've hit the limit
+                        remaining = len(bundled_files) - files_actually_included
+                        prompt_parts.append(f"# ... {remaining} more files truncated to fit {token_limit:,} token budget\n")
+                        break
+                
                 lang = self._detect_language(file_path)
                 prompt_parts.append(f"### File: {file_path}\n")
                 prompt_parts.append(f"```{lang}\n")
                 prompt_parts.append(source_code)
                 prompt_parts.append("\n```\n\n")
+                
+                source_tokens_used += file_tokens
+                files_actually_included += 1
 
         prompt = "".join(prompt_parts)
 
@@ -464,8 +623,8 @@ class PromptEngine:
             "token_estimate": estimate_tokens(prompt),
             "entry_point": entry_point,
             "query": query,
-            "files_included": len(bundled_files),
-            "file_list": bundled_files,
+            "files_included": files_actually_included,
+            "file_list": bundled_files[:files_actually_included],
             "max_depth": max_depth,
             "description": f"Complete dependency bundle for: {entry_point}"
         }
@@ -495,7 +654,7 @@ class PromptEngine:
 
     def _read_source_file(self, file_path: str) -> Optional[str]:
         """
-        Read source code from source_spans.json, spans.zip, or original repository.
+        Read source code from cache, source_spans.json, spans.zip, or original repository.
 
         Args:
             file_path: Relative file path
@@ -512,7 +671,13 @@ class PromptEngine:
                     return data.get('full_source', '')
                 return str(data)
 
-        # Try to read from source_spans.json (flat file format after cleanup)
+        # Use cached source files if available (fast path)
+        if hasattr(self, '_source_cache'):
+            self._ensure_source_cache()
+            if file_path in self._source_cache:
+                return self._source_cache[file_path]
+
+        # Fallback: Try to read from source_spans.json (slow path - shouldn't hit this often)
         if self.work_dir:
             spans_json_path = self.work_dir / "source_spans.json"
             if spans_json_path.exists():
@@ -724,7 +889,7 @@ def generate_vibe_prompt(
         max_files: Max files to include in focus mode
         max_depth: Max dependency depth in bundle mode
         repo_url: Optional URL of the repository (for fallback source reading)
-        token_limit: Optional token budget for context optimization (bundle mode only)
+        token_limit: Optional token budget for context optimization
 
     Returns:
         Dict with 'prompt' and 'metadata'
@@ -736,12 +901,12 @@ def generate_vibe_prompt(
 
     try:
         if mode == "blueprint":
-            return engine.generate_blueprint()
+            return engine.generate_blueprint(token_limit=token_limit)
 
         elif mode == "focus":
             if not query:
                 raise ValueError("Query is required for focus mode")
-            return engine.generate_focus(query, max_files)
+            return engine.generate_focus(query, max_files, token_limit=token_limit)
 
         elif mode == "bundle":
             if not entry_point and not query:

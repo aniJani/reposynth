@@ -48,11 +48,12 @@ export function RateLimitBanner() {
 
   // Update countdown timer
   useEffect(() => {
+    // Skip countdown if unlimited (reset_at is null) or no rate limit
     if (!rateLimit?.reset_at) return;
 
     function updateCountdown() {
       const now = new Date();
-      const reset = new Date(rateLimit!.reset_at);
+      const reset = new Date(rateLimit!.reset_at!);
       const diff = reset.getTime() - now.getTime();
 
       if (diff <= 0) {
@@ -99,6 +100,18 @@ export function RateLimitBanner() {
   }
 
   if (!rateLimit) return null;
+
+  // Check if rate limiting is disabled (unlimited mode, indicated by -1)
+  const isUnlimited = rateLimit.limit === -1 || rateLimit.remaining === -1;
+  
+  if (isUnlimited) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-teal-900/30 border border-teal-700/50 rounded-lg text-xs text-teal-300">
+        <CheckCircle className="h-3 w-3" />
+        <span>Development Mode - Unlimited API calls</span>
+      </div>
+    );
+  }
 
   const isExhausted = rateLimit.remaining === 0;
   const isLow = rateLimit.remaining <= 2 && rateLimit.remaining > 0;

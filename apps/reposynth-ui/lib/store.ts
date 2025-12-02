@@ -11,9 +11,9 @@ export interface JobConfiguration {
 }
 
 export interface RateLimitInfo {
-  limit: number;
-  remaining: number;
-  reset_at: string;
+  limit: number;  // -1 means unlimited
+  remaining: number;  // -1 means unlimited
+  reset_at: string | null;
 }
 
 export interface EstimateResponse {
@@ -86,8 +86,8 @@ interface StoreState {
   setSubmitError: (error: string | null) => void;
 
   // Vibe Coding
-  vibeMode: 'blueprint' | 'focus' | 'bundle';
-  setVibeMode: (mode: 'blueprint' | 'focus' | 'bundle') => void;
+  vibeMode: 'prompt' | 'file';
+  setVibeMode: (mode: 'prompt' | 'file') => void;
   vibeQuery: string;
   setVibeQuery: (query: string) => void;
   vibeEntryPoint: string;
@@ -145,7 +145,7 @@ export const useStore = create<StoreState>((set) => ({
   setSubmitError: (error) => set({ submitError: error }),
 
   // Vibe Coding
-  vibeMode: 'blueprint',
+  vibeMode: 'prompt',
   setVibeMode: (mode) => set({ vibeMode: mode }),
   vibeQuery: '',
   setVibeQuery: (query) => set({ vibeQuery: query }),

@@ -85,7 +85,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PYTHONUNBUFFERED: 1
-      ALLOW_DEV_ORIGINS: "true"
+      ALLOW_DEV_ORIGINS: "false"
     ports:
       - "8000:8000"
     volumes:
