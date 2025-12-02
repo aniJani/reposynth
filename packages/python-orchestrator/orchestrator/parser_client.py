@@ -76,11 +76,13 @@ class ParserClient:
             # No .gitignore file - accept all files (no-op matcher)
             matches = lambda path: False
 
-        # Include .js files for JavaScript repositories
+        # Include .js/.jsx and .ts/.tsx files for JavaScript/TypeScript repositories
         all_files = (
             list(repo_path.glob("**/*.py"))
             + list(repo_path.glob("**/*.ts"))
+            + list(repo_path.glob("**/*.tsx"))
             + list(repo_path.glob("**/*.js"))
+            + list(repo_path.glob("**/*.jsx"))
         )
 
         files_to_parse = []
@@ -100,7 +102,7 @@ class ParserClient:
         files_to_parse = self._discover_files(repo_path)
 
         if not files_to_parse:
-            print(f"Warning: No .py, .ts, or .js files found to parse in {repo_path}")
+            print(f"Warning: No .py, .ts, .tsx, .js, or .jsx files found to parse in {repo_path}")
             return
 
         print(f"Found {len(files_to_parse)} files to parse.")
