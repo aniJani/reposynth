@@ -4,7 +4,7 @@
 import { useStore } from '@/lib/store';
 import { generateVibePrompt, getJobFiles } from '@/lib/api';
 import { useState, useEffect } from 'react';
-import { X, Copy, CheckCircle, PlayCircle, AlertCircle, Loader2, Sparkles, Hash, FileText, Layers, Download, Zap, ChevronDown, MessageSquare } from 'lucide-react';
+import { X, Copy, CheckCircle, PlayCircle, AlertCircle, Loader2, Hash, FileText, Layers, Download, Zap, ChevronDown, MessageSquare } from 'lucide-react';
 
 // Context window presets for different LLM models
 const CONTEXT_PRESETS = {
@@ -256,16 +256,11 @@ export function VibeStationDrawer() {
       <div className="fixed inset-y-0 right-0 w-full md:w-1/2 lg:w-[40%] bg-[#0d1117] z-50 overflow-hidden flex flex-col border-l border-zinc-800/50 animate-in slide-in-from-right duration-300">
         {/* Header */}
         <div className="px-6 py-4 border-b border-zinc-800/50 flex items-center justify-between bg-[#0d1117]">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-violet-500/10 flex items-center justify-center">
-              <Sparkles className="text-violet-400 h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="text-white text-lg font-semibold">
-                Vibe Station
-              </h1>
-              <p className="text-xs text-zinc-500">Advanced Context Modes</p>
-            </div>
+          <div>
+            <h1 className="text-white text-lg font-semibold">
+              Vibe Station
+            </h1>
+            <p className="text-xs text-zinc-500">Advanced Context Modes</p>
           </div>
           <button
             onClick={() => setIsVibeDrawerOpen(false)}
