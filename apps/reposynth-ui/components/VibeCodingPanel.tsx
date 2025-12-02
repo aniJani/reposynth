@@ -137,7 +137,7 @@ export function VibeCodingPanel() {
                   onClick={() => setVibeMode(mode)}
                   className={`px-4 py-2 text-sm transition-colors ${
                     vibeMode === mode
-                      ? 'border-b-2 border-cyber-blue text-white bg-zinc-800/50'
+                      ? 'border-b-2 border-accent text-white bg-zinc-800/50'
                       : 'text-zinc-400 hover:text-white'
                   }`}
                 >
@@ -150,14 +150,14 @@ export function VibeCodingPanel() {
             {/* Mode-Specific Inputs */}
             {vibeMode === 'focus' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-zinc-400 mb-2">
                   What are you working on?
                 </label>
                 <textarea
                   value={vibeQuery}
                   onChange={(e) => setVibeQuery(e.target.value)}
                   placeholder="e.g., How does authentication work? or Fix the login bug"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none bg-white text-gray-900 placeholder-gray-500"
+                  className="w-full px-4 py-3 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none bg-zinc-800 text-zinc-200 placeholder-zinc-500"
                   rows={3}
                 />
               </div>
@@ -165,13 +165,13 @@ export function VibeCodingPanel() {
 
             {vibeMode === 'bundle' && (
               <div className="space-y-4">
-                <div className="flex rounded-lg bg-gray-100 p-1">
+                <div className="flex rounded-lg bg-zinc-800 p-1">
                   <button
                     onClick={() => setBundleSubMode('file')}
                     className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
                       bundleSubMode === 'file'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-900'
+                        ? 'bg-zinc-700 text-zinc-100'
+                        : 'text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
                     Select File
@@ -180,8 +180,8 @@ export function VibeCodingPanel() {
                     onClick={() => setBundleSubMode('search')}
                     className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all ${
                       bundleSubMode === 'search'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-900'
+                        ? 'bg-zinc-700 text-zinc-100'
+                        : 'text-zinc-400 hover:text-zinc-200'
                     }`}
                   >
                     Search Tree
@@ -190,11 +190,11 @@ export function VibeCodingPanel() {
 
                 {bundleSubMode === 'file' ? (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">
                       Entry Point File
                     </label>
                     {isLoadingFiles ? (
-                      <div className="flex items-center gap-2 text-gray-500 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50">
+                      <div className="flex items-center gap-2 text-zinc-400 px-4 py-3 border border-zinc-700 rounded-lg bg-zinc-800">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Loading file list...
                       </div>
@@ -202,11 +202,11 @@ export function VibeCodingPanel() {
                       <select
                         value={vibeEntryPoint}
                         onChange={(e) => setVibeEntryPoint(e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white text-gray-900"
+                        className="w-full px-4 py-3 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-zinc-800 text-zinc-200"
                       >
                         <option value="">Select a file...</option>
                         {vibeFileList.roots.length > 0 && (
-                          <optgroup label="⭐ Suggested Entry Points">
+                          <optgroup label="Suggested Entry Points">
                             {vibeFileList.roots.map((f) => (
                               <option key={f} value={f}>
                                 {f}
@@ -224,27 +224,27 @@ export function VibeCodingPanel() {
                       </select>
                     )}
                     {vibeFileList.files.length === 0 && !isLoadingFiles && (
-                      <p className="text-sm text-amber-600 mt-2">
-                        ⚠️ No files found in the analysis pack. The job might have completed without generating a graph.
+                      <p className="text-sm text-amber-500 mt-2">
+                        No files found in the analysis pack. The job might have completed without generating a graph.
                       </p>
                     )}
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-zinc-500 mt-2">
                       Manually select the root file for the dependency tree
                     </p>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-zinc-400 mb-2">
                       Search for Entry Point
                     </label>
                     <textarea
                       value={vibeQuery}
                       onChange={(e) => setVibeQuery(e.target.value)}
                       placeholder="e.g., Payment Service or Auth Controller"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none bg-white text-gray-900 placeholder-gray-500"
+                      className="w-full px-4 py-3 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none bg-zinc-800 text-zinc-200 placeholder-zinc-500"
                       rows={3}
                     />
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-zinc-500 mt-2">
                       We&apos;ll find the most relevant file and build the tree from there
                     </p>
                   </div>
@@ -264,8 +264,8 @@ export function VibeCodingPanel() {
                 isGeneratingPrompt ||
                 !currentJob ||
                 currentJob.status !== 'completed'
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg hover:shadow-xl'
+                  ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
+                  : 'bg-teal-600 text-white hover:bg-teal-500'
               }`}
             >
               {isGeneratingPrompt ? (
