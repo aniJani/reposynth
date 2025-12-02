@@ -65,7 +65,7 @@ export function ConfiguratorPanel() {
   };
 
   return (
-    <div className="w-full space-y-2 p-4 border border-zinc-800 rounded-md bg-zinc-900/50">
+    <div className="w-full space-y-2 p-5 border border-zinc-800 rounded-lg bg-zinc-900/80">
       <div className="flex items-center justify-between">
         <p className="text-zinc-400 text-sm font-mono">[ConfiguratorPanel]</p>
 
@@ -94,17 +94,17 @@ export function ConfiguratorPanel() {
                 <button
                   key={mode.value}
                   onClick={() => setConfig({ mode: mode.value })}
-                  className={`relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-colors cursor-pointer text-left h-32 ${
+                  className={`relative flex flex-col items-center justify-center p-4 rounded-lg border transition-all cursor-pointer text-left h-32 ${
                     config.mode === mode.value
-                      ? 'border-neon-purple bg-zinc-800 glow-purple'
-                      : 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800'
+                      ? 'border-accent bg-accent/10'
+                      : 'bg-zinc-900 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/50'
                   }`}
                 >
                   <span
-                    className={`absolute top-2 right-2 text-xs font-mono px-2 py-0.5 rounded-full ${
+                    className={`absolute top-2 right-2 text-xs font-mono px-2 py-0.5 rounded ${
                       config.mode === mode.value
-                        ? 'bg-neon-purple/10 text-neon-purple'
-                        : 'bg-zinc-700/50 text-zinc-400'
+                        ? 'bg-accent/20 text-accent'
+                        : 'bg-zinc-800 text-zinc-500'
                     }`}
                   >
                     {mode.time}
@@ -150,29 +150,29 @@ export function ConfiguratorPanel() {
                   <button
                     key={feature.key}
                     onClick={() => setConfig({ [feature.key]: !isEnabled })}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
                       isEnabled
-                        ? 'bg-cyber-blue/10 border-cyber-blue/50 hover:bg-cyber-blue/20'
-                        : 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800 hover:border-cyber-blue/40'
+                        ? 'bg-accent/10 border-accent/40'
+                        : 'bg-zinc-900 border-zinc-700 hover:border-zinc-600'
                     }`}
                   >
                     <span
                       className={`font-mono text-sm ${
-                        isEnabled ? 'text-cyber-blue' : 'text-zinc-200'
+                        isEnabled ? 'text-accent' : 'text-zinc-300'
                       }`}
                     >
                       {feature.label}
                     </span>
                     <div
-                      className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors ${
+                      className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors ${
                         isEnabled
-                          ? 'bg-cyber-blue/50 justify-end'
-                          : 'bg-zinc-700 justify-start'
+                          ? 'bg-accent justify-end'
+                          : 'bg-zinc-600 justify-start'
                       }`}
                     >
                       <div
-                        className={`w-3 h-3 rounded-full shadow-md ${
-                          isEnabled ? 'bg-zinc-100' : 'bg-zinc-400'
+                        className={`w-4 h-4 rounded-full transition-colors ${
+                          isEnabled ? 'bg-white' : 'bg-zinc-400'
                         }`}
                       />
                     </div>

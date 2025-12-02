@@ -164,13 +164,13 @@ export function VibeCodingPanel() {
         <div className="flex flex-col md:flex-row">
           {/* Left Panel - Configuration */}
           <div className="w-full md:w-1/2 p-4 border-b md:border-b-0 md:border-r border-zinc-800">
-            {/* Mode Tabs - Only 2 modes now */}
+            {/* Mode Tabs - 2 modes: Prompt and File Selection */}
             <div className="flex border-b border-zinc-800 -mx-4 px-4">
               <button
                 onClick={() => setVibeMode('prompt')}
                 className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                   vibeMode === 'prompt'
-                    ? 'border-b-2 border-cyber-blue text-white bg-zinc-800/50'
+                    ? 'border-b-2 border-teal-500 text-white bg-zinc-800/50'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
@@ -181,7 +181,7 @@ export function VibeCodingPanel() {
                 onClick={() => setVibeMode('file')}
                 className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
                   vibeMode === 'file'
-                    ? 'border-b-2 border-cyber-blue text-white bg-zinc-800/50'
+                    ? 'border-b-2 border-teal-500 text-white bg-zinc-800/50'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
@@ -194,20 +194,20 @@ export function VibeCodingPanel() {
               {/* Prompt Mode */}
               {vibeMode === 'prompt' && (
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">
                     What are you working on? <span className="text-zinc-500">(optional)</span>
                   </label>
                   <textarea
                     value={vibeQuery}
                     onChange={(e) => setVibeQuery(e.target.value)}
                     placeholder="Leave empty for full project context, or describe what you're working on..."
-                    className="w-full px-4 py-3 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none bg-zinc-800 text-zinc-200 placeholder-zinc-500"
+                    className="w-full px-4 py-3 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none bg-zinc-800 text-zinc-200 placeholder-zinc-500"
                     rows={3}
                   />
-                  <p className="text-xs text-zinc-500 mt-2">
+                  <p className="text-sm text-zinc-500 mt-2">
                     {vibeQuery.trim() 
-                      ? '🔍 Will search for relevant code based on your query'
-                      : '📦 Will generate a compressed overview of the entire project'
+                      ? 'Will search for relevant code based on your query'
+                      : 'Will generate a compressed overview of the entire project'
                     }
                   </p>
                 </div>
@@ -216,11 +216,11 @@ export function VibeCodingPanel() {
               {/* File Selection Mode */}
               {vibeMode === 'file' && (
                 <div>
-                  <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">
                     Entry Point File
                   </label>
                   {isLoadingFiles ? (
-                    <div className="flex items-center gap-2 text-zinc-500 px-4 py-3 border border-zinc-700 rounded-lg bg-zinc-800">
+                    <div className="flex items-center gap-2 text-zinc-400 px-4 py-3 border border-zinc-700 rounded-lg bg-zinc-800">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Loading file list...
                     </div>
@@ -228,11 +228,11 @@ export function VibeCodingPanel() {
                     <select
                       value={vibeEntryPoint}
                       onChange={(e) => setVibeEntryPoint(e.target.value)}
-                      className="w-full px-4 py-3 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-zinc-800 text-zinc-200"
+                      className="w-full px-4 py-3 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-zinc-800 text-zinc-200"
                     >
                       <option value="">Select a file...</option>
                       {vibeFileList.roots.length > 0 && (
-                        <optgroup label="⭐ Suggested Entry Points">
+                        <optgroup label="Suggested Entry Points">
                           {vibeFileList.roots.map((f) => (
                             <option key={f} value={f}>
                               {f}
@@ -251,11 +251,11 @@ export function VibeCodingPanel() {
                   )}
                   {vibeFileList.files.length === 0 && !isLoadingFiles && (
                     <p className="text-sm text-amber-500 mt-2">
-                      ⚠️ No files found. The job might have completed without generating a graph.
+                      No files found in the analysis pack. The job might have completed without generating a graph.
                     </p>
                   )}
-                  <p className="text-xs text-zinc-500 mt-2">
-                    📂 Will build a dependency tree starting from the selected file
+                  <p className="text-sm text-zinc-500 mt-2">
+                    Manually select the root file for the dependency tree
                   </p>
                 </div>
               )}
@@ -283,7 +283,7 @@ export function VibeCodingPanel() {
                       onClick={() => setContextPreset(key)}
                       className={`px-3 py-2 text-xs rounded-md transition-all ${
                         contextPreset === key
-                          ? 'bg-purple-600 text-white ring-2 ring-purple-400'
+                          ? 'bg-teal-600 text-white ring-2 ring-teal-400'
                           : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
                       }`}
                     >
@@ -300,7 +300,7 @@ export function VibeCodingPanel() {
                         onClick={() => setContextPreset(key)}
                         className={`px-3 py-2 text-xs rounded-md transition-all ${
                           contextPreset === key
-                            ? 'bg-purple-600 text-white ring-2 ring-purple-400'
+                            ? 'bg-teal-600 text-white ring-2 ring-teal-400'
                             : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
                         }`}
                       >
@@ -335,7 +335,7 @@ export function VibeCodingPanel() {
                   currentJob.status !== 'completed' ||
                   (vibeMode === 'file' && !vibeEntryPoint.trim())
                     ? 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
-                    : 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg hover:shadow-xl'
+                    : 'bg-teal-600 text-white hover:bg-teal-500'
                 }`}
               >
                 {isGeneratingPrompt ? (

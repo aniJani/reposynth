@@ -13,8 +13,8 @@ const config: Config = {
         'primary': '#0d9488', // Teal for accent
         'background-light': '#f6f6f8',
         'background-dark': '#18181b', // zinc-900
-        'neon-purple': '#a855f7', // violet-500
-        'cyber-blue': '#2563eb', // blue-600
+        'accent': '#14b8a6', // teal-500 for selected states
+        'accent-muted': '#0f766e', // teal-700 for subtle accents
       },
       fontFamily: {
         'display': ['Space Grotesk', 'sans-serif'],
