@@ -579,11 +579,11 @@ export function VibeStationDrawer() {
                           <span className="text-yellow-400 font-medium">Context Optimized: </span>
                           <span className="text-zinc-300">
                             {vibeMetadata.files_included} files included
-                            {vibeMetadata.optimization.files_pruned > 0 && (
-                              <span className="text-zinc-500"> • {vibeMetadata.optimization.files_pruned} pruned</span>
+                            {(vibeMetadata.optimization?.files_pruned ?? 0) > 0 && (
+                              <span className="text-zinc-500"> • {vibeMetadata.optimization?.files_pruned} pruned</span>
                             )}
-                            {vibeMetadata.optimization.tokens_used && (
-                              <span className="text-zinc-500"> • {formatTokenCount(vibeMetadata.optimization.tokens_used)} of {formatTokenCount(vibeMetadata.optimization.token_budget || 0)} used</span>
+                            {vibeMetadata.optimization?.tokens_used && (
+                              <span className="text-zinc-500"> • {formatTokenCount(vibeMetadata.optimization?.tokens_used)} of {formatTokenCount(vibeMetadata.optimization?.token_budget || 0)} used</span>
                             )}
                           </span>
                         </div>
