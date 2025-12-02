@@ -1,4 +1,4 @@
-// components/UrlInput.tsx
+//components/UrlInput.tsx
 'use client';
 
 import { useStore } from '@/lib/store';
@@ -43,8 +43,8 @@ export function UrlInput() {
   const borderColor = validation.valid === false
     ? 'border-red-500'
     : validation.valid === true
-    ? 'border-green-500'
-    : 'border-zinc-800 hover:border-zinc-700';
+      ? 'border-green-500'
+      : 'border-zinc-800 hover:border-zinc-700';
 
   return (
     <div className="w-full">
@@ -73,9 +73,8 @@ export function UrlInput() {
           )}
         </div>
         {validation.message && (
-          <div className={`mt-2 text-sm px-1 flex items-center gap-2 ${
-            validation.valid ? 'text-green-400' : 'text-red-400'
-          }`}>
+          <div className={`mt-2 text-sm px-1 flex items-center gap-2 ${validation.valid ? 'text-green-400' : 'text-red-400'
+            }`}>
             {validation.valid ? (
               <span>Repository: {validation.message}</span>
             ) : (
