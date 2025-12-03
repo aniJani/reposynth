@@ -37,6 +37,9 @@ struct AstNode {
 extern "C" {
     fn tree_sitter_python() -> tree_sitter::Language;
     fn tree_sitter_typescript() -> tree_sitter::Language;
+    fn tree_sitter_css() -> tree_sitter::Language;
+    fn tree_sitter_scss() -> tree_sitter::Language;
+    fn tree_sitter_html() -> tree_sitter::Language;
 }
 
 // The main async function to run our daemon
@@ -93,6 +96,9 @@ fn process_file(request: Request) -> Response {
     let language = match path.split('.').last() {
         Some("py") => unsafe { tree_sitter_python() },
         Some("ts") | Some("tsx") | Some("js") | Some("jsx") => unsafe { tree_sitter_typescript() },
+        Some("css") => unsafe { tree_sitter_css() },
+        Some("scss") => unsafe { tree_sitter_scss() },
+        Some("html") | Some("htm") => unsafe { tree_sitter_html() },
         _ => {
             return Response {
                 id: request.id,

@@ -129,7 +129,8 @@ def generate_token_map(
     source_extensions = {
         ".py", ".ts", ".tsx", ".js", ".jsx", ".rs", ".go", ".java",
         ".c", ".cpp", ".h", ".hpp", ".cs", ".rb", ".php", ".swift",
-        ".kt", ".scala", ".vue", ".svelte", ".md", ".json", ".yaml", ".yml"
+        ".kt", ".scala", ".vue", ".svelte", ".md", ".json", ".yaml", ".yml",
+        ".css", ".scss", ".html", ".htm"
     }
     
     if file_paths:

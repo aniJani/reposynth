@@ -812,6 +812,346 @@ class TypeScriptAdapter(LanguageAdapter):
         return statements
 
 
+class CSSAdapter(LanguageAdapter):
+    """
+    CSS adapter extracts:
+    - Definitions: CSS selectors (class, id, tag), @-rules (@media, @keyframes, @font-face)
+    - Imports: @import statements
+    - Variables: CSS custom properties (--variable-name)
+    """
+
+    def get_definitions(self, ast_nodes, source_code):
+        definitions = []
+        root = self._build_tree(ast_nodes)
+        if not root:
+            return []
+
+        def find_defs(node):
+            # Rule sets contain selectors
+            if node.kind == "rule_set":
+                # Find the selectors node
+                selectors_node = next((c for c in node.children if c.kind == "selectors"), None)
+                if selectors_node:
+                    selector_text = self._get_node_text(selectors_node, source_code).strip()
+                    definitions.append({
+                        "name": selector_text,
+                        "kind": "rule_set",
+                        "start_byte": node.start_byte,
+                        "end_byte": node.end_byte,
+                        "is_public": True,
+                    })
+
+            # @-rules like @keyframes, @media, @font-face
+            if node.kind in ["keyframes_statement", "media_statement", "supports_statement", "at_rule"]:
+                # Extract the name/query
+                rule_text = self._get_node_text(node, source_code)
+                # Get first line or first 50 chars as name
+                name = rule_text.split("{")[0].strip()[:80]
+                definitions.append({
+                    "name": name,
+                    "kind": node.kind,
+                    "start_byte": node.start_byte,
+                    "end_byte": node.end_byte,
+                    "is_public": True,
+                })
+
+            for child in node.children:
+                find_defs(child)
+
+        find_defs(root)
+        return definitions
+
+    def get_imports(self, ast_nodes, source_code):
+        imports = []
+        root = self._build_tree(ast_nodes)
+        if not root:
+            return []
+
+        def find_imports(node):
+            # @import statements
+            if node.kind == "import_statement":
+                # Find the url or string value
+                for child in node.children:
+                    if child.kind in ["string_value", "call_expression"]:
+                        import_path = self._get_node_text(child, source_code)
+                        # Clean up url() wrapper and quotes
+                        import_path = import_path.replace("url(", "").replace(")", "")
+                        import_path = import_path.strip("'\"")
+                        imports.append(import_path)
+
+            for child in node.children:
+                find_imports(child)
+
+        find_imports(root)
+        return imports
+
+    def get_variables(self, ast_nodes, source_code, definitions):
+        variables = []
+        root = self._build_tree(ast_nodes)
+        if not root:
+            return []
+
+        def find_vars(node):
+            # CSS custom properties: --variable-name
+            if node.kind == "declaration":
+                # Check if the property name starts with --
+                property_node = next((c for c in node.children if c.kind == "property_name"), None)
+                if property_node:
+                    prop_name = self._get_node_text(property_node, source_code)
+                    if prop_name.startswith("--"):
+                        variables.append({
+                            "name": prop_name,
+                            "scope": "global",
+                            "start_byte": node.start_byte,
+                            "end_byte": node.end_byte,
+                        })
+
+            for child in node.children:
+                find_vars(child)
+
+        find_vars(root)
+        return variables
+
+
+class SCSSAdapter(LanguageAdapter):
+    """
+    SCSS adapter extracts:
+    - Definitions: Mixins (@mixin), functions (@function), placeholders (%placeholder), rule sets
+    - Imports: @import, @use, @forward statements
+    - Variables: SCSS variables ($variable-name), CSS custom properties
+    """
+
+    def get_definitions(self, ast_nodes, source_code):
+        definitions = []
+        root = self._build_tree(ast_nodes)
+        if not root:
+            return []
+
+        def find_defs(node):
+            # Mixin definitions
+            if node.kind == "mixin_statement":
+                name_node = next((c for c in node.children if c.kind == "identifier"), None)
+                if name_node:
+                    definitions.append({
+                        "name": "@mixin " + self._get_node_text(name_node, source_code),
+                        "kind": "mixin",
+                        "start_byte": node.start_byte,
+                        "end_byte": node.end_byte,
+                        "is_public": True,
+                    })
+
+            # Function definitions
+            if node.kind == "function_statement":
+                name_node = next((c for c in node.children if c.kind == "identifier"), None)
+                if name_node:
+                    definitions.append({
+                        "name": "@function " + self._get_node_text(name_node, source_code),
+                        "kind": "function",
+                        "start_byte": node.start_byte,
+                        "end_byte": node.end_byte,
+                        "is_public": True,
+                    })
+
+            # Rule sets (selectors)
+            if node.kind == "rule_set":
+                selectors_node = next((c for c in node.children if c.kind == "selectors"), None)
+                if selectors_node:
+                    selector_text = self._get_node_text(selectors_node, source_code).strip()
+                    definitions.append({
+                        "name": selector_text,
+                        "kind": "rule_set",
+                        "start_byte": node.start_byte,
+                        "end_byte": node.end_byte,
+                        "is_public": True,
+                    })
+
+            # Placeholder selectors (%placeholder)
+            if node.kind == "placeholder_selector":
+                definitions.append({
+                    "name": self._get_node_text(node, source_code),
+                    "kind": "placeholder",
+                    "start_byte": node.start_byte,
+                    "end_byte": node.end_byte,
+                    "is_public": True,
+                })
+
+            for child in node.children:
+                find_defs(child)
+
+        find_defs(root)
+        return definitions
+
+    def get_imports(self, ast_nodes, source_code):
+        imports = []
+        root = self._build_tree(ast_nodes)
+        if not root:
+            return []
+
+        def find_imports(node):
+            # @import, @use, @forward statements
+            if node.kind in ["import_statement", "use_statement", "forward_statement"]:
+                # Find the string value
+                for child in node.children:
+                    if child.kind in ["string_value", "unquoted_string"]:
+                        import_path = self._get_node_text(child, source_code)
+                        import_path = import_path.strip("'\"")
+                        imports.append(import_path)
+
+            for child in node.children:
+                find_imports(child)
+
+        find_imports(root)
+        return imports
+
+    def get_variables(self, ast_nodes, source_code, definitions):
+        variables = []
+        root = self._build_tree(ast_nodes)
+        if not root:
+            return []
+
+        def find_vars(node, depth=0):
+            # SCSS variables: $variable-name (at top level)
+            if node.kind == "variable_declaration" and depth <= 1:
+                var_name_node = next((c for c in node.children if c.kind == "variable_name"), None)
+                if var_name_node:
+                    variables.append({
+                        "name": self._get_node_text(var_name_node, source_code),
+                        "scope": "global",
+                        "start_byte": node.start_byte,
+                        "end_byte": node.end_byte,
+                    })
+
+            # CSS custom properties: --variable-name
+            if node.kind == "declaration":
+                property_node = next((c for c in node.children if c.kind == "property_name"), None)
+                if property_node:
+                    prop_name = self._get_node_text(property_node, source_code)
+                    if prop_name.startswith("--"):
+                        variables.append({
+                            "name": prop_name,
+                            "scope": "global",
+                            "start_byte": node.start_byte,
+                            "end_byte": node.end_byte,
+                        })
+
+            for child in node.children:
+                find_vars(child, depth + 1)
+
+        find_vars(root)
+        return variables
+
+
+class HTMLAdapter(LanguageAdapter):
+    """
+    HTML adapter extracts:
+    - Definitions: Elements with id attributes, named elements (forms, anchors)
+    - Imports: <link href>, <script src>, <img src>, <a href> references
+    - Variables: data-* attributes
+    """
+
+    def get_definitions(self, ast_nodes, source_code):
+        definitions = []
+        root = self._build_tree(ast_nodes)
+        if not root:
+            return []
+
+        def find_defs(node):
+            # Elements with id attributes
+            if node.kind in ["element", "self_closing_tag"]:
+                # Find the tag name
+                tag_node = next((c for c in node.children if c.kind == "tag_name"), None)
+                tag_name = self._get_node_text(tag_node, source_code) if tag_node else "unknown"
+
+                # Look for id attribute
+                for child in node.children:
+                    if child.kind in ["start_tag", "self_closing_tag"]:
+                        for attr in child.children:
+                            if attr.kind == "attribute":
+                                attr_name_node = next((c for c in attr.children if c.kind == "attribute_name"), None)
+                                if attr_name_node and self._get_node_text(attr_name_node, source_code) == "id":
+                                    value_node = next((c for c in attr.children if c.kind in ["attribute_value", "quoted_attribute_value"]), None)
+                                    if value_node:
+                                        id_value = self._get_node_text(value_node, source_code).strip("'\"")
+                                        definitions.append({
+                                            "name": f"#{id_value}",
+                                            "kind": f"element_{tag_name}",
+                                            "start_byte": node.start_byte,
+                                            "end_byte": node.end_byte,
+                                            "is_public": True,
+                                        })
+
+            for child in node.children:
+                find_defs(child)
+
+        find_defs(root)
+        return definitions
+
+    def get_imports(self, ast_nodes, source_code):
+        imports = []
+        root = self._build_tree(ast_nodes)
+        if not root:
+            return []
+
+        def find_imports(node):
+            # Look for link, script, img elements with href/src attributes
+            if node.kind in ["element", "self_closing_tag"]:
+                tag_node = next((c for c in node.children if c.kind == "tag_name"), None)
+                if tag_node:
+                    tag_name = self._get_node_text(tag_node, source_code).lower()
+
+                    # Check for relevant tags
+                    if tag_name in ["link", "script", "img", "source", "video", "audio", "iframe"]:
+                        attr_to_check = "href" if tag_name == "link" else "src"
+
+                        for child in node.children:
+                            if child.kind in ["start_tag", "self_closing_tag"]:
+                                for attr in child.children:
+                                    if attr.kind == "attribute":
+                                        attr_name_node = next((c for c in attr.children if c.kind == "attribute_name"), None)
+                                        if attr_name_node and self._get_node_text(attr_name_node, source_code) == attr_to_check:
+                                            value_node = next((c for c in attr.children if c.kind in ["attribute_value", "quoted_attribute_value"]), None)
+                                            if value_node:
+                                                import_path = self._get_node_text(value_node, source_code).strip("'\"")
+                                                # Skip external URLs for now, focus on local imports
+                                                if not import_path.startswith(("http://", "https://", "//")):
+                                                    imports.append(import_path)
+
+            for child in node.children:
+                find_imports(child)
+
+        find_imports(root)
+        return imports
+
+    def get_variables(self, ast_nodes, source_code, definitions):
+        variables = []
+        root = self._build_tree(ast_nodes)
+        if not root:
+            return []
+
+        def find_vars(node):
+            # Look for data-* attributes
+            if node.kind == "attribute":
+                attr_name_node = next((c for c in node.children if c.kind == "attribute_name"), None)
+                if attr_name_node:
+                    attr_name = self._get_node_text(attr_name_node, source_code)
+                    if attr_name.startswith("data-"):
+                        value_node = next((c for c in node.children if c.kind in ["attribute_value", "quoted_attribute_value"]), None)
+                        value = self._get_node_text(value_node, source_code).strip("'\"") if value_node else ""
+                        variables.append({
+                            "name": attr_name,
+                            "scope": "element",
+                            "start_byte": node.start_byte,
+                            "end_byte": node.end_byte,
+                            "value": value,
+                        })
+
+            for child in node.children:
+                find_vars(child)
+
+        find_vars(root)
+        return variables
+
+
 def get_adapter(file_path: Path) -> LanguageAdapter | None:
     if file_path.suffix == ".py":
         return PythonAdapter()
@@ -819,4 +1159,10 @@ def get_adapter(file_path: Path) -> LanguageAdapter | None:
         return TypeScriptAdapter()
     elif file_path.suffix in [".js", ".jsx"]:
         return JavaScriptAdapter()
+    elif file_path.suffix == ".css":
+        return CSSAdapter()
+    elif file_path.suffix == ".scss":
+        return SCSSAdapter()
+    elif file_path.suffix in [".html", ".htm"]:
+        return HTMLAdapter()
     return None
