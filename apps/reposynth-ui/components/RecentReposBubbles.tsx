@@ -21,18 +21,18 @@ interface DisplayBubble {
 
 // Popular GitHub repos to show as examples when there aren't enough real ones
 const SAMPLE_REPOS: RecentJob[] = [
-  { id: 'sample-1', repo_url: 'https://github.com/facebook/react', status: 'completed', created_at: '' },
-  { id: 'sample-2', repo_url: 'https://github.com/vercel/next.js', status: 'completed', created_at: '' },
-  { id: 'sample-3', repo_url: 'https://github.com/microsoft/vscode', status: 'completed', created_at: '' },
-  { id: 'sample-4', repo_url: 'https://github.com/tailwindlabs/tailwindcss', status: 'completed', created_at: '' },
-  { id: 'sample-5', repo_url: 'https://github.com/openai/whisper', status: 'completed', created_at: '' },
-  { id: 'sample-6', repo_url: 'https://github.com/nodejs/node', status: 'completed', created_at: '' },
-  { id: 'sample-7', repo_url: 'https://github.com/rust-lang/rust', status: 'completed', created_at: '' },
-  { id: 'sample-8', repo_url: 'https://github.com/golang/go', status: 'completed', created_at: '' },
-  { id: 'sample-9', repo_url: 'https://github.com/python/cpython', status: 'completed', created_at: '' },
-  { id: 'sample-10', repo_url: 'https://github.com/denoland/deno', status: 'completed', created_at: '' },
-  { id: 'sample-11', repo_url: 'https://github.com/sveltejs/svelte', status: 'completed', created_at: '' },
-  { id: 'sample-12', repo_url: 'https://github.com/vuejs/vue', status: 'completed', created_at: '' },
+  { id: 'sample-1', repo_url: 'https://github.com/facebook/react', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-2', repo_url: 'https://github.com/vercel/next.js', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-3', repo_url: 'https://github.com/microsoft/vscode', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-4', repo_url: 'https://github.com/tailwindlabs/tailwindcss', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-5', repo_url: 'https://github.com/openai/whisper', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-6', repo_url: 'https://github.com/nodejs/node', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-7', repo_url: 'https://github.com/rust-lang/rust', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-8', repo_url: 'https://github.com/golang/go', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-9', repo_url: 'https://github.com/python/cpython', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-10', repo_url: 'https://github.com/denoland/deno', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-11', repo_url: 'https://github.com/sveltejs/svelte', status: 'completed', mode: 'standard', created_at: '' },
+  { id: 'sample-12', repo_url: 'https://github.com/vuejs/vue', status: 'completed', mode: 'standard', created_at: '' },
 ];
 
 /**
