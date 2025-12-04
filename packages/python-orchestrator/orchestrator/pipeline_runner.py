@@ -607,14 +607,15 @@ class Pipeline:
 
     def store_spans(self):
         """
-        Creates a comprehensive JSON file containing source code for all public APIs.
-        The JSON includes the full source of each file plus extracted spans for each public API.
-        NOW INCLUDES: Exported types, interfaces, and enums from variable_registry!
+        Creates a comprehensive JSON file containing source code for ALL parsed files.
+        The JSON includes the full source of each file plus extracted spans for public APIs.
+        
+        This ensures complete codebase reconstruction is possible, not just public API files.
         """
         json_path = self.output_path / "source_spans.json"
         source_spans = {}
 
-        # Group public APIs by file
+        # Group public APIs by file (for highlighting/annotation purposes)
         files_with_apis = defaultdict(list)
 
         # Add items from name_registry (functions, classes, constants)
@@ -628,7 +629,7 @@ class Pipeline:
                     "end_byte": data["end_byte"]
                 })
 
-        # FIXED: Also add exported types/interfaces/enums from variable_registry
+        # Also add exported types/interfaces/enums from variable_registry
         for file_path, variables in self.variable_registry.items():
             for var in variables:
                 # Include variables with scope "export" and that have a "kind" field
@@ -643,25 +644,37 @@ class Pipeline:
                         "end_byte": var["end_byte"]
                     })
 
-        # Build the complete source spans structure
-        for file_path_str, apis in files_with_apis.items():
+        # NEW: Get ALL files from the import_graph (all parsed source files)
+        all_source_files = set(self.import_graph.keys())
+        
+        # Also include files from name_registry and variable_registry
+        for fqn, data in self.name_registry.items():
+            all_source_files.add(data["file_path"])
+        for file_path in self.variable_registry.keys():
+            all_source_files.add(file_path)
+
+        # Build the complete source spans structure for ALL files
+        for file_path_str in all_source_files:
             try:
                 full_path = self.repo_path / file_path_str
                 with open(full_path, "rb") as f:
                     source_code = f.read()
 
-                # Extract the actual code span for each API
+                # Extract the actual code span for each public API (if any)
                 api_details = []
-                for api in apis:
-                    span_code = source_code[api["start_byte"]:api["end_byte"]].decode('utf-8')
-                    api_details.append({
-                        "name": api["name"],
-                        "fqn": api["fqn"],
-                        "kind": api["kind"],
-                        "start_byte": api["start_byte"],
-                        "end_byte": api["end_byte"],
-                        "span": span_code
-                    })
+                for api in files_with_apis.get(file_path_str, []):
+                    try:
+                        span_code = source_code[api["start_byte"]:api["end_byte"]].decode('utf-8')
+                        api_details.append({
+                            "name": api["name"],
+                            "fqn": api["fqn"],
+                            "kind": api["kind"],
+                            "start_byte": api["start_byte"],
+                            "end_byte": api["end_byte"],
+                            "span": span_code
+                        })
+                    except Exception:
+                        continue
 
                 source_spans[file_path_str] = {
                     "file_path": file_path_str,
@@ -681,7 +694,8 @@ class Pipeline:
             json.dump(source_spans, f, indent=2)
 
         print(f"Source spans saved to {json_path}")
-        print(f"  - {len(source_spans)} files with public APIs")
+        print(f"  - {len(source_spans)} total source files")
+        print(f"  - {len(files_with_apis)} files with public APIs")
         print(f"  - {sum(len(v['public_apis']) for v in source_spans.values())} total public symbols")
 
         return source_spans

@@ -56,7 +56,7 @@ export function ConfiguratorPanel() {
       enable_complexity: true,
       enable_security: true,
       enable_embeddings: true,
-      output_format: 'zip' as const,
+      output_format: 'toon' as const,
     },
   };
 

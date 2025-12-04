@@ -781,6 +781,102 @@ async def create_job(
         )
 
 
+@app.get("/jobs/by-repo", tags=["Jobs"])
+def get_job_by_repo(
+    repo_url: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Get the most recent completed job for a repository URL.
+    
+    This allows looking up cached results by repo name instead of job ID.
+    Returns the job data along with info about whether a re-analysis is recommended.
+    """
+    import requests as req
+    from urllib.parse import unquote
+    
+    # Decode URL-encoded characters
+    repo_url = unquote(repo_url)
+    
+    # Normalize the repo URL (remove trailing .git, ensure https)
+    normalized_url = repo_url.strip().rstrip('/').replace('.git', '')
+    if not normalized_url.startswith('http'):
+        normalized_url = f"https://github.com/{normalized_url}"
+    
+    logger.info(f"Looking up job for repo: {normalized_url}")
+    
+    # Try exact match first
+    job = db.query(Job).filter(
+        Job.repo_url == normalized_url,
+        Job.status == "completed"
+    ).order_by(Job.created_at.desc()).first()
+    
+    # If no exact match, try with/without trailing slash or .git variations
+    if not job:
+        variations = [
+            normalized_url,
+            normalized_url + '/',
+            normalized_url + '.git',
+            normalized_url.rstrip('/'),
+        ]
+        for url_variant in variations:
+            job = db.query(Job).filter(
+                Job.repo_url == url_variant,
+                Job.status == "completed"
+            ).order_by(Job.created_at.desc()).first()
+            if job:
+                break
+    
+    if not job:
+        logger.info(f"No completed job found for: {normalized_url}")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No completed analysis found for this repository"
+        )
+    
+    # Check if the repository has new commits since the analysis
+    needs_reanalysis = False
+    latest_commit_sha = None
+    latest_commit_date = None
+    
+    try:
+        # Extract owner/repo from URL
+        parts = normalized_url.replace('https://github.com/', '').split('/')
+        if len(parts) >= 2:
+            owner, repo = parts[0], parts[1]
+            
+            # Call GitHub API to get latest commit
+            response = req.get(
+                f"https://api.github.com/repos/{owner}/{repo}/commits",
+                params={"per_page": 1},
+                headers={"Accept": "application/vnd.github.v3+json"},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                commits = response.json()
+                if commits:
+                    latest_commit_sha = commits[0]["sha"]
+                    latest_commit_date = commits[0]["commit"]["committer"]["date"]
+                    
+                    # Compare with job creation time
+                    from datetime import datetime
+                    commit_time = datetime.fromisoformat(latest_commit_date.replace('Z', '+00:00'))
+                    job_time = job.created_at.replace(tzinfo=commit_time.tzinfo)
+                    
+                    if commit_time > job_time:
+                        needs_reanalysis = True
+    except Exception as e:
+        logger.warning(f"Failed to check GitHub commits: {e}")
+    
+    return {
+        **job.to_dict(),
+        "needs_reanalysis": needs_reanalysis,
+        "latest_commit_sha": latest_commit_sha,
+        "latest_commit_date": latest_commit_date,
+    }
+
+
 @app.get("/jobs/{job_id}", tags=["Jobs"])
 async def get_job_status(job_id: str, db: Session = Depends(get_db)):
     """Get the status of a submitted job."""

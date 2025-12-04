@@ -181,3 +181,20 @@ export async function getRecentJobs(limit: number = 10): Promise<RecentJobsRespo
   });
   return response.data;
 }
+
+// ============================================================================
+// Job Lookup by Repo API
+// ============================================================================
+
+export interface JobByRepoResponse extends JobStatus {
+  needs_reanalysis: boolean;
+  latest_commit_sha: string | null;
+  latest_commit_date: string | null;
+}
+
+export async function getJobByRepo(repoUrl: string): Promise<JobByRepoResponse> {
+  const response = await apiClient.get<JobByRepoResponse>('/jobs/by-repo', {
+    params: { repo_url: repoUrl },
+  });
+  return response.data;
+}

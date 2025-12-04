@@ -121,7 +121,7 @@ export const useStore = create<StoreState>((set) => ({
     enable_complexity: true,
     enable_security: false,
     enable_embeddings: true,
-    output_format: 'zip',
+    output_format: 'toon',
   },
   setConfig: (newConfig) =>
     set((state) => ({

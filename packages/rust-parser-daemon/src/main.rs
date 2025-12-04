@@ -110,7 +110,16 @@ fn process_file(request: Request) -> Response {
     };
 
     let mut parser = Parser::new();
-    parser.set_language(&language).unwrap();
+    
+    // Handle language version mismatches gracefully instead of panicking
+    if let Err(e) = parser.set_language(&language) {
+        return Response {
+            id: request.id,
+            path: request.path,
+            ast: None,
+            error: Some(format!("Language version mismatch: {:?}", e)),
+        };
+    }
 
     let source_code = match std::fs::read_to_string(path) {
         Ok(code) => code,
@@ -124,7 +133,18 @@ fn process_file(request: Request) -> Response {
         }
     };
     
-    let tree = parser.parse(&source_code, None).unwrap();
+    let tree = match parser.parse(&source_code, None) {
+        Some(t) => t,
+        None => {
+            return Response {
+                id: request.id,
+                path: request.path,
+                ast: None,
+                error: Some("Failed to parse file".to_string()),
+            };
+        }
+    };
+    
     let mut nodes = Vec::new();
     let mut node_counter = 0;
     
