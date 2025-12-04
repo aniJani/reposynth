@@ -6,6 +6,7 @@ import { SubmitButton } from '@/components/SubmitButton';
 import { JobProgressPanel } from '@/components/JobProgressPanel';
 import { VibeStationDrawer } from '@/components/VibeStationDrawer';
 import { RateLimitBanner } from '@/components/RateLimitBanner';
+import { RecentReposBubbles } from '@/components/RecentReposBubbles';
 import { Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef } from 'react';
@@ -64,8 +65,11 @@ export default function Home() {
       >
         {!showConfiguration ? (
           /* Centered URL Input - Initial State */
-          <div className="flex items-center justify-center h-full px-4">
-            <div className="w-full max-w-2xl">
+          <div className="relative flex items-center justify-center h-full px-4">
+            {/* Floating bubbles of recently analyzed repos */}
+            <RecentReposBubbles />
+
+            <div className="relative z-10 w-full max-w-2xl">
               <div className="text-center mb-8">
                 <h2 className="text-4xl md:text-5xl font-bold text-zinc-200 mb-4 font-display tracking-tight">
                   Analyze a Repository

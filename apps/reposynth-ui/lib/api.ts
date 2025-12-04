@@ -154,3 +154,30 @@ export async function getJobFiles(jobId: string): Promise<JobFilesResponse> {
   const response = await apiClient.get<JobFilesResponse>(`/jobs/${jobId}/files`);
   return response.data;
 }
+
+// ============================================================================
+// Recent Jobs API (for homepage bubbles)
+// ============================================================================
+
+export interface RecentJob {
+  id: string;
+  repo_url: string;
+  status: string;
+  mode: string;
+  created_at: string;
+}
+
+export interface RecentJobsResponse {
+  jobs: RecentJob[];
+  total: number;
+}
+
+export async function getRecentJobs(limit: number = 10): Promise<RecentJobsResponse> {
+  const response = await apiClient.get<RecentJobsResponse>('/jobs', {
+    params: {
+      status_filter: 'completed',
+      limit,
+    },
+  });
+  return response.data;
+}
