@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { getRecentJobs, RecentJob } from '@/lib/api';
 
@@ -16,8 +16,24 @@ interface DisplayBubble {
   position: BubblePosition;
   opacity: number;
   state: 'entering' | 'visible' | 'exiting';
-  key: string; // Unique key for animation tracking
+  key: string;
 }
+
+// Popular GitHub repos to show as examples when there aren't enough real ones
+const SAMPLE_REPOS: RecentJob[] = [
+  { id: 'sample-1', repo_url: 'https://github.com/facebook/react', status: 'completed', created_at: '' },
+  { id: 'sample-2', repo_url: 'https://github.com/vercel/next.js', status: 'completed', created_at: '' },
+  { id: 'sample-3', repo_url: 'https://github.com/microsoft/vscode', status: 'completed', created_at: '' },
+  { id: 'sample-4', repo_url: 'https://github.com/tailwindlabs/tailwindcss', status: 'completed', created_at: '' },
+  { id: 'sample-5', repo_url: 'https://github.com/openai/whisper', status: 'completed', created_at: '' },
+  { id: 'sample-6', repo_url: 'https://github.com/nodejs/node', status: 'completed', created_at: '' },
+  { id: 'sample-7', repo_url: 'https://github.com/rust-lang/rust', status: 'completed', created_at: '' },
+  { id: 'sample-8', repo_url: 'https://github.com/golang/go', status: 'completed', created_at: '' },
+  { id: 'sample-9', repo_url: 'https://github.com/python/cpython', status: 'completed', created_at: '' },
+  { id: 'sample-10', repo_url: 'https://github.com/denoland/deno', status: 'completed', created_at: '' },
+  { id: 'sample-11', repo_url: 'https://github.com/sveltejs/svelte', status: 'completed', created_at: '' },
+  { id: 'sample-12', repo_url: 'https://github.com/vuejs/vue', status: 'completed', created_at: '' },
+];
 
 /**
  * Extract owner/repo from a GitHub URL.
@@ -32,66 +48,37 @@ function parseGitHubUrl(url: string): { owner: string; repo: string } | null {
 }
 
 /**
- * Generate a single random position for a bubble.
+ * Generate a position on the RIGHT side only.
  */
-function generateSinglePosition(): BubblePosition {
-  // Distribute across left or right side randomly
-  const side = Math.random() > 0.5 ? 'left' : 'right';
-  const x = side === 'left'
-    ? 5 + Math.random() * 25 // 5-30% from left
-    : 65 + Math.random() * 25; // 65-90% from left
-
-  const y = 15 + (Math.random() * 70); // 15-85% from top
-
+function generateRightPosition(index: number): BubblePosition {
+  // Stagger vertically based on index
+  const baseY = 20 + (index * 18); // 20%, 38%, 56%, 74%
+  const y = baseY + (Math.random() * 10 - 5); // Add some randomness
+  
   return {
-    x,
-    y,
-    delay: 0, // No delay for dynamically added bubbles
-    duration: 3 + Math.random() * 2, // Animation duration 3-5s
+    x: 75 + Math.random() * 15, // 75-90% from left (right side)
+    y: Math.min(Math.max(y, 15), 80), // Clamp between 15-80%
+    delay: 0,
+    duration: 3 + Math.random() * 2,
   };
 }
 
-/**
- * Generate random positions for bubbles that don't overlap.
- */
-function generateBubblePositions(count: number): BubblePosition[] {
-  const positions: BubblePosition[] = [];
-
-  for (let i = 0; i < count; i++) {
-    // Distribute bubbles across the width, avoiding the center where the input is
-    const side = i % 2 === 0 ? 'left' : 'right';
-    const x = side === 'left'
-      ? 5 + Math.random() * 25 // 5-30% from left
-      : 65 + Math.random() * 25; // 65-90% from left
-
-    const y = 15 + (Math.random() * 70); // 15-85% from top
-
-    positions.push({
-      x,
-      y,
-      delay: Math.random() * 2, // Random animation delay 0-2s
-      duration: 3 + Math.random() * 2, // Animation duration 3-5s
-    });
-  }
-
-  return positions;
-}
-
-const MAX_VISIBLE_BUBBLES = 6;
-const CYCLE_INTERVAL = 4000; // Swap a bubble every 4 seconds
-const FADE_DURATION = 800; // Fade animation duration in ms
+const MAX_VISIBLE_BUBBLES = 4;
+const MIN_CYCLE_INTERVAL = 2000; // Min 2 seconds between changes
+const MAX_CYCLE_INTERVAL = 5000; // Max 5 seconds between changes
+const FADE_DURATION = 600;
 
 export function RecentReposBubbles() {
   const [allRepos, setAllRepos] = useState<RecentJob[]>([]);
   const [displayBubbles, setDisplayBubbles] = useState<DisplayBubble[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [cycleCounter, setCycleCounter] = useState(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch recent repos
+  // Fetch recent repos and merge with samples
   useEffect(() => {
     async function fetchRecentRepos() {
       try {
-        const response = await getRecentJobs(20); // Get more repos for cycling
+        const response = await getRecentJobs(20);
         // Filter to unique repos
         const uniqueRepos = response.jobs.reduce((acc: RecentJob[], job) => {
           const parsed = parseGitHubUrl(job.repo_url);
@@ -101,9 +88,15 @@ export function RecentReposBubbles() {
           return acc;
         }, []);
 
-        setAllRepos(uniqueRepos);
+        // Merge with sample repos, avoiding duplicates
+        const realUrls = new Set(uniqueRepos.map(r => r.repo_url));
+        const samplesToAdd = SAMPLE_REPOS.filter(s => !realUrls.has(s.repo_url));
+        
+        setAllRepos([...uniqueRepos, ...samplesToAdd]);
       } catch (error) {
         console.error('Failed to fetch recent repos:', error);
+        // On error, use sample repos
+        setAllRepos(SAMPLE_REPOS);
       } finally {
         setIsLoading(false);
       }
@@ -118,11 +111,10 @@ export function RecentReposBubbles() {
 
     const shuffled = [...allRepos].sort(() => Math.random() - 0.5);
     const initialRepos = shuffled.slice(0, MAX_VISIBLE_BUBBLES);
-    const positions = generateBubblePositions(initialRepos.length);
 
     const initialBubbles: DisplayBubble[] = initialRepos.map((job, i) => ({
       job,
-      position: positions[i],
+      position: generateRightPosition(i),
       opacity: 1,
       state: 'visible' as const,
       key: `${job.id}-${Date.now()}-${i}`,
@@ -131,54 +123,61 @@ export function RecentReposBubbles() {
     setDisplayBubbles(initialBubbles);
   }, [allRepos]);
 
-  // Cycle bubbles - fade one out and bring a new one in
+  // Cycle bubbles with random intervals
   useEffect(() => {
-    if (allRepos.length <= MAX_VISIBLE_BUBBLES || displayBubbles.length === 0) return;
+    if (allRepos.length === 0 || displayBubbles.length === 0) return;
 
-    const interval = setInterval(() => {
-      setDisplayBubbles((current) => {
-        // Find bubbles that are visible (not exiting)
-        const visibleBubbles = current.filter(b => b.state !== 'exiting');
-        if (visibleBubbles.length === 0) return current;
+    const scheduleCycle = () => {
+      const randomInterval = MIN_CYCLE_INTERVAL + Math.random() * (MAX_CYCLE_INTERVAL - MIN_CYCLE_INTERVAL);
+      
+      timeoutRef.current = setTimeout(() => {
+        setDisplayBubbles((current) => {
+          const visibleBubbles = current.filter(b => b.state !== 'exiting');
+          if (visibleBubbles.length === 0) return current;
 
-        // Pick a random bubble to exit
-        const exitIndex = Math.floor(Math.random() * visibleBubbles.length);
-        const bubbleToExit = visibleBubbles[exitIndex];
+          // Pick a random bubble to exit
+          const exitIndex = Math.floor(Math.random() * visibleBubbles.length);
+          const bubbleToExit = visibleBubbles[exitIndex];
 
-        // Find a repo that's not currently displayed
-        const displayedRepoIds = new Set(current.map(b => b.job.id));
-        const availableRepos = allRepos.filter(r => !displayedRepoIds.has(r.id));
+          // Find a repo that's not currently displayed
+          const displayedRepoIds = new Set(current.map(b => b.job.id));
+          let availableRepos = allRepos.filter(r => !displayedRepoIds.has(r.id));
 
-        if (availableRepos.length === 0) {
-          // If no new repos available, shuffle from all repos
-          const shuffled = [...allRepos].sort(() => Math.random() - 0.5);
-          const nonDisplayed = shuffled.find(r => r.id !== bubbleToExit.job.id);
-          if (!nonDisplayed) return current;
-          availableRepos.push(nonDisplayed);
-        }
+          if (availableRepos.length === 0) {
+            const shuffled = [...allRepos].sort(() => Math.random() - 0.5);
+            const nonDisplayed = shuffled.find(r => r.id !== bubbleToExit.job.id);
+            if (nonDisplayed) availableRepos = [nonDisplayed];
+          }
 
-        const newRepo = availableRepos[Math.floor(Math.random() * availableRepos.length)];
+          if (availableRepos.length === 0) return current;
 
-        // Mark the selected bubble as exiting and add a new entering bubble
-        const newBubble: DisplayBubble = {
-          job: newRepo,
-          position: generateSinglePosition(),
-          opacity: 0,
-          state: 'entering',
-          key: `${newRepo.id}-${Date.now()}`,
-        };
+          const newRepo = availableRepos[Math.floor(Math.random() * availableRepos.length)];
+          const exitedIndex = visibleBubbles.findIndex(b => b.key === bubbleToExit.key);
 
-        return current.map(b =>
-          b.key === bubbleToExit.key
-            ? { ...b, state: 'exiting' as const, opacity: 0 }
-            : b
-        ).concat(newBubble);
-      });
+          const newBubble: DisplayBubble = {
+            job: newRepo,
+            position: generateRightPosition(exitedIndex >= 0 ? exitedIndex : 0),
+            opacity: 0,
+            state: 'entering',
+            key: `${newRepo.id}-${Date.now()}`,
+          };
 
-      setCycleCounter(c => c + 1);
-    }, CYCLE_INTERVAL);
+          return current.map(b =>
+            b.key === bubbleToExit.key
+              ? { ...b, state: 'exiting' as const, opacity: 0 }
+              : b
+          ).concat(newBubble);
+        });
 
-    return () => clearInterval(interval);
+        scheduleCycle(); // Schedule next cycle
+      }, randomInterval);
+    };
+
+    scheduleCycle();
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [allRepos, displayBubbles.length]);
 
   // Transition entering bubbles to visible, remove exited bubbles
@@ -212,20 +211,25 @@ export function RecentReposBubbles() {
     }
   }, [displayBubbles]);
 
-  if (isLoading || displayBubbles.length === 0) {
+  if (isLoading) {
     return null;
   }
 
   return (
     <>
-      {/* Hint text - positioned below the main content */}
-      <div className="absolute bottom-8 left-0 right-0 text-center pointer-events-none z-10">
-        <p className="text-zinc-500 text-sm">
-          or click a recently analyzed repo
-        </p>
-      </div>
+      {/* Right side container for bubbles */}
+      <div className="absolute right-0 top-0 bottom-0 w-[35%] overflow-hidden pointer-events-none">
+        {/* Watermark text */}
+        <div className="absolute top-8 right-8 text-right pointer-events-none select-none">
+          <p className="text-zinc-700/40 text-2xl font-bold tracking-wider uppercase">
+            Recent
+          </p>
+          <p className="text-zinc-700/40 text-2xl font-bold tracking-wider uppercase -mt-1">
+            Synthesis
+          </p>
+        </div>
 
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Bubbles */}
         {displayBubbles.map((bubble) => {
           const parsed = parseGitHubUrl(bubble.job.repo_url);
           if (!parsed) return null;
@@ -238,17 +242,18 @@ export function RecentReposBubbles() {
               href={repoPath}
               className="pointer-events-auto absolute group"
               style={{
-                left: `${bubble.position.x}%`,
+                right: `${100 - bubble.position.x - 10}%`,
                 top: `${bubble.position.y}%`,
                 animation: bubble.state === 'visible' 
                   ? `float ${bubble.position.duration}s ease-in-out ${bubble.position.delay}s infinite`
                   : undefined,
                 opacity: bubble.opacity,
-                transition: `opacity ${FADE_DURATION}ms ease-in-out, transform 200ms ease-out`,
-                transform: bubble.state === 'entering' ? 'scale(0.8)' : 'scale(1)',
+                transition: `opacity ${FADE_DURATION}ms ease-in-out, transform 300ms ease-out`,
+                transform: bubble.state === 'entering' ? 'scale(0.8) translateX(20px)' : 'scale(1) translateX(0)',
               }}
             >
-              <div className="relative px-4 py-2 bg-zinc-800/60 backdrop-blur-sm border border-zinc-700/50 rounded-full text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/70 hover:border-zinc-600 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 cursor-pointer">
+              <div className="relative px-3 py-2 bg-zinc-800/60 backdrop-blur-sm border border-zinc-700/50 rounded-lg text-xs text-zinc-400 hover:text-zinc-200 hover:bg-zinc-700/70 hover:border-teal-600/50 transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-teal-500/10 hover:scale-105 cursor-pointer whitespace-nowrap">
+                <span className="text-zinc-500">github.com/</span>
                 <span className="font-medium text-zinc-300 group-hover:text-white">
                   {parsed.owner}
                 </span>
@@ -267,7 +272,7 @@ export function RecentReposBubbles() {
               transform: translateY(0px);
             }
             50% {
-              transform: translateY(-10px);
+              transform: translateY(-8px);
             }
           }
         `}</style>

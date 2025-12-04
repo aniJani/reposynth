@@ -11,14 +11,8 @@ export function ConfiguratorPanel() {
   } = useStore();
 
   const modeConfig = [
-    { value: 'semantic', label: 'Semantic', time: '~30s', description: 'Lightweight analysis' },
-    { value: 'hybrid', label: 'Hybrid', time: '~2m', description: 'Balanced detail' },
-    { value: 'full', label: 'Full', time: '~10m', description: 'Deep inspection' },
-  ] as const;
-
-  const formatConfig = [
-    { value: 'zip', label: 'ZIP' },
-    { value: 'toon', label: 'TOON' },
+    { value: 'hybrid', label: 'Hybrid', time: '~30s', description: 'Balanced detail' },
+    { value: 'full', label: 'Full', time: '~1m', description: 'Deep inspection' },
   ] as const;
 
   const featureConfig = [
@@ -31,15 +25,6 @@ export function ConfiguratorPanel() {
 
   // Configuration presets
   const presets = {
-    quickScan: {
-      mode: 'semantic' as const,
-      enable_ast: true,
-      enable_imports: false,
-      enable_complexity: false,
-      enable_security: false,
-      enable_embeddings: true,
-      output_format: 'toon' as const,
-    },
     balanced: {
       mode: 'hybrid' as const,
       enable_ast: true,
@@ -76,7 +61,6 @@ export function ConfiguratorPanel() {
           defaultValue=""
         >
           <option value="" disabled>Quick Presets</option>
-          <option value="quickScan">Quick Scan</option>
           <option value="balanced">Balanced</option>
           <option value="deepDive">Deep Dive</option>
         </select>
@@ -89,7 +73,7 @@ export function ConfiguratorPanel() {
             <h3 className="font-display text-zinc-400 text-sm tracking-wider uppercase mb-3 px-1">
               Mode Selector
             </h3>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {modeConfig.map((mode) => (
                 <button
                   key={mode.value}
@@ -116,27 +100,7 @@ export function ConfiguratorPanel() {
             </div>
           </div>
 
-          {/* Output Format */}
-          <div className="col-span-1">
-            <h3 className="font-display text-zinc-400 text-sm tracking-wider uppercase mb-3 px-1">
-              Output Format
-            </h3>
-            <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-1 space-x-1">
-              {formatConfig.map((format) => (
-                <button
-                  key={format.value}
-                  onClick={() => setConfig({ output_format: format.value })}
-                  className={`flex-1 text-center py-2 rounded-md font-mono text-sm transition-colors ${
-                    config.output_format === format.value
-                      ? 'bg-zinc-800 text-zinc-200'
-                      : 'text-zinc-400 hover:bg-zinc-800'
-                  }`}
-                >
-                  {format.label}
-                </button>
-              ))}
-            </div>
-          </div>
+
 
           {/* Feature Toggles */}
           <div className="col-span-1 md:col-span-3">
