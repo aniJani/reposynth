@@ -9,6 +9,7 @@ import { Sparkles, Loader2, Copy, CheckCircle, PlayCircle, AlertCircle } from 'l
 export function VibeCodingPanel() {
   const {
     currentJob,
+    config,
     vibeMode,
     setVibeMode,
     vibeQuery,
@@ -82,6 +83,12 @@ export function VibeCodingPanel() {
     setVibePrompt('');
 
     try {
+      // Map analysis mode to filter strategy:
+      // - 'hybrid' (Balanced) -> 'aggressive' (exclude API files)
+      // - 'full' (Deep Dive) -> 'minimal' (include minimal API signatures)
+      // - 'semantic' -> 'minimal' (fallback)
+      const filterStrategy = config.mode === 'hybrid' ? 'aggressive' : 'minimal';
+
       const response = await generateVibePrompt({
         job_id: currentJob.id,
         mode: vibeMode,
@@ -89,6 +96,9 @@ export function VibeCodingPanel() {
         entry_point: (vibeMode === 'bundle' && bundleSubMode === 'file') ? vibeEntryPoint : undefined,
         max_files: 5,
         max_depth: 3,
+        minify_source: true,
+        keep_docs: false,
+        filter_strategy: filterStrategy,
       });
 
       setVibePrompt(response.prompt);

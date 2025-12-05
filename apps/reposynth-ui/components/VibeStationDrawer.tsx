@@ -14,6 +14,9 @@ interface VibeStationDrawerProps {
 export function VibeStationDrawer({ isOpen, onClose }: VibeStationDrawerProps) {
   const {
     currentJob,
+    config,
+    isVibeDrawerOpen,
+    setIsVibeDrawerOpen,
     vibeMode,
     setVibeMode,
     vibeQuery,
@@ -79,6 +82,35 @@ export function VibeStationDrawer({ isOpen, onClose }: VibeStationDrawerProps) {
     setVibePrompt('');
 
     try {
+      const tokenLimit = getEffectiveTokenLimit();
+
+      // Map analysis mode to filter strategy:
+      // - 'hybrid' (Balanced) -> 'aggressive' (exclude API files)
+      // - 'full' (Deep Dive) -> 'minimal' (include minimal API signatures)
+      // - 'semantic' -> 'minimal' (fallback)
+      const filterStrategy = config.mode === 'hybrid' ? 'aggressive' : 'minimal';
+
+      // Map frontend modes to backend modes:
+      // - 'prompt' mode with query -> 'focus' (search-based)
+      // - 'prompt' mode without query -> 'blueprint' (full project overview)
+      // - 'file' mode -> 'bundle' (dependency tree from file)
+      let backendMode: 'blueprint' | 'focus' | 'bundle';
+      let query: string | undefined;
+      let entryPoint: string | undefined;
+
+      if (vibeMode === 'prompt') {
+        if (vibeQuery.trim()) {
+          backendMode = 'focus';
+          query = vibeQuery;
+        } else {
+          backendMode = 'blueprint';
+        }
+      } else {
+        // file mode
+        backendMode = 'bundle';
+        entryPoint = vibeEntryPoint;
+      }
+
       const response = await generateVibePrompt({
         job_id: currentJob.id,
         mode: vibeMode,
@@ -86,6 +118,10 @@ export function VibeStationDrawer({ isOpen, onClose }: VibeStationDrawerProps) {
         entry_point: (vibeMode === 'bundle' && bundleSubMode === 'file') ? vibeEntryPoint : undefined,
         max_files: 5,
         max_depth: 3,
+        token_limit: tokenLimit,
+        minify_source: true,
+        keep_docs: false,
+        filter_strategy: filterStrategy,
       });
 
       setVibePrompt(response.prompt);

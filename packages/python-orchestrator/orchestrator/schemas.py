@@ -375,6 +375,22 @@ class VibePromptRequest(BaseModel):
         default=3,
         description="Maximum dependency depth in bundle mode"
     )
+    token_limit: Optional[int] = Field(
+        default=None,
+        description="Optional token budget for context optimization. Uses intelligent truncation for blueprint/focus modes, and Graph-Knapsack algorithm for bundle mode."
+    )
+    minify_source: bool = Field(
+        default=True,
+        description="If True, strip comments and whitespace from source code to reduce tokens (default: True)"
+    )
+    keep_docs: bool = Field(
+        default=False,
+        description="If True, keep docstrings/JSDoc when minifying (default: False)"
+    )
+    filter_strategy: str = Field(
+        default="minimal",
+        description="File filtering strategy: 'aggressive' (exclude API files), 'minimal' (include minimal API signatures), 'permissive' (include all files) (default: 'minimal')"
+    )
 
     @field_validator('mode')
     @classmethod

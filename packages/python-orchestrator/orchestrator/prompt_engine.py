@@ -17,6 +17,13 @@ from typing import Dict, List, Any, Optional, Tuple
 
 from .toon_formatter import generate_toon_blueprint, estimate_tokens, summarize_toon
 from .retriever import retrieve_relevant_symbols, hybrid_search
+from .context_optimizer import optimize_context, PruningReport, get_context_window_presets
+from .code_minifier import minify_code
+from .file_filter import (
+    should_include_file, FileFilterStrategy, categorize_file,
+    extract_minimal_api_content, get_aggressive_filter_strategy,
+    get_minimal_filter_strategy, get_permissive_filter_strategy
+)
 
 
 class PromptEngine:
@@ -24,19 +31,34 @@ class PromptEngine:
     Assembles LLM-optimized prompts from RepoSynth pack artifacts.
     """
 
-    def __init__(self, pack_path: Path, repo_url: Optional[str] = None):
+    def __init__(self, pack_path: Path, repo_url: Optional[str] = None, minify_source: bool = True, keep_docs: bool = False, filter_strategy: str = "minimal"):
         """
         Initialize the prompt engine with a pack directory or ZIP file.
 
         Args:
             pack_path: Path to pack directory or ZIP file
             repo_url: Optional URL of the repository (for fallback source reading)
+            minify_source: If True, strip comments and whitespace from source code (default: True)
+            keep_docs: If True, keep docstrings/JSDoc when minifying (default: False)
+            filter_strategy: File filtering strategy - "aggressive" (exclude APIs), "minimal" (minimal APIs), "permissive" (include all) (default: "minimal")
         """
         self.pack_path = Path(pack_path)
         self.is_zip = pack_path.suffix == '.zip'
         self.is_json = pack_path.suffix == '.json'
         self.repo_url = repo_url
         self.temp_extract_dir = None
+        self.minify_source = minify_source
+        self.keep_docs = keep_docs
+
+        # Set file filtering strategy
+        if filter_strategy == "aggressive":
+            self.filter_strategy_map = get_aggressive_filter_strategy()
+        elif filter_strategy == "minimal":
+            self.filter_strategy_map = get_minimal_filter_strategy()
+        elif filter_strategy == "permissive":
+            self.filter_strategy_map = get_permissive_filter_strategy()
+        else:
+            self.filter_strategy_map = get_minimal_filter_strategy()
 
         # Load artifacts
         self._load_artifacts()
@@ -399,42 +421,75 @@ class PromptEngine:
 
     def _read_source_file(self, file_path: str) -> Optional[str]:
         """
-        Read source code from source_spans.json, spans.zip, or original repository.
+        Read source code from cache, source_spans.json, spans.zip, or original repository.
+        Applies file filtering and minification if enabled.
 
         Args:
             file_path: Relative file path
 
         Returns:
-            Source code string or None if not found
+            Source code string or None if file should be excluded
         """
+        # Check file filtering strategy first
+        filter_strategy = should_include_file(file_path, self.filter_strategy_map)
+
+        if filter_strategy == FileFilterStrategy.EXCLUDE:
+            # Skip this file entirely
+            return None
+
+        # Read the source code
+        source_code = None
+
         # Check if we have source files loaded from JSON or TOON
         if hasattr(self, 'source_files') and self.source_files:
             if file_path in self.source_files:
                 # Handle both direct string (TOON) and dict (JSON) formats
                 data = self.source_files[file_path]
                 if isinstance(data, dict):
-                    return data.get('full_source', '')
-                return str(data)
+                    source_code = data.get('full_source', '')
+                else:
+                    source_code = str(data)
 
-        # Try to read from source_spans.json (flat file format after cleanup)
+                # Apply file filtering (minimal or full)
+                source_code = self._apply_file_filter(source_code, file_path, filter_strategy)
+                return source_code
+
+        # Use cached source files if available (fast path)
+        if hasattr(self, '_source_cache'):
+            self._ensure_source_cache()
+            if file_path in self._source_cache:
+                source_code = self._source_cache[file_path]
+                # Apply file filtering (minimal or full)
+                source_code = self._apply_file_filter(source_code, file_path, filter_strategy)
+                return source_code
+
+        # Fallback: Try to read from source_spans.json (slow path - shouldn't hit this often)
         if self.work_dir:
             spans_json_path = self.work_dir / "source_spans.json"
             if spans_json_path.exists():
                 try:
                     with open(spans_json_path, 'r', encoding='utf-8') as f:
                         spans_data = json.load(f)
-                    
+
                     # source_spans.json can be a list of dicts or a dict keyed by file path
+                    source_code = None
                     if isinstance(spans_data, list):
                         for file_data in spans_data:
                             if file_data.get('file_path') == file_path:
-                                return file_data.get('source_code', file_data.get('full_source', ''))
+                                source_code = file_data.get('source_code', file_data.get('full_source', ''))
+                                break
                     elif isinstance(spans_data, dict):
                         if file_path in spans_data:
                             data = spans_data[file_path]
                             if isinstance(data, dict):
-                                return data.get('source_code', data.get('full_source', ''))
-                            return str(data)
+                                source_code = data.get('source_code', data.get('full_source', ''))
+                            else:
+                                source_code = str(data)
+
+                    # Apply file filtering (minimal or full)
+                    if source_code:
+                        source_code = self._apply_file_filter(source_code, file_path, filter_strategy)
+                        return source_code
                 except Exception as e:
                     print(f"Error reading source_spans.json: {e}", file=sys.stderr)
 
@@ -445,9 +500,10 @@ class PromptEngine:
                 try:
                     with zipfile.ZipFile(spans_zip_path, 'r') as zf:
                         # Try reading file directly from zip (new format)
+                        source_code = None
                         try:
                             with zf.open(file_path) as f:
-                                return f.read().decode('utf-8', errors='replace')
+                                source_code = f.read().decode('utf-8', errors='replace')
                         except KeyError:
                             # Fallback to old format (source_spans.json inside zip)
                             try:
@@ -455,9 +511,15 @@ class PromptEngine:
                                 spans_data = json.loads(spans_json)
                                 for file_data in spans_data:
                                     if file_data.get('file_path') == file_path:
-                                        return file_data.get('source_code', '')
+                                        source_code = file_data.get('source_code', '')
+                                        break
                             except KeyError:
                                 pass
+
+                        # Apply file filtering (minimal or full)
+                        if source_code:
+                            source_code = self._apply_file_filter(source_code, file_path, filter_strategy)
+                            return source_code
                 except Exception:
                     pass
 
@@ -467,12 +529,12 @@ class PromptEngine:
             # Try to find the file in temp_repos if we are in a dev environment
             # This is a hack for local testing when pack doesn't have source
             project_root = self.work_dir.parent.parent # Assuming work_dir is temp/pack
-            
+
             # Try to guess repo name from path or use self.repo_url
             repo_name = None
             if self.repo_url:
                 repo_name = self.repo_url.split('/')[-1].replace('.git', '')
-            
+
             # If we can't determine repo name, try to find any folder in temp_repos that contains this file
             temp_repos = project_root / "temp_repos"
             if temp_repos.exists():
@@ -482,10 +544,13 @@ class PromptEngine:
                     if local_path.exists():
                         try:
                             with open(local_path, "r", encoding="utf-8", newline='') as f:
-                                return f.read()
+                                source_code = f.read()
+                                # Apply file filtering (minimal or full)
+                                source_code = self._apply_file_filter(source_code, file_path, filter_strategy)
+                                return source_code
                         except Exception:
                             pass
-                
+
                 # Fallback: check all folders in temp_repos
                 for repo_dir in temp_repos.iterdir():
                     if repo_dir.is_dir():
@@ -493,11 +558,42 @@ class PromptEngine:
                         if local_path.exists():
                             try:
                                 with open(local_path, "r", encoding="utf-8", newline='') as f:
-                                    return f.read()
+                                    source_code = f.read()
+                                    # Apply file filtering (minimal or full)
+                                    source_code = self._apply_file_filter(source_code, file_path, filter_strategy)
+                                    return source_code
                             except Exception:
                                 pass
 
-        return f"// Source code for {file_path} not available in this pack mode\n"
+        return None  # File not found or excluded
+
+    def _apply_file_filter(self, source_code: str, file_path: str, filter_strategy: FileFilterStrategy) -> Optional[str]:
+        """
+        Apply file filtering and minification to source code.
+
+        Args:
+            source_code: Original source code
+            file_path: File path (for language detection)
+            filter_strategy: Strategy to apply
+
+        Returns:
+            Processed source code or None
+        """
+        if not source_code:
+            return None
+
+        lang = self._detect_language(file_path)
+
+        # Apply filtering strategy
+        if filter_strategy == FileFilterStrategy.INCLUDE_MINIMAL:
+            # Extract minimal representation (just signatures)
+            source_code = extract_minimal_api_content(source_code, lang)
+        elif filter_strategy == FileFilterStrategy.INCLUDE_FULL:
+            # Apply minification if enabled
+            if self.minify_source:
+                source_code = minify_code(source_code, lang, keep_docs=self.keep_docs)
+
+        return source_code
 
     def _detect_language(self, file_path: str) -> str:
         """Detect programming language from file extension."""
@@ -614,7 +710,11 @@ def generate_vibe_prompt(
     entry_point: Optional[str] = None,
     max_files: int = 5,
     max_depth: int = 3,
-    repo_url: Optional[str] = None
+    repo_url: Optional[str] = None,
+    token_limit: Optional[int] = None,
+    minify_source: bool = True,
+    keep_docs: bool = False,
+    filter_strategy: str = "minimal"
 ) -> Dict[str, Any]:
     """
     Convenience function to generate a vibe coding prompt.
@@ -627,6 +727,10 @@ def generate_vibe_prompt(
         max_files: Max files to include in focus mode
         max_depth: Max dependency depth in bundle mode
         repo_url: Optional URL of the repository (for fallback source reading)
+        token_limit: Optional token budget for context optimization
+        minify_source: If True, strip comments and whitespace from source code (default: True)
+        keep_docs: If True, keep docstrings/JSDoc when minifying (default: False)
+        filter_strategy: File filtering strategy - "aggressive" (exclude APIs), "minimal" (minimal APIs), "permissive" (include all) (default: "minimal")
 
     Returns:
         Dict with 'prompt' and 'metadata'
@@ -634,7 +738,7 @@ def generate_vibe_prompt(
     Raises:
         ValueError: If required parameters are missing
     """
-    engine = PromptEngine(Path(pack_path), repo_url=repo_url)
+    engine = PromptEngine(Path(pack_path), repo_url=repo_url, minify_source=minify_source, keep_docs=keep_docs, filter_strategy=filter_strategy)
 
     try:
         if mode == "blueprint":

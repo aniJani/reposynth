@@ -775,7 +775,11 @@ async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session 
                 entry_point=request.entry_point,
                 max_files=request.max_files,
                 max_depth=request.max_depth,
-                repo_url=job.repo_url  # Pass repo_url for fallback source reading
+                repo_url=job.repo_url,
+                token_limit=request.token_limit,
+                minify_source=request.minify_source,
+                keep_docs=request.keep_docs,
+                filter_strategy=request.filter_strategy
             )
             
             return VibePromptResponse(
@@ -820,7 +824,11 @@ async def generate_vibe_prompt_endpoint(request: VibePromptRequest, db: Session 
                 query=request.query,
                 entry_point=request.entry_point,
                 max_files=request.max_files,
-                max_depth=request.max_depth
+                max_depth=request.max_depth,
+                token_limit=request.token_limit,
+                minify_source=request.minify_source,
+                keep_docs=request.keep_docs,
+                filter_strategy=request.filter_strategy
             )
 
             return VibePromptResponse(
