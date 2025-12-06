@@ -607,15 +607,14 @@ class Pipeline:
 
     def store_spans(self):
         """
-        Creates a comprehensive JSON file containing source code for ALL parsed files.
-        The JSON includes the full source of each file plus extracted spans for public APIs.
-        
-        This ensures complete codebase reconstruction is possible, not just public API files.
+        Creates a comprehensive JSON file containing source code for all public APIs.
+        The JSON includes the full source of each file plus extracted spans for each public API.
+        NOW INCLUDES: Exported types, interfaces, and enums from variable_registry!
         """
         json_path = self.output_path / "source_spans.json"
         source_spans = {}
 
-        # Group public APIs by file (for highlighting/annotation purposes)
+        # Group public APIs by file
         files_with_apis = defaultdict(list)
 
         # Add items from name_registry (functions, classes, constants)
@@ -644,25 +643,16 @@ class Pipeline:
                         "end_byte": var["end_byte"]
                     })
 
-        # NEW: Get ALL files from the import_graph (all parsed source files)
-        all_source_files = set(self.import_graph.keys())
-        
-        # Also include files from name_registry and variable_registry
-        for fqn, data in self.name_registry.items():
-            all_source_files.add(data["file_path"])
-        for file_path in self.variable_registry.keys():
-            all_source_files.add(file_path)
-
-        # Build the complete source spans structure for ALL files
-        for file_path_str in all_source_files:
+        # Build the complete source spans structure (only for files with public APIs)
+        for file_path_str, apis in files_with_apis.items():
             try:
                 full_path = self.repo_path / file_path_str
                 with open(full_path, "rb") as f:
                     source_code = f.read()
 
-                # Extract the actual code span for each public API (if any)
+                # Extract the actual code span for each API
                 api_details = []
-                for api in files_with_apis.get(file_path_str, []):
+                for api in apis:
                     try:
                         span_code = source_code[api["start_byte"]:api["end_byte"]].decode('utf-8')
                         api_details.append({
@@ -694,8 +684,7 @@ class Pipeline:
             json.dump(source_spans, f, indent=2)
 
         print(f"Source spans saved to {json_path}")
-        print(f"  - {len(source_spans)} total source files")
-        print(f"  - {len(files_with_apis)} files with public APIs")
+        print(f"  - {len(source_spans)} files with public APIs")
         print(f"  - {sum(len(v['public_apis']) for v in source_spans.values())} total public symbols")
 
         return source_spans
