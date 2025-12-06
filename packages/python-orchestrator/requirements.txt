@@ -38,5 +38,8 @@ botocore==1.32.7
 # Week 8: Configuration
 python-dotenv==1.0.0
 
+# Week 10: Production Security
+slowapi==0.1.9
+
 # Additional utilities
 python-multipart==0.0.6

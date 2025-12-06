@@ -15,19 +15,7 @@
 }
 
 @layer utilities {
-  .focus-glow-purple:focus-within {
-    box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #a855f7;
-  }
-
-  .focus-glow-teal:focus-within {
-    box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #0d9488;
-  }
-
-  .glow-purple {
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
-  }
-
-  .glow-teal {
-    box-shadow: 0 0 15px rgba(13, 148, 136, 0.3);
+  .focus-ring-accent:focus-within {
+    box-shadow: 0 0 0 2px #18181b, 0 0 0 3px #14b8a6;
   }
 }

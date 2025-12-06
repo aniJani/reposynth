@@ -6,10 +6,13 @@ FROM rust:1.82-slim as rust-builder
 
 WORKDIR /build
 
-# Install git (needed for tree-sitter dependencies)
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+# Install git and build-essential (needed for tree-sitter C compilation)
+RUN apt-get update && apt-get install -y git build-essential && rm -rf /var/lib/apt/lists/*
 
-# Copy Rust project
+# Copy Rust project (includes grammars directory)
+# NOTE: Grammars must be at compatible versions for tree-sitter 0.22
+# See packages/rust-parser-daemon/grammars/README.md for version requirements
+# Run setup-grammars.sh locally before building if grammars are missing
 COPY packages/rust-parser-daemon /build
 
 # Build the Rust parser daemon in release mode

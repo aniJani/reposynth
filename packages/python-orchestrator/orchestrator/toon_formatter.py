@@ -158,6 +158,149 @@ def convert_graph_to_toon(graph: Dict[str, Any]) -> str:
     return format_table("dependencies", headers, rows)
 
 
+def convert_registry_to_toon_limited(registry: Dict[str, Any], max_tokens: int) -> str:
+    """
+    Convert name_registry.json to TOON format with token limit.
+    
+    Prioritizes public symbols, classes, and functions over private/variables.
+    
+    Args:
+        registry: name_registry.json as dict
+        max_tokens: Maximum tokens to use
+        
+    Returns:
+        TOON formatted string (truncated if necessary)
+    """
+    headers = ["name", "kind", "file", "pub", "inherits"]
+    
+    # Score and sort symbols by importance
+    scored_items = []
+    kind_priority = {
+        "class": 100, "class_declaration": 100,
+        "interface": 90, "interface_declaration": 90, "iface": 90,
+        "function": 80, "function_declaration": 80, "func": 80,
+        "method": 70, "method_definition": 70, "meth": 70,
+        "type": 60, "type_alias_declaration": 60,
+        "enum": 50, "enum_declaration": 50,
+        "const": 30, "const_declaration": 30,
+        "variable": 20, "variable_declaration": 20, "var": 20,
+    }
+    
+    kind_map = {
+        "function_declaration": "func",
+        "method_definition": "meth",
+        "class_declaration": "class",
+        "interface_declaration": "iface",
+        "type_alias_declaration": "type",
+        "const_declaration": "const",
+        "variable_declaration": "var",
+        "enum_declaration": "enum",
+        "module_declaration": "mod",
+        "export_statement": "exp",
+        "import_statement": "imp"
+    }
+    
+    for key, data in registry.items():
+        raw_kind = data.get('kind', 'unknown')
+        is_public = data.get('is_public', False)
+        
+        # Calculate priority score
+        score = kind_priority.get(raw_kind, 10)
+        if is_public:
+            score += 50  # Boost public symbols
+            
+        scored_items.append((score, key, data))
+    
+    # Sort by score descending
+    scored_items.sort(key=lambda x: -x[0])
+    
+    # Build rows until we hit token limit
+    rows = []
+    current_text = ""
+    
+    for score, key, data in scored_items:
+        symbol_name = data.get('name', key.split(':')[-1] if ':' in key else key)
+        raw_kind = data.get('kind', 'unknown')
+        short_kind = kind_map.get(raw_kind, raw_kind)
+        
+        row = [
+            symbol_name,
+            short_kind,
+            data.get('file_path', ''),
+            "1" if data.get('is_public', False) else "0",
+            "|".join(data.get('inherits_from', [])) if data.get('inherits_from') else ""
+        ]
+        
+        # Estimate tokens for this row (roughly 1 token per 4 chars)
+        row_text = "  " + ",".join(str(c).replace('\n', ' ').replace(',', ';')[:250] for c in row) + "\n"
+        test_text = current_text + row_text
+        
+        if estimate_tokens(test_text) > max_tokens and rows:
+            # Stop - we've hit the limit
+            break
+            
+        rows.append(row)
+        current_text = test_text
+    
+    result = format_table("symbols", headers, rows)
+    
+    # Add truncation notice if we didn't include everything
+    if len(rows) < len(registry):
+        result += f"  # ... {len(registry) - len(rows)} more symbols (truncated for token budget)\n"
+    
+    return result
+
+
+def convert_graph_to_toon_limited(graph: Dict[str, Any], max_tokens: int) -> str:
+    """
+    Convert import_graph.json to TOON format with token limit.
+    
+    Args:
+        graph: import_graph.json as dict
+        max_tokens: Maximum tokens to use
+        
+    Returns:
+        TOON formatted string (truncated if necessary)
+    """
+    headers = ["source", "target"]
+    all_rows = []
+    
+    # CASE A: Graph is a Dictionary {"src/a.ts": ["src/b.ts"]}
+    if isinstance(graph, dict) and "edges" not in graph:
+        for source, targets in graph.items():
+            if isinstance(targets, list):
+                for target in targets:
+                    all_rows.append([source, target])
+            else:
+                all_rows.append([source, str(targets)])
+    
+    # CASE B: Graph is Node/Edge format
+    elif isinstance(graph, dict) and "edges" in graph:
+        for edge in graph["edges"]:
+            all_rows.append([edge["source"], edge["target"]])
+    
+    # Limit rows based on token budget
+    rows = []
+    current_text = ""
+    
+    for row in all_rows:
+        row_text = "  " + ",".join(str(c).replace('\n', ' ').replace(',', ';')[:250] for c in row) + "\n"
+        test_text = current_text + row_text
+        
+        if estimate_tokens(test_text) > max_tokens and rows:
+            break
+            
+        rows.append(row)
+        current_text = test_text
+    
+    result = format_table("dependencies", headers, rows)
+    
+    if len(rows) < len(all_rows):
+        result += f"  # ... {len(all_rows) - len(rows)} more dependencies (truncated for token budget)\n"
+    
+    return result
+
+
 def convert_complexity_to_toon(complexity_data: List[Dict[str, Any]]) -> str:
     """
     Convert complexity metrics to TOON format.
@@ -236,7 +379,7 @@ def convert_source_to_toon(source_spans: Dict[str, Any]) -> str:
     return "\n".join(sections)
 
 
-def generate_toon_blueprint(registry: Dict[str, Any], graph: Dict[str, List[str]]) -> str:
+def generate_toon_blueprint(registry: Dict[str, Any], graph: Dict[str, List[str]], max_tokens: int = None) -> str:
     """
     Generate a complete TOON blueprint (structure only, no source code).
 
@@ -245,6 +388,7 @@ def generate_toon_blueprint(registry: Dict[str, Any], graph: Dict[str, List[str]
     Args:
         registry: name_registry.json as dict
         graph: import_graph.json as dict
+        max_tokens: Optional maximum token budget - if set, will truncate intelligently
 
     Returns:
         Complete TOON formatted string with symbols and dependencies
@@ -255,15 +399,33 @@ def generate_toon_blueprint(registry: Dict[str, Any], graph: Dict[str, List[str]
     sections.append("This is a structural map of the codebase.\n")
     sections.append("Use this to understand architecture, dependencies, and symbol locations.\n\n")
 
-    # Add symbol registry
-    sections.append("## Symbol Registry\n")
-    sections.append(convert_registry_to_toon(registry))
-    sections.append("\n")
+    # Calculate overhead for header/footer (roughly 500 tokens)
+    overhead = 500
+    
+    if max_tokens:
+        # Reserve tokens for structure: 70% symbols, 30% dependencies
+        available = max_tokens - overhead
+        symbol_budget = int(available * 0.7)
+        dep_budget = int(available * 0.3)
+        
+        # Add symbol registry with budget
+        sections.append("## Symbol Registry\n")
+        sections.append(convert_registry_to_toon_limited(registry, symbol_budget))
+        
+        # Add dependency graph with budget
+        sections.append("\n## Import Dependencies\n")
+        sections.append(convert_graph_to_toon_limited(graph, dep_budget))
+        sections.append("\n")
+    else:
+        # Original full output
+        sections.append("## Symbol Registry\n")
+        sections.append(convert_registry_to_toon(registry))
+        sections.append("\n")
 
-    # Add dependency graph
-    sections.append("## Import Dependencies\n")
-    sections.append(convert_graph_to_toon(graph))
-    sections.append("\n")
+        # Add dependency graph
+        sections.append("## Import Dependencies\n")
+        sections.append(convert_graph_to_toon(graph))
+        sections.append("\n")
 
     return "".join(sections)
 

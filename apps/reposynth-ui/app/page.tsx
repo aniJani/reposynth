@@ -2,44 +2,74 @@
 
 import { UrlInput } from '@/components/UrlInput';
 import { ConfiguratorPanel } from '@/components/ConfiguratorPanel';
-import { EstimatorDisplay } from '@/components/EstimatorDisplay';
 import { SubmitButton } from '@/components/SubmitButton';
-import { JobStatusDisplay } from '@/components/JobStatusDisplay';
+import { JobProgressPanel } from '@/components/JobProgressPanel';
 import { VibeStationDrawer } from '@/components/VibeStationDrawer';
-import { Database, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { RateLimitBanner } from '@/components/RateLimitBanner';
+import { RecentReposBubbles } from '@/components/RecentReposBubbles';
+import { Sparkles } from 'lucide-react';
+import Image from 'next/image';
+import { useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Home() {
-  const [isVibeDrawerOpen, setIsVibeDrawerOpen] = useState(false);
-  const { currentJob, repoUrl } = useStore();
+  const { currentJob, repoUrl, isVibeDrawerOpen, setIsVibeDrawerOpen } = useStore();
+  const prevJobStatusRef = useRef<string | null>(null);
+  const router = useRouter();
+
+  // Auto-redirect to results page when job completes
+  useEffect(() => {
+    if (currentJob?.status === 'completed' && prevJobStatusRef.current !== 'completed') {
+      // Redirect to shareable results page
+      router.push(`/results/${currentJob.id}`);
+    }
+    prevJobStatusRef.current = currentJob?.status ?? null;
+  }, [currentJob?.status, currentJob?.id, router]);
 
   const showVibeButton = currentJob?.status === 'completed';
   const showConfiguration = repoUrl.trim().length > 0;
+  const hasActiveJob = currentJob && currentJob.status !== 'failed';
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <div className="relative flex h-screen w-full flex-col overflow-hidden">
       {/* Fixed Header - Top Left */}
       <header className="fixed top-0 left-0 right-0 z-20 bg-zinc-950/80 backdrop-blur-md">
         <div className="px-6 py-4">
-          <div className="flex items-center gap-3">
-            <Database className="text-primary h-6 w-6" />
-            <div>
-              <h1 className="text-lg font-bold font-display tracking-tight text-zinc-200">
-                RepoSynth
-              </h1>
-              <p className="text-xs text-zinc-500">Repository Synthesis & LLM Context Engine</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Image 
+                src="/logo.png" 
+                alt="RepoSynth Logo" 
+                width={32} 
+                height={32}
+              />
+              <div>
+                <h1 className="text-lg font-bold font-display tracking-tight text-zinc-200">
+                  RepoSynth
+                </h1>
+                <p className="text-xs text-zinc-500">Repository Synthesis & LLM Context Engine</p>
+              </div>
             </div>
+            <RateLimitBanner />
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 pt-20">
+      {/* Main Content - slides left when vibe drawer opens */}
+      <main 
+        className={`flex-1 pt-20 overflow-y-auto transition-all duration-300 ease-in-out ${
+          isVibeDrawerOpen ? 'mr-[50%] lg:mr-[40%]' : 'mr-0'
+        }`}
+      >
         {!showConfiguration ? (
           /* Centered URL Input - Initial State */
-          <div className="flex items-center justify-center min-h-[calc(100vh-5rem)] px-4">
-            <div className="w-full max-w-2xl">
+          <div className="relative flex items-center justify-center h-full px-4">
+            {/* Floating bubbles of recently analyzed repos */}
+            <RecentReposBubbles />
+
+            <div className="relative z-10 w-full max-w-2xl">
               <div className="text-center mb-8">
                 <h2 className="text-4xl md:text-5xl font-bold text-zinc-200 mb-4 font-display tracking-tight">
                   Analyze a Repository
@@ -52,73 +82,62 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          /* Configuration Panels - After URL Entry */
-          <div className="max-w-5xl mx-auto px-4 md:px-8 pb-16">
-            <div className="space-y-8">
+          /* Configuration / Job Progress - After URL Entry */
+          <div className="max-w-5xl mx-auto px-4 md:px-8 py-4">
+            <div className="space-y-6">
               {/* URL Input - Compact */}
               <div className="w-full">
                 <UrlInput />
               </div>
 
-              {/* Configuration Panel */}
-              <div className="w-full">
-                <ConfiguratorPanel />
-              </div>
+              {/* Show Configuration Panel OR Job Progress Panel */}
+              {!hasActiveJob ? (
+                <>
+                  {/* Configuration Panel */}
+                  <div className="w-full">
+                    <ConfiguratorPanel />
+                  </div>
 
-              {/* Estimator Display */}
-              <div className="w-full">
-                <EstimatorDisplay />
-              </div>
-
-              {/* Submit Button */}
-              <div className="w-full pt-4">
-                <SubmitButton />
-              </div>
+                  {/* Submit Button */}
+                  <div className="w-full pt-2">
+                    <SubmitButton />
+                  </div>
+                </>
+              ) : (
+                /* Job Progress Panel - replaces config when job is active */
+                <div className="w-full">
+                  <JobProgressPanel />
+                </div>
+              )}
             </div>
           </div>
         )}
       </main>
 
       {/* Footer - Minimal */}
-      <footer className="py-6 text-center border-t border-zinc-800/50 bg-zinc-950/50">
-        <div className="flex items-center justify-center gap-6 text-xs text-zinc-600">
-          <a href="#" className="hover:text-zinc-400 transition-colors">
-            Documentation
-          </a>
-          <span>•</span>
-          <a href="#" className="hover:text-zinc-400 transition-colors">
+      <footer className={`py-4 text-center border-t border-zinc-800/50 bg-zinc-950/50 transition-all duration-300 ease-in-out ${
+        isVibeDrawerOpen ? 'mr-[50%] lg:mr-[40%]' : 'mr-0'
+      }`}>
+        <div className="text-xs text-zinc-600">
+          <Link href="/about" className="hover:text-zinc-400 transition-colors">
             About
-          </a>
-          <span>•</span>
-          <a href="#" className="hover:text-zinc-400 transition-colors">
-            GitHub
-          </a>
+          </Link>
         </div>
       </footer>
 
-      {/* Fixed Job Status Display - Bottom Left */}
-      {currentJob && (
-        <div className="fixed bottom-8 left-8 w-full max-w-2xl z-30">
-          <JobStatusDisplay />
-        </div>
-      )}
-
-      {/* Floating Vibe Station Button */}
-      {showVibeButton && (
+      {/* Floating Vibe Station Button - only show when drawer is closed */}
+      {showVibeButton && !isVibeDrawerOpen && (
         <button
           onClick={() => setIsVibeDrawerOpen(true)}
-          className="fixed bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-neon-purple to-violet-600 text-white rounded-full shadow-2xl hover:shadow-neon-purple/50 hover:scale-105 transition-all font-bold text-base z-30 glow-purple"
+          className="fixed bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-violet-600 text-white rounded-xl hover:bg-violet-500 transition-colors font-semibold text-base z-30"
         >
           <Sparkles className="h-5 w-5" />
           <span>Vibe Station</span>
         </button>
       )}
 
-      {/* Vibe Station Drawer */}
-      <VibeStationDrawer
-        isOpen={isVibeDrawerOpen}
-        onClose={() => setIsVibeDrawerOpen(false)}
-      />
+      {/* Vibe Station Drawer - no backdrop blur */}
+      <VibeStationDrawer />
     </div>
   );
 }

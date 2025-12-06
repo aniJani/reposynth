@@ -2,7 +2,7 @@
 
 > A powerful, configurable repository analysis and synthesis pipeline for extracting semantic insights from codebases.
 
-RepoSynth is a comprehensive code analysis tool that parses repositories into structured artifacts including AST representations, dependency graphs, complexity metrics, semantic embeddings, and security reports. It's designed to help developers understand, document, and analyze codebases at scale.
+RepoSynth is a comprehensive code analysis tool that parses repositories into structured artifacts including AST representations, dependency graphs, complexity metrics, semantic embeddings, and security reports. It's designed to help developers understand, document, and analyze codebases at scale!
 
 ## Features
 

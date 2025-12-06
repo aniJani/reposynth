@@ -42,7 +42,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -134,6 +133,9 @@ test_full/
 
 # Any cloned repositories for processing
 temp_repos/
+
+# Worker packs directory (job output files)
+worker_packs/
 
 # Local databases and vector stores
 *.sqlite

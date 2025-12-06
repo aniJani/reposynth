@@ -2,68 +2,17 @@
 'use client';
 
 import { useStore } from '@/lib/store';
-import { Settings, Zap, Layers, BarChart, Shield, Brain } from 'lucide-react';
-import { useEffect, useCallback, useRef } from 'react';
-import { estimateTokens } from '@/lib/api';
+import { Zap, Layers, BarChart, Shield, Brain } from 'lucide-react';
 
 export function ConfiguratorPanel() {
   const {
     config,
     setConfig,
-    repoUrl,
-    setEstimate,
-    setIsEstimating,
-    setEstimateError,
   } = useStore();
 
-  // Use a ref to track the debounce timeout
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Debounced estimation
-  useEffect(() => {
-    if (!repoUrl) {
-      setEstimate(null);
-      return;
-    }
-
-    // Clear previous timeout
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    // Set new debounced call
-    debounceTimerRef.current = setTimeout(async () => {
-      setIsEstimating(true);
-      setEstimateError(null);
-      try {
-        const estimate = await estimateTokens({ repo_url: repoUrl, config });
-        setEstimate(estimate);
-      } catch (error) {
-        setEstimateError('Failed to fetch estimate');
-        console.error('Estimation error:', error);
-      } finally {
-        setIsEstimating(false);
-      }
-    }, 500);
-
-    // Cleanup on unmount or dependency change
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [repoUrl, config, setEstimate, setIsEstimating, setEstimateError]);
-
   const modeConfig = [
-    { value: 'semantic', label: 'Semantic', time: '~30s', description: 'Lightweight analysis' },
-    { value: 'hybrid', label: 'Hybrid', time: '~2m', description: 'Balanced detail' },
-    { value: 'full', label: 'Full', time: '~10m', description: 'Deep inspection' },
-  ] as const;
-
-  const formatConfig = [
-    { value: 'zip', label: 'ZIP' },
-    { value: 'markdown', label: 'Markdown' },
-    { value: 'toon', label: 'TOON' },
+    { value: 'hybrid', label: 'Hybrid', time: '~30s', description: 'Balanced detail' },
+    { value: 'full', label: 'Full', time: '~1m', description: 'Deep inspection' },
   ] as const;
 
   const featureConfig = [
@@ -76,15 +25,6 @@ export function ConfiguratorPanel() {
 
   // Configuration presets
   const presets = {
-    quickScan: {
-      mode: 'semantic' as const,
-      enable_ast: true,
-      enable_imports: false,
-      enable_complexity: false,
-      enable_security: false,
-      enable_embeddings: true,
-      output_format: 'markdown' as const,
-    },
     balanced: {
       mode: 'hybrid' as const,
       enable_ast: true,
@@ -92,7 +32,7 @@ export function ConfiguratorPanel() {
       enable_complexity: true,
       enable_security: false,
       enable_embeddings: true,
-      output_format: 'zip' as const,
+      output_format: 'toon' as const,
     },
     deepDive: {
       mode: 'full' as const,
@@ -101,7 +41,7 @@ export function ConfiguratorPanel() {
       enable_complexity: true,
       enable_security: true,
       enable_embeddings: true,
-      output_format: 'zip' as const,
+      output_format: 'toon' as const,
     },
   };
 
@@ -110,7 +50,7 @@ export function ConfiguratorPanel() {
   };
 
   return (
-    <div className="w-full space-y-2 p-4 border border-zinc-800 rounded-md bg-zinc-900/50">
+    <div className="w-full space-y-2 p-5 border border-zinc-800 rounded-lg bg-zinc-900/80">
       <div className="flex items-center justify-between">
         <p className="text-zinc-400 text-sm font-mono">[ConfiguratorPanel]</p>
 
@@ -121,7 +61,6 @@ export function ConfiguratorPanel() {
           defaultValue=""
         >
           <option value="" disabled>Quick Presets</option>
-          <option value="quickScan">Quick Scan</option>
           <option value="balanced">Balanced</option>
           <option value="deepDive">Deep Dive</option>
         </select>
@@ -134,22 +73,22 @@ export function ConfiguratorPanel() {
             <h3 className="font-display text-zinc-400 text-sm tracking-wider uppercase mb-3 px-1">
               Mode Selector
             </h3>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {modeConfig.map((mode) => (
                 <button
                   key={mode.value}
                   onClick={() => setConfig({ mode: mode.value })}
-                  className={`relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-colors cursor-pointer text-left h-32 ${
+                  className={`relative flex flex-col items-center justify-center p-4 rounded-lg border transition-all cursor-pointer text-left h-32 ${
                     config.mode === mode.value
-                      ? 'border-neon-purple bg-zinc-800 glow-purple'
-                      : 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800'
+                      ? 'border-accent bg-accent/10'
+                      : 'bg-zinc-900 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800/50'
                   }`}
                 >
                   <span
-                    className={`absolute top-2 right-2 text-xs font-mono px-2 py-0.5 rounded-full ${
+                    className={`absolute top-2 right-2 text-xs font-mono px-2 py-0.5 rounded ${
                       config.mode === mode.value
-                        ? 'bg-neon-purple/10 text-neon-purple'
-                        : 'bg-zinc-700/50 text-zinc-400'
+                        ? 'bg-accent/20 text-accent'
+                        : 'bg-zinc-800 text-zinc-500'
                     }`}
                   >
                     {mode.time}
@@ -161,27 +100,7 @@ export function ConfiguratorPanel() {
             </div>
           </div>
 
-          {/* Output Format */}
-          <div className="col-span-1">
-            <h3 className="font-display text-zinc-400 text-sm tracking-wider uppercase mb-3 px-1">
-              Output Format
-            </h3>
-            <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-1 space-x-1">
-              {formatConfig.map((format) => (
-                <button
-                  key={format.value}
-                  onClick={() => setConfig({ output_format: format.value })}
-                  className={`flex-1 text-center py-2 rounded-md font-mono text-sm transition-colors ${
-                    config.output_format === format.value
-                      ? 'bg-zinc-800 text-zinc-200'
-                      : 'text-zinc-400 hover:bg-zinc-800'
-                  }`}
-                >
-                  {format.label}
-                </button>
-              ))}
-            </div>
-          </div>
+
 
           {/* Feature Toggles */}
           <div className="col-span-1 md:col-span-3">
@@ -195,29 +114,29 @@ export function ConfiguratorPanel() {
                   <button
                     key={feature.key}
                     onClick={() => setConfig({ [feature.key]: !isEnabled })}
-                    className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                    className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
                       isEnabled
-                        ? 'bg-cyber-blue/10 border-cyber-blue/50 hover:bg-cyber-blue/20'
-                        : 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800 hover:border-cyber-blue/40'
+                        ? 'bg-accent/10 border-accent/40'
+                        : 'bg-zinc-900 border-zinc-700 hover:border-zinc-600'
                     }`}
                   >
                     <span
                       className={`font-mono text-sm ${
-                        isEnabled ? 'text-cyber-blue' : 'text-zinc-200'
+                        isEnabled ? 'text-accent' : 'text-zinc-300'
                       }`}
                     >
                       {feature.label}
                     </span>
                     <div
-                      className={`w-10 h-5 flex items-center rounded-full p-1 transition-colors ${
+                      className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors ${
                         isEnabled
-                          ? 'bg-cyber-blue/50 justify-end'
-                          : 'bg-zinc-700 justify-start'
+                          ? 'bg-accent justify-end'
+                          : 'bg-zinc-600 justify-start'
                       }`}
                     >
                       <div
-                        className={`w-3 h-3 rounded-full shadow-md ${
-                          isEnabled ? 'bg-zinc-100' : 'bg-zinc-400'
+                        className={`w-4 h-4 rounded-full transition-colors ${
+                          isEnabled ? 'bg-white' : 'bg-zinc-400'
                         }`}
                       />
                     </div>

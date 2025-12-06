@@ -37,6 +37,9 @@ struct AstNode {
 extern "C" {
     fn tree_sitter_python() -> tree_sitter::Language;
     fn tree_sitter_typescript() -> tree_sitter::Language;
+    fn tree_sitter_css() -> tree_sitter::Language;
+    fn tree_sitter_scss() -> tree_sitter::Language;
+    fn tree_sitter_html() -> tree_sitter::Language;
 }
 
 // The main async function to run our daemon
@@ -93,6 +96,9 @@ fn process_file(request: Request) -> Response {
     let language = match path.split('.').last() {
         Some("py") => unsafe { tree_sitter_python() },
         Some("ts") | Some("tsx") | Some("js") | Some("jsx") => unsafe { tree_sitter_typescript() },
+        Some("css") => unsafe { tree_sitter_css() },
+        Some("scss") => unsafe { tree_sitter_scss() },
+        Some("html") | Some("htm") => unsafe { tree_sitter_html() },
         _ => {
             return Response {
                 id: request.id,
@@ -104,7 +110,16 @@ fn process_file(request: Request) -> Response {
     };
 
     let mut parser = Parser::new();
-    parser.set_language(&language).unwrap();
+    
+    // Handle language version mismatches gracefully instead of panicking
+    if let Err(e) = parser.set_language(&language) {
+        return Response {
+            id: request.id,
+            path: request.path,
+            ast: None,
+            error: Some(format!("Language version mismatch: {:?}", e)),
+        };
+    }
 
     let source_code = match std::fs::read_to_string(path) {
         Ok(code) => code,
@@ -118,7 +133,18 @@ fn process_file(request: Request) -> Response {
         }
     };
     
-    let tree = parser.parse(&source_code, None).unwrap();
+    let tree = match parser.parse(&source_code, None) {
+        Some(t) => t,
+        None => {
+            return Response {
+                id: request.id,
+                path: request.path,
+                ast: None,
+                error: Some("Failed to parse file".to_string()),
+            };
+        }
+    };
+    
     let mut nodes = Vec::new();
     let mut node_counter = 0;
     

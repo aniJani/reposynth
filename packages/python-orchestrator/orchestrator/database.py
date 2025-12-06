@@ -7,7 +7,7 @@ Jobs progress through states: pending -> processing -> completed/failed
 
 import os
 import datetime
-from sqlalchemy import create_engine, Column, String, DateTime, Text, Integer, JSON
+from sqlalchemy import create_engine, Column, String, DateTime, Text, Integer, JSON, Date
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -84,6 +84,28 @@ class Job(Base):
         }
 
 
+class RateLimitRecord(Base):
+    """
+    Rate limit tracking for IP-based API limits.
+    
+    Attributes:
+        ip_address: Client IP address
+        date: Date of the rate limit record
+        request_count: Number of requests made on this date
+        last_request_at: Timestamp of the last request
+    """
+    __tablename__ = "rate_limits"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ip_address = Column(String, nullable=False, index=True)
+    date = Column(Date, nullable=False, index=True)
+    request_count = Column(Integer, default=0, nullable=False)
+    last_request_at = Column(DateTime, default=datetime.datetime.utcnow, nullable=False)
+    
+    def __repr__(self):
+        return f"<RateLimitRecord(ip={self.ip_address}, date={self.date}, count={self.request_count})>"
+
+
 def create_tables():
     """
     Create all database tables.
@@ -91,10 +113,8 @@ def create_tables():
     """
     try:
         Base.metadata.create_all(bind=engine)
-        print("✓ Database tables created/verified successfully")
     except SQLAlchemyError as e:
-        print(f"✗ Failed to create database tables: {e}")
-        raise
+        raise RuntimeError(f"Failed to create database tables: {e}")
 
 
 def get_db():
