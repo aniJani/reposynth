@@ -1,0 +1,9 @@
+{
+  "missing_context_cce_mean": 1.0586769342422486,
+  "language_choice_cce_mean": -1.005765700340271,
+  "difference": 2.0644426345825195,
+  "t_statistic": 10.847206449481764,
+  "p_value": 4.610775899262518e-06,
+  "cohens_d": 6.86037572608611,
+  "hypothesis_supported": true
+}
