@@ -1,0 +1,151 @@
+id,type,method,prompt,generated_text,raw_entropy,normalized_entropy,probability_differential,code_entropy,language_entropy,contrastive_entropy,total_entropy,code_prob_mass,language_prob_mass,top_k_predictions
+code_1,missing_context,keyword,How do I use the requests library to make an HTTP GET request in Python? Show me the code.,"\begin{code}
+import requests
+
+response = requests.get('http://www.example.com')
+\end{code}
+
+Comment: I'm getting a 404 error. I'm not sure",5.2924017906188965,0.3536164008108516,0.8232768326997757,3.745778799057007,2.5753495693206787,1.1704292297363281,5.2924017906188965,0.1728675365447998,0.3461659848690033,"[('\\', 0.1767231673002243), ('You', 0.1712859719991684), ('The', 0.08218391239643097), ('Here', 0.053061917424201965), ('Use', 0.0332053005695343), ('I', 0.03119349293410778), ('This', 0.030233770608901978), ('To', 0.023546084761619568), ('If', 0.0189198087900877), ('It', 0.018481533974409103)]"
+code_2,missing_context,keyword,Write a React component that uses useState. Show the import and component.,"
+
+\begin{code}
+import React, { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+
+You clicked",3.9629900455474854,0.26479060581525815,0.5729230344295502,3.8419697284698486,3.093968152999878,0.7480015754699707,3.9629900455474854,0.09709517657756805,0.12928171455860138,"[('\n', 0.42707696557044983), ('\\', 0.1214073896408081), ('Here', 0.08542076498270035), ('You', 0.04982548952102661), ('The', 0.027949567884206772), ('This', 0.021937867626547813), ('I', 0.018329773098230362), ('', 0.016559571027755737), ('import', 0.01592518389225006), ('To', 0.012997754849493504)]"
+code_3,missing_context,keyword,How do I authenticate with Firebase in a TypeScript project? Show the auth code.,"You can use the `firebase-admin` package to authenticate with Firebase in a TypeScript project.
+
+\begin{code}
+import * as admin from 'firebase-admin';
+
+const serviceAccount = require('path/to",5.765317440032959,0.38521466875213944,0.8555441051721573,3.643120527267456,2.8778672218322754,0.7652533054351807,5.765317440032959,0.18049384653568268,0.31682881712913513,"[('You', 0.1444558948278427), ('\\', 0.08969470858573914), ('I', 0.07732167094945908), ('The', 0.05701342597603798), ('To', 0.042368777096271515), ('In', 0.03887977823615074), ('Here', 0.03827700391411781), ('Firebase', 0.03827700391411781), ('This', 0.03540043905377388), ('There', 0.030279599130153656)]"
+code_4,missing_context,keyword,Write a function that uses pandas to read a CSV file and filter rows.,"\begin{code}
+import pandas as pd
+
+def filter_rows(csv_file, column_name, value):
+    df = pd.read_csv(csv_file)
+    return df[df[column_",4.771153926849365,0.3187887741852148,0.7310225665569305,3.334106206893921,2.3624887466430664,0.9716174602508545,4.771153926849365,0.15043534338474274,0.261283814907074,"[('\\', 0.26897743344306946), ('You', 0.16571219265460968), ('Here', 0.06591575592756271), ('I', 0.05422082170844078), ('This', 0.04601661488413811), ('Use', 0.0341966412961483), ('\n', 0.031380604952573776), ('The', 0.028129391372203827), ('If', 0.015902915969491005), ('It', 0.014034274965524673)]"
+code_5,missing_context,keyword,How do I create a FastAPI endpoint that handles POST requests with JSON body?,"You can use the `Request` object to get the JSON body of the request.
+
+\begin{code}
+from fastapi import FastAPI, Request
+
+app = FastAPI()
+
+@app.post(""/items/"")",4.838674545288086,0.32330022267636027,0.6969985365867615,3.554468870162964,1.9163857698440552,1.6380831003189087,4.838674545288086,0.13822424411773682,0.43222272396087646,"[('You', 0.3030014634132385), ('\\', 0.08887004852294922), ('Here', 0.05183744058012962), ('Fast', 0.048696767538785934), ('\n', 0.04646678268909454), ('The', 0.037337105721235275), ('To', 0.0321866013109684), ('This', 0.030712667852640152), ('Use', 0.030236510559916496), ('I', 0.02668362855911255)]"
+lang_1,language_choice,keyword,"Explain what this function does: def add(a, b): return a + b","This function takes two arguments a and b and returns their sum.
+
+Comment: I'm voting to close this question as off-topic because it is a question about a programming language.
+
+Comment: @MatthewCrawf",3.356607675552368,0.22427464355915888,0.5681752264499664,0.8645156025886536,2.1783335208892822,-1.3138179779052734,3.356607675552368,0.4801733195781708,0.265293151140213,"[('This', 0.43182477355003357), ('The', 0.16136114299297333), ('\n', 0.14807328581809998), ('It', 0.048072364181280136), ('', 0.030796309933066368), ('this', 0.01334921270608902), ('a', 0.011153684929013252), ('add', 0.010642919689416885), ('A', 0.008288714103400707), ('That', 0.008160210214555264)]"
+lang_2,language_choice,keyword,Write a comment describing this code: for item in items: process(item),"This code is a for loop that iterates over the items in the list items and calls the process function on each item.
+
+Comment: What is the purpose of the colon?
+
+Comment: @user3578888",4.552550792694092,0.3041826167987931,0.7193655073642731,1.7748897075653076,2.8048298358917236,-1.029940128326416,4.552550792694092,0.37067899107933044,0.21150930225849152,"[('This', 0.28063449263572693), ('\n', 0.20371879637241364), ('The', 0.10989803820848465), ('It', 0.035678666085004807), ('', 0.03404482454061508), ('Iter', 0.030044451355934143), ('A', 0.01939815655350685), ('this', 0.01711881160736084), ('For', 0.014873082749545574), ('I', 0.013542095199227333)]"
+lang_3,language_choice,keyword,"Summarize this code: class User: def __init__(self, name): self.name = name","
+
+\begin{code}
+class User:
+    def __init__(self, name):
+        self.name = name
+\end{code}
+
+Explanation:
+
+\begin{code}
+class User",4.227758884429932,0.282481364672312,0.7454497814178467,1.7721052169799805,2.5138533115386963,-0.7417480945587158,4.227758884429932,0.27891239523887634,0.28439727425575256,"[('\n', 0.2545502185821533), ('This', 0.2143527865409851), ('The', 0.10948069393634796), ('It', 0.09437825530767441), ('', 0.04253961145877838), ('A', 0.03526657447218895), ('User', 0.016921088099479675), ('Initial', 0.01470129657536745), ('\\', 0.01287288498133421), ('In', 0.010755698196589947)]"
+lang_4,language_choice,keyword,"Add a docstring to: def multiply(x, y): return x * y","
+
+def multiply(x, y):
+    """"""
+    Multiplies two numbers
+    """"""
+    return x * y
+
+Question: Add a docstring to: def multiply(x, y): return x * y
+",5.140212535858154,0.3434477441895851,0.776506781578064,2.245831251144409,3.3137407302856445,-1.0679094791412354,5.140212535858154,0.26841792464256287,0.1669456660747528,"[('\n', 0.22349321842193604), ('def', 0.1754218339920044), ('The', 0.07255762815475464), ('', 0.06869617849588394), ('This', 0.04400842264294624), ('multiply', 0.03793763369321823), ('Add', 0.025271913036704063), ('A', 0.02212882600724697), ('Here', 0.015569573268294334), ('To', 0.012907629832625389)]"
+lang_5,language_choice,keyword,Describe this function: def is_even(n): return n % 2 == 0,"This function takes an integer as input and returns True if the input is even and False if it is odd.
+
+Question: What is the value of the expression (3+2)*5
+
+Answer: The value of the expression (3",3.1848061084747314,0.21279557333600532,0.5395680367946625,1.1124749183654785,1.9878877401351929,-0.8754128217697144,3.1848061084747314,0.5397124290466309,0.1975141018629074,"[('This', 0.4604319632053375), ('\n', 0.170711949467659), ('The', 0.1258750855922699), ('', 0.03133278712630272), ('It', 0.03133278712630272), ('is', 0.03108895570039749), ('A', 0.016902770847082138), ('If', 0.009706445038318634), ('Given', 0.007799347396939993), ('Function', 0.0076186759397387505)]"
+code_1,missing_context,hybrid,How do I use the requests library to make an HTTP GET request in Python? Show me the code.,"\begin{code}
+import requests
+
+response = requests.get('http://www.example.com')
+\end{code}
+
+Comment: I'm getting a 404 error. I'm not sure",5.2924017906188965,0.3536164008108516,0.8232768326997757,3.8343677520751953,3.3517374992370605,0.48263025283813477,5.2924017906188965,0.1763397455215454,0.41784828901290894,"[('\\', 0.1767231673002243), ('You', 0.1712859719991684), ('The', 0.08218391239643097), ('Here', 0.053061917424201965), ('Use', 0.0332053005695343), ('I', 0.03119349293410778), ('This', 0.030233770608901978), ('To', 0.023546084761619568), ('If', 0.0189198087900877), ('It', 0.018481533974409103)]"
+code_2,missing_context,hybrid,Write a React component that uses useState. Show the import and component.,"
+
+\begin{code}
+import React, { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+
+You clicked",3.9629900455474854,0.26479060581525815,0.5729230344295502,3.946566104888916,2.038872480392456,1.90769362449646,3.9629900455474854,0.10206463187932968,0.607262372970581,"[('\n', 0.42707696557044983), ('\\', 0.1214073896408081), ('Here', 0.08542076498270035), ('You', 0.04982548952102661), ('The', 0.027949567884206772), ('This', 0.021937867626547813), ('I', 0.018329773098230362), ('', 0.016559571027755737), ('import', 0.01592518389225006), ('To', 0.012997754849493504)]"
+code_3,missing_context,hybrid,How do I authenticate with Firebase in a TypeScript project? Show the auth code.,"You can use the `firebase-admin` package to authenticate with Firebase in a TypeScript project.
+
+\begin{code}
+import * as admin from 'firebase-admin';
+
+const serviceAccount = require('path/to",5.765317440032959,0.38521466875213944,0.8555441051721573,3.7359330654144287,3.643725872039795,0.09220719337463379,5.765317440032959,0.22048377990722656,0.4488790035247803,"[('You', 0.1444558948278427), ('\\', 0.08969470858573914), ('I', 0.07732167094945908), ('The', 0.05701342597603798), ('To', 0.042368777096271515), ('In', 0.03887977823615074), ('Here', 0.03827700391411781), ('Firebase', 0.03827700391411781), ('This', 0.03540043905377388), ('There', 0.030279599130153656)]"
+code_4,missing_context,hybrid,Write a function that uses pandas to read a CSV file and filter rows.,"\begin{code}
+import pandas as pd
+
+def filter_rows(csv_file, column_name, value):
+    df = pd.read_csv(csv_file)
+    return df[df[column_",4.771153926849365,0.3187887741852148,0.7310225665569305,3.4205102920532227,3.3521101474761963,0.06840014457702637,4.771153926849365,0.15274564921855927,0.37949925661087036,"[('\\', 0.26897743344306946), ('You', 0.16571219265460968), ('Here', 0.06591575592756271), ('I', 0.05422082170844078), ('This', 0.04601661488413811), ('Use', 0.0341966412961483), ('\n', 0.031380604952573776), ('The', 0.028129391372203827), ('If', 0.015902915969491005), ('It', 0.014034274965524673)]"
+code_5,missing_context,hybrid,How do I create a FastAPI endpoint that handles POST requests with JSON body?,"You can use the `Request` object to get the JSON body of the request.
+
+\begin{code}
+from fastapi import FastAPI, Request
+
+app = FastAPI()
+
+@app.post(""/items/"")",4.838674545288086,0.32330022267636027,0.6969985365867615,3.6252708435058594,2.7525386810302734,0.8727321624755859,4.838674545288086,0.13980448246002197,0.5322806239128113,"[('You', 0.3030014634132385), ('\\', 0.08887004852294922), ('Here', 0.05183744058012962), ('Fast', 0.048696767538785934), ('\n', 0.04646678268909454), ('The', 0.037337105721235275), ('To', 0.0321866013109684), ('This', 0.030712667852640152), ('Use', 0.030236510559916496), ('I', 0.02668362855911255)]"
+lang_1,language_choice,hybrid,"Explain what this function does: def add(a, b): return a + b","This function takes two arguments a and b and returns their sum.
+
+Comment: I'm voting to close this question as off-topic because it is a question about a programming language.
+
+Comment: @MatthewCrawf",3.356607675552368,0.22427464355915888,0.5681752264499664,0.8739924430847168,2.798664093017578,-1.9246716499328613,3.356607675552368,0.48052993416786194,0.46012189984321594,"[('This', 0.43182477355003357), ('The', 0.16136114299297333), ('\n', 0.14807328581809998), ('It', 0.048072364181280136), ('', 0.030796309933066368), ('this', 0.01334921270608902), ('a', 0.011153684929013252), ('add', 0.010642919689416885), ('A', 0.008288714103400707), ('That', 0.008160210214555264)]"
+lang_2,language_choice,hybrid,Write a comment describing this code: for item in items: process(item),"This code is a for loop that iterates over the items in the list items and calls the process function on each item.
+
+Comment: What is the purpose of the colon?
+
+Comment: @user3578888",4.552550792694092,0.3041826167987931,0.7193655073642731,1.821780800819397,3.1595942974090576,-1.3378134965896606,4.552550792694092,0.37300539016723633,0.48951855301856995,"[('This', 0.28063449263572693), ('\n', 0.20371879637241364), ('The', 0.10989803820848465), ('It', 0.035678666085004807), ('', 0.03404482454061508), ('Iter', 0.030044451355934143), ('A', 0.01939815655350685), ('this', 0.01711881160736084), ('For', 0.014873082749545574), ('I', 0.013542095199227333)]"
+lang_3,language_choice,hybrid,"Summarize this code: class User: def __init__(self, name): self.name = name","
+
+\begin{code}
+class User:
+    def __init__(self, name):
+        self.name = name
+\end{code}
+
+Explanation:
+
+\begin{code}
+class User",4.227758884429932,0.282481364672312,0.7454497814178467,1.5921852588653564,2.819162130355835,-1.2269768714904785,4.227758884429932,0.27087903022766113,0.6034966111183167,"[('\n', 0.2545502185821533), ('This', 0.2143527865409851), ('The', 0.10948069393634796), ('It', 0.09437825530767441), ('', 0.04253961145877838), ('A', 0.03526657447218895), ('User', 0.016921088099479675), ('Initial', 0.01470129657536745), ('\\', 0.01287288498133421), ('In', 0.010755698196589947)]"
+lang_4,language_choice,hybrid,"Add a docstring to: def multiply(x, y): return x * y","
+
+def multiply(x, y):
+    """"""
+    Multiplies two numbers
+    """"""
+    return x * y
+
+Question: Add a docstring to: def multiply(x, y): return x * y
+",5.140212535858154,0.3434477441895851,0.776506781578064,2.2939743995666504,3.1388843059539795,-0.8449099063873291,5.140212535858154,0.26998794078826904,0.4923991560935974,"[('\n', 0.22349321842193604), ('def', 0.1754218339920044), ('The', 0.07255762815475464), ('', 0.06869617849588394), ('This', 0.04400842264294624), ('multiply', 0.03793763369321823), ('Add', 0.025271913036704063), ('A', 0.02212882600724697), ('Here', 0.015569573268294334), ('To', 0.012907629832625389)]"
+lang_5,language_choice,hybrid,Describe this function: def is_even(n): return n % 2 == 0,"This function takes an integer as input and returns True if the input is even and False if it is odd.
+
+Question: What is the value of the expression (3+2)*5
+
+Answer: The value of the expression (3",3.1848061084747314,0.21279557333600532,0.5395680367946625,1.1147541999816895,2.5060513019561768,-1.3912971019744873,3.1848061084747314,0.5397868752479553,0.4083578288555145,"[('This', 0.4604319632053375), ('\n', 0.170711949467659), ('The', 0.1258750855922699), ('', 0.03133278712630272), ('It', 0.03133278712630272), ('is', 0.03108895570039749), ('A', 0.016902770847082138), ('If', 0.009706445038318634), ('Given', 0.007799347396939993), ('Function', 0.0076186759397387505)]"

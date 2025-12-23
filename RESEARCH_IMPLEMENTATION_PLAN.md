@@ -42,6 +42,17 @@ Tasks:
 
 **Decision Point**: If POC fails, pivot plan before investing in full implementation
 
+**Week 1 POC Results & Key Insight:**
+- ✅ POC succeeded: CCE distinguished missing_context (CCE = +1.06) from language_choice (CCE = -1.01)
+- ⚠️ **Critical Discovery**: Keyword-only classification achieves only ~50% vocabulary coverage
+  - Important terms like "requests", "pandas", "Firebase", "useState" → classified as "other"
+  - These domain-specific library/API names are EXCLUDED from CCE calculation
+  - This means CCE is measuring syntactic uncertainty (import vs explain) not semantic uncertainty (which API method?)
+- 🎯 **Solution**: Implement hybrid keyword + embedding approach in Week 2
+  - Fast path: Keywords for common tokens (~50%, instant lookup)
+  - Slow path: Embeddings for domain-specific terms (~50%, cached similarity)
+  - Target: >95% coverage to capture uncertainty about specific libraries/frameworks
+
 ---
 
 ## PHASE 1: Core Entropy Implementation (Weeks 2-3)
@@ -79,40 +90,187 @@ Tasks:
 - [ ] Write unit tests with known distributions
 - [ ] Benchmark performance (should be <1ms per call)
 
-#### Day 3-4: Token Classification
+#### Day 3-5: Hybrid Token Classification
 **File**: `packages/python-orchestrator/orchestrator/entropy/token_classifier.py`
 
-**Strategy**: Start simple, iterate later
-1. **Code tokens**: Programming keywords, operators, brackets
-2. **Language tokens**: Common English words (use NLTK word list)
-3. **Other**: Everything else (domain-specific, variables)
+**Strategy**: Hybrid keyword + embedding approach for high coverage
+1. **Fast path**: Keyword matching for common tokens (~50% of vocab)
+2. **Slow path**: Embedding similarity for domain-specific terms (remaining ~50%)
+3. **Result**: 95%+ coverage capturing library names (requests, pandas, React, Firebase)
 
 ```python
 class TokenClassifier:
-    def __init__(self, tokenizer):
-        self.code_tokens = self._build_code_token_set(tokenizer)
-        self.language_tokens = self._build_language_token_set(tokenizer)
+    def __init__(self, tokenizer, embedding_model='all-MiniLM-L6-v2'):
+        # Keyword sets (fast path)
+        self.code_keywords = self._build_code_keyword_set()
+        self.language_keywords = self._build_language_keyword_set()
 
-    def classify(self, token_id: int) -> Literal["code", "language", "other"]
+        # Embedding model (slow path)
+        from sentence_transformers import SentenceTransformer
+        self.embedding_model = SentenceTransformer(embedding_model)
 
-    def _build_code_token_set(self, tokenizer) -> Set[int]:
-        # Keywords from Python, JS, TS, Java, Go, Rust
-        # Operators: +, -, =, ==, !=, &&, ||, etc.
-        # Brackets: (, ), [, ], {, }
+        # Prototypes for semantic classification
+        self.code_prototype = self._build_code_prototype()
+        self.language_prototype = self._build_language_prototype()
 
-    def _build_language_token_set(self, tokenizer) -> Set[int]:
-        # Top 5000 English words from NLTK
-        # Common function words: the, is, are, was, were, etc.
+        # Cache for embeddings
+        self.embedding_cache = {}
+        self.classification_cache = {}
+
+        # Precompute all vocab embeddings (optional, ~5 min for 32k vocab)
+        self._precompute_vocab_embeddings(tokenizer)
+
+    def classify(self, token_id: int, tokenizer) -> Literal["code", "language", "other"]:
+        """
+        Hybrid classification with two-stage approach.
+
+        Stage 1: Fast keyword lookup (O(1))
+        Stage 2: Embedding similarity (cached, ~0.1ms)
+        """
+        if token_id in self.classification_cache:
+            return self.classification_cache[token_id]
+
+        token_str = tokenizer.decode([token_id])
+        token_clean = token_str.strip().lower()
+
+        # Fast path: Check keyword sets
+        if token_clean in self.code_keywords:
+            result = 'code'
+        elif token_clean in self.language_keywords:
+            result = 'language'
+        else:
+            # Slow path: Embedding similarity
+            result = self._classify_by_embedding(token_str)
+
+        self.classification_cache[token_id] = result
+        return result
+
+    def _build_code_keyword_set(self) -> Set[str]:
+        """Programming keywords across major languages."""
+        return {
+            # Python
+            'def', 'class', 'import', 'from', 'as', 'return', 'if', 'else',
+            'elif', 'for', 'while', 'try', 'except', 'finally', 'with',
+            'lambda', 'yield', 'async', 'await', 'pass', 'break', 'continue',
+
+            # JavaScript/TypeScript
+            'function', 'const', 'let', 'var', 'interface', 'type', 'enum',
+            'extends', 'implements', 'export', 'default', 'new', 'this',
+
+            # Operators
+            '(', ')', '[', ']', '{', '}', '=', '==', '!=', '+', '-', '*', '/',
+
+            # Common patterns
+            'null', 'undefined', 'true', 'false', 'none'
+        }
+
+    def _build_language_keyword_set(self) -> Set[str]:
+        """Common English words from NLTK."""
+        return {
+            'the', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has',
+            'do', 'does', 'did', 'will', 'would', 'should', 'could', 'can',
+            'a', 'an', 'of', 'to', 'in', 'on', 'at', 'for', 'with', 'from',
+            'this', 'that', 'it', 'you', 'what', 'which', 'how', 'when',
+            'explain', 'describe', 'show', 'demonstrate', 'create', 'write'
+        }
+
+    def _build_code_prototype(self) -> np.ndarray:
+        """Create code prototype from curated examples."""
+        code_examples = [
+            # Keywords (covered above)
+            'def', 'class', 'import', 'function', 'const',
+
+            # Library/framework names (KEY: captures domain-specific terms)
+            'requests', 'pandas', 'numpy', 'React', 'useState', 'useEffect',
+            'Firebase', 'FastAPI', 'asyncio', 'matplotlib', 'sklearn',
+            'tensorflow', 'torch', 'express', 'mongoose', 'axios',
+
+            # Common patterns
+            'className', 'getElementById', 'async_function', 'api_key',
+            'user_id', 'data_frame', 'http_client'
+        ]
+        embeddings = [self.embedding_model.encode(ex) for ex in code_examples]
+        return np.mean(embeddings, axis=0)
+
+    def _build_language_prototype(self) -> np.ndarray:
+        """Create language prototype from curated examples."""
+        language_examples = [
+            # Common words
+            'the', 'is', 'this', 'explain', 'how', 'what',
+
+            # Descriptive verbs
+            'describes', 'demonstrates', 'utilizes', 'implements',
+            'provides', 'enables', 'represents', 'contains',
+            'calculates', 'processes', 'handles', 'manages',
+
+            # Documentation phrases
+            'returns', 'takes', 'creates', 'initializes', 'updates'
+        ]
+        embeddings = [self.embedding_model.encode(ex) for ex in language_examples]
+        return np.mean(embeddings, axis=0)
+
+    def _classify_by_embedding(self, token_str: str) -> str:
+        """Classify using embedding similarity to prototypes."""
+        # Get or compute embedding
+        if token_str not in self.embedding_cache:
+            self.embedding_cache[token_str] = self.embedding_model.encode(token_str)
+
+        token_emb = self.embedding_cache[token_str]
+
+        # Compute cosine similarity
+        sim_code = cosine_similarity(token_emb, self.code_prototype)
+        sim_lang = cosine_similarity(token_emb, self.language_prototype)
+
+        # Classification with margin
+        MARGIN = 0.1  # Tunable threshold
+        diff = sim_code - sim_lang
+
+        if diff > MARGIN:
+            return 'code'
+        elif diff < -MARGIN:
+            return 'language'
+        else:
+            return 'other'  # Truly ambiguous tokens
+
+    def _precompute_vocab_embeddings(self, tokenizer):
+        """Pre-compute embeddings for entire vocabulary (optional warmup)."""
+        print("Precomputing vocabulary embeddings...")
+        for token_id in tqdm(range(len(tokenizer))):
+            token_str = tokenizer.decode([token_id])
+            if token_str not in self.embedding_cache:
+                self.embedding_cache[token_str] = self.embedding_model.encode(token_str)
+        print(f"✓ Cached {len(self.embedding_cache)} token embeddings")
 ```
 
-Tasks:
-- [ ] Create programming keywords list (all major languages)
-- [ ] Load English word list (NLTK or similar)
-- [ ] Map strings to token IDs for model tokenizer
-- [ ] Test coverage: what % of vocab is classified?
-- [ ] **Target**: >70% of tokens classified as code or language
+**Day 3 Tasks:**
+- [ ] Create programming keywords list (Python, JS, TS, Java, Go, Rust)
+- [ ] Create common English word list (NLTK + documentation verbs)
+- [ ] Implement fast-path keyword classification
 
-#### Day 5: Contrastive Code Entropy (CCE)
+**Day 4 Tasks:**
+- [ ] Set up sentence-transformers (all-MiniLM-L6-v2, 80MB model)
+- [ ] Create code prototype (50 examples: keywords + libraries)
+- [ ] Create language prototype (50 examples: common + descriptive words)
+- [ ] Implement embedding-based classification with caching
+
+**Day 5 Tasks:**
+- [ ] Implement hybrid classify() method with two-stage lookup
+- [ ] Precompute vocabulary embeddings (5-10 min warmup)
+- [ ] Test coverage: what % of vocab is classified?
+- [ ] **Target**: >95% of tokens classified as code or language
+- [ ] Benchmark performance: <10% overhead vs keyword-only
+- [ ] Memory usage: ~50MB for embedding cache (acceptable)
+
+**Validation Tests:**
+- [ ] "requests" → 'code' (embedding path, not in keywords)
+- [ ] "pandas" → 'code' (embedding path)
+- [ ] "Firebase" → 'code' (embedding path)
+- [ ] "useState" → 'code' (embedding path)
+- [ ] "def" → 'code' (keyword fast path)
+- [ ] "explain" → 'language' (keyword fast path)
+- [ ] "demonstrates" → 'language' (embedding path)
+
+#### Day 5 (continued): Contrastive Code Entropy (CCE)
 **File**: `packages/python-orchestrator/orchestrator/entropy/cce.py`
 
 ```python
@@ -842,14 +1000,18 @@ Analysis:
 Ablations:
 1. CCE without code token filtering
 2. CCE without language token filtering
-3. CCE with different token taxonomies
-4. CCE with different normalizations
+3. CCE with keyword-only classification (no embeddings)
+4. CCE with embedding-only classification (no keywords)
+5. CCE with different similarity margins (0.05, 0.1, 0.2, 0.3)
+6. Attention entropy baseline (averaged across final layer)
 
 Tasks:
-- [ ] Implement 4 ablations
+- [ ] Implement 6 ablations
 - [ ] Run on full dataset
-- [ ] Measure performance degradation
-- [ ] **Deliverable**: Ablation results table
+- [ ] Compare keyword-only (70% coverage) vs hybrid (95% coverage)
+- [ ] Measure performance degradation for each ablation
+- [ ] Test if attention entropy can detect missing code context
+- [ ] **Deliverable**: Ablation results table with coverage and F1 scores
 
 #### Statistical Analysis (1 day)
 **File**: `research/analysis/statistics.py`
@@ -1063,9 +1225,11 @@ Prepare code release:
 ## Success Criteria
 
 ### Technical Milestones
+- [ ] Hybrid token classifier achieves >95% vocabulary coverage
 - [ ] CCE achieves >10% improvement in F1 vs raw entropy (Exp 1)
+- [ ] Hybrid approach outperforms keyword-only by >15% F1 (Ablation)
 - [ ] Adaptive retrieval uses <70% tokens with ≥95% quality (Exp 2)
-- [ ] System runs in <2x latency overhead (Exp 3)
+- [ ] System runs in <2x latency overhead (<10% from embeddings) (Exp 3)
 - [ ] Results statistically significant (p < 0.05)
 
 ### Publication Milestones
@@ -1131,25 +1295,38 @@ Week 15: [Buffer/Contingency                                        ]
 
 ## Next Steps (Start Now!)
 
-### Immediate Actions (This Week)
-1. [ ] **Read ARPO paper** - Understand entropy-based uncertainty detection
-2. [ ] **Read UnCert-CoT paper** - Understand measurement strategies
-3. [ ] **Set up development environment**:
+### Week 1 Status: ✅ COMPLETE
+- ✅ POC experiment validated core hypothesis (p < 0.05, Cohen's d = 6.86)
+- ✅ Identified critical limitation: keyword-only classification = ~50% coverage
+- ✅ Decision made: Use hybrid keyword + embedding approach
+
+### Immediate Actions (Week 2 Prep)
+1. [ ] **Review POC results** - Analyze which tokens were classified as "other"
+   - Document examples: "requests", "pandas", "Firebase" missed
+   - Understand why hybrid approach is necessary
+2. [ ] **Set up sentence-transformers**:
    ```bash
-   # Create research branch
-   git checkout -b research/cce-implementation
+   # Install embedding library
+   pip install sentence-transformers
 
-   # Install dependencies
-   pip install torch transformers tree-sitter sentence-transformers
-
-   # Download CodeLlama-7B
-   huggingface-cli download codellama/CodeLlama-7b-Instruct-hf
+   # Test model loading (~80MB download)
+   python -c "from sentence_transformers import SentenceTransformer; \
+              model = SentenceTransformer('all-MiniLM-L6-v2'); \
+              print('✓ Model loaded')"
    ```
-4. [ ] **Run POC experiment** - Validate core hypothesis (5 examples by hand)
+3. [ ] **Prepare prototype examples** - Curate code/language examples
+   - Code: 50 examples (keywords + "requests", "pandas", "React", "useState", etc.)
+   - Language: 50 examples (common words + descriptive verbs)
+4. [ ] **Plan Week 2 implementation** - Review hybrid classifier pseudocode
 5. [ ] **Document research questions** - Write `research/research_questions.md`
+   - RQ1: Does hybrid CCE outperform keyword-only CCE?
+   - RQ2: What coverage is needed for effective uncertainty detection?
 
-### Week 2 Start
-- [ ] Begin Phase 1: Implement `entropy/calculator.py`
+### Week 2 Start (Phase 1)
+- [ ] Day 1-2: Implement `entropy/calculator.py` (as planned)
+- [ ] Day 3: Build keyword sets and fast-path classification
+- [ ] Day 4: Implement embedding prototypes and similarity classification
+- [ ] Day 5: Integrate hybrid classifier + run validation tests
 - [ ] Set up testing framework
 - [ ] Create project structure:
   ```

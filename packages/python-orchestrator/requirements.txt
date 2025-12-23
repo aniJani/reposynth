@@ -43,3 +43,6 @@ slowapi==0.1.9
 
 # Additional utilities
 python-multipart==0.0.6
+
+# Week 2: Entropy Calculation (Research - CCE)
+scipy==1.11.4
