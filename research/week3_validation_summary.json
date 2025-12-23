@@ -1,0 +1,20 @@
+{
+  "keyword_only": {
+    "missing_context_cce_mean": 0.5297780990600586,
+    "language_choice_cce_mean": -1.435502290725708,
+    "coverage": 0.18750163018703458
+  },
+  "hybrid": {
+    "missing_context_cce_mean": 3.464544343948364,
+    "language_choice_cce_mean": 2.8009724617004395,
+    "difference": 0.6635718822479246,
+    "t_statistic": 0.6390549830239141,
+    "p_value": 0.5406486006623428,
+    "cohens_d": 0.4518801120472636,
+    "hypothesis_supported": false,
+    "coverage": 0.9470726191997528
+  },
+  "improvement": {
+    "coverage_gain": 0.7595709890127182
+  }
+}
