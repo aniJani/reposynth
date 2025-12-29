@@ -1,0 +1,24 @@
+id,prompt,expected_type,description,probe_score,cce,h_code,h_lang,h_total,code_prob_mass,lang_prob_mass,uncertainty_type
+code_unc_1,import,code_uncertainty,Uncertain which module to import (pandas? numpy? requests?),0.9376273541229697,-3.4072265625,1.8115234375,5.21875,5.2109375,0.5986328125,0.269287109375,language
+code_unc_2,from sklearn import,code_uncertainty,Uncertain which sklearn module (tree? svm? linear_model?),0.5302425371754207,-1.5048828125,1.5869140625,3.091796875,3.337890625,0.01139068603515625,0.97802734375,language
+code_unc_3,"def process_data(df):
+    df.",code_uncertainty,Uncertain which pandas method (head? groupby? merge?),0.8354420826737332,-1.119140625,2.1796875,3.298828125,4.203125,0.00785064697265625,0.9248046875,language
+code_unc_4,"const [state, setState] = use",code_uncertainty,Uncertain which React hook (useState? useEffect? useRef?),0.6935979470820435,-3.456787109375,0.332275390625,3.7890625,0.529296875,0.98828125,0.00348663330078125,language
+code_unc_5,"async function fetch_data() {
+    await",code_uncertainty,Uncertain which async operation (fetch? axios? Promise?),0.9665521857414019,0.548828125,3.23046875,2.681640625,4.00390625,0.0455322265625,0.8740234375,code
+code_unc_6,model = tf.keras.,code_uncertainty,Uncertain which Keras class (Sequential? Model? layers?),0.7845699984160466,-0.6322021484375,0.1334228515625,0.765625,1.412109375,0.21826171875,0.77978515625,language
+code_unc_7,"app = FastAPI()
+@app.",code_uncertainty,Uncertain which FastAPI decorator (get? post? put?),0.6960499209703017,-1.8818359375,-0.0,1.8818359375,1.947265625,6.395578384399414e-05,0.99658203125,language
+code_unc_8,SELECT * FROM users WHERE,code_uncertainty,Uncertain which SQL condition (id=? name=? age>?),0.6491928437569643,-1.44140625,2.419921875,3.861328125,5.109375,0.0297698974609375,0.875,language
+code_unc_9,git,code_uncertainty,Uncertain which git command (commit? push? pull? clone?),0.6518258413982816,0.546875,4.54296875,3.99609375,11.171875,0.10528564453125,0.2476806640625,code
+code_unc_10,docker run -,code_uncertainty,Uncertain which docker flag (-p? -v? -d? -it?),0.9236439751175499,-0.3984375,2.71875,3.1171875,3.49609375,0.0011157989501953125,0.974609375,language
+lang_unc_1,This function,language_uncertainty,Uncertain which verb (performs? calculates? returns? processes?),0.9669491781959951,-3.0751953125,1.7998046875,4.875,6.53125,0.015716552734375,0.80029296875,language
+lang_unc_2,The algorithm is,language_uncertainty,Uncertain which adjective (efficient? recursive? complex? optimal?),0.9138397719154298,-4.0576171875,1.4384765625,5.49609375,7.671875,0.054443359375,0.6748046875,language
+lang_unc_3,Code quality can be,language_uncertainty,Uncertain which verb (improved? measured? maintained? assessed?),0.6730787171706737,-5.59765625,-0.0,5.59765625,8.5234375,0.00689697265625,0.5859375,language
+lang_unc_4,Explain what this code,language_uncertainty,Uncertain which verb (does? achieves? demonstrates? performs?),0.7844002367594435,1.462890625,3.65234375,2.189453125,2.64453125,0.0074005126953125,0.96630859375,code
+lang_unc_5,The main advantage of async programming is,language_uncertainty,Uncertain which benefit (performance? scalability? responsiveness?),0.07652355362273754,0.369140625,2.8515625,2.482421875,3.39453125,0.02545166015625,0.91845703125,code
+lang_unc_6,TypeScript provides better,language_uncertainty,Uncertain which improvement (type safety? tooling? developer experience?),0.46236420568825687,-3.0751953125,1.7138671875,4.7890625,7.5,0.04034423828125,0.6669921875,language
+lang_unc_7,Recursion is useful when,language_uncertainty,Uncertain which scenario (solving? processing? traversing?),0.6187694906790587,-1.861328125,1.53515625,3.396484375,4.78125,0.0177154541015625,0.87451171875,language
+lang_unc_8,REST APIs are designed to,language_uncertainty,Uncertain which purpose (provide? enable? facilitate?),0.6221737602765658,-3.7392578125,1.5068359375,5.24609375,7.4140625,0.00646209716796875,0.71826171875,language
+lang_unc_9,The difference between let and const is,language_uncertainty,Uncertain which explanation (that? their? const?),0.19192947000520605,-0.666015625,2.78125,3.447265625,4.5625,0.053497314453125,0.873046875,language
+lang_unc_10,Unit tests help,language_uncertainty,Uncertain which benefit (ensure? verify? catch? improve?),0.5386078859913819,0.54296875,3.15625,2.61328125,4.00390625,0.0257720947265625,0.88623046875,code
