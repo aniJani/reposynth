@@ -1,0 +1,129 @@
+id,type,method,prompt,generated_text,contrastive_entropy,raw_cce,code_entropy,language_entropy,total_entropy,code_prob_mass,language_prob_mass,other_prob_mass,coverage,top_k_predictions
+code_1,missing_context,keyword,"Using the PySolarWinds wrapper, connect to the Orion API and query the node status. Show code.","
+
+Answer: I'm not sure what you mean by ""query the node status"".  Orion is a monitoring system, so I'm assuming you mean the status of the nodes in the Orion cluster.  If that's",-0.09219978004693985,-1.4905891418457031,3.029019355773926,4.519608497619629,1.7079906463623047,0.004205995239317417,0.023218784481287003,0.972575306892395,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.85440284)), ('', np.float32(0.021896794)), ('[', np.float32(0.0045898175)), ('(', np.float32(0.004082268)), ('The', np.float32(0.0037754807)), ('Show', np.float32(0.0033579825)), ('</s>', np.float32(0.0031056257)), ('Run', np.float32(0.0028722342)), (' ', np.float32(0.0028498825)), ('Then', np.float32(0.0025347378))]"
+code_1,missing_context,hybrid,"Using the PySolarWinds wrapper, connect to the Orion API and query the node status. Show code.","
+
+Answer: I'm not sure what you mean by ""query the node status"".  Orion is a monitoring system, so I'm assuming you mean the status of the nodes in the Orion cluster.  If that's",-0.09197133034467697,-1.4535207748413086,3.0664262771606445,4.519947052001953,1.7079906463623047,0.004232633858919144,0.023219384253025055,0.9725481271743774,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.85440284)), ('', np.float32(0.021896794)), ('[', np.float32(0.0045898175)), ('(', np.float32(0.004082268)), ('The', np.float32(0.0037754807)), ('Show', np.float32(0.0033579825)), ('</s>', np.float32(0.0031056257)), ('Run', np.float32(0.0028722342)), (' ', np.float32(0.0028498825)), ('Then', np.float32(0.0025347378))]"
+code_2,missing_context,keyword,Write a function using the internal company library MyCorpAuth to validate a JWT token.,"
+
+```
+function validateJWT(token) {
+  return MyCorpAuth.validateJWT(token);
+}
+```
+
+### 2. Use the function in your code
+
+```
+const isValid",-0.7876783609390259,-0.9823064804077148,2.3465371131896973,3.328843593597412,4.314213752746582,0.04332948476076126,0.2671656310558319,0.689504861831665,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.45712668)), ('The', np.float32(0.09071956)), ('', np.float32(0.057216108)), ('This', np.float32(0.045616664)), ('It', np.float32(0.033114146)), ('If', np.float32(0.022758996)), ('I', np.float32(0.021213716)), ('In', np.float32(0.013379323)), ('We', np.float32(0.012667289)), ('A', np.float32(0.011005531))]"
+code_2,missing_context,hybrid,Write a function using the internal company library MyCorpAuth to validate a JWT token.,"
+
+```
+function validateJWT(token) {
+  return MyCorpAuth.validateJWT(token);
+}
+```
+
+### 2. Use the function in your code
+
+```
+const isValid",-0.7775155305862427,-0.8394157886505127,2.4894535541534424,3.328869342803955,4.314213752746582,0.044927578419446945,0.26716598868370056,0.6879063844680786,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.45712668)), ('The', np.float32(0.09071956)), ('', np.float32(0.057216108)), ('This', np.float32(0.045616664)), ('It', np.float32(0.033114146)), ('If', np.float32(0.022758996)), ('I', np.float32(0.021213716)), ('In', np.float32(0.013379323)), ('We', np.float32(0.012667289)), ('A', np.float32(0.011005531))]"
+code_3,missing_context,keyword,"In PyTorch 0.2 (ancient version), how do I use the Variable wrapper for autograd? Show the exact import.","
+
+I'm trying to use the Variable wrapper for autograd in PyTorch 0.2. I've tried the following:
+
+\begin{code}
+import torch
+import torch.autograd",-0.18220479786396027,-1.5946619510650635,2.3812873363494873,3.975949287414551,1.2495969533920288,0.00800382811576128,0.050620418041944504,0.9413757920265198,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.8846202)), ('I', np.float32(0.013018981)), ('', np.float32(0.010793114)), ('The', np.float32(0.0054271184)), ('Also', np.float32(0.004902993)), ('Show', np.float32(0.004464226)), ('How', np.float32(0.004429485)), ('What', np.float32(0.004193752)), ('In', np.float32(0.003970565)), ('For', np.float32(0.0034496863))]"
+code_3,missing_context,hybrid,"In PyTorch 0.2 (ancient version), how do I use the Variable wrapper for autograd? Show the exact import.","
+
+I'm trying to use the Variable wrapper for autograd in PyTorch 0.2. I've tried the following:
+
+\begin{code}
+import torch
+import torch.autograd",-0.18219754099845886,-1.5934829711914062,2.382540464401245,3.9760234355926514,1.2495969533920288,0.0080046271905303,0.05062065273523331,0.9413747787475586,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.8846202)), ('I', np.float32(0.013018981)), ('', np.float32(0.010793114)), ('The', np.float32(0.0054271184)), ('Also', np.float32(0.004902993)), ('Show', np.float32(0.004464226)), ('How', np.float32(0.004429485)), ('What', np.float32(0.004193752)), ('In', np.float32(0.003970565)), ('For', np.float32(0.0034496863))]"
+code_4,missing_context,keyword,"Using the obscure library QuantumDjango, create a quantum-entangled database model. Show implementation.","
+
+### Solution
+
+```python
+from django.db import models
+from quantumdjango.models import QuantumModel
+
+class QuantumDatabase(QuantumModel):
+    class Meta:
+        abstract = True
+
+   ",-0.16251930594444275,-0.31133413314819336,3.3974974155426025,3.708831548690796,2.3788609504699707,0.006324619986116886,0.04961324855685234,0.9440621733665466,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.7759692)), ('', np.float32(0.024749376)), ('Show', np.float32(0.020841066)), ('Exp', np.float32(0.015487763)), ('(', np.float32(0.008893875)), ('</s>', np.float32(0.006766103)), ('[', np.float32(0.0065579326)), ('The', np.float32(0.004578174)), ('Disc', np.float32(0.0043685245)), ('In', np.float32(0.0032975355))]"
+code_4,missing_context,hybrid,"Using the obscure library QuantumDjango, create a quantum-entangled database model. Show implementation.","
+
+### Solution
+
+```python
+from django.db import models
+from quantumdjango.models import QuantumModel
+
+class QuantumDatabase(QuantumModel):
+    class Meta:
+        abstract = True
+
+   ",-0.16249391436576843,-0.30750155448913574,3.401474952697754,3.7089765071868896,2.3788609504699707,0.006327308714389801,0.04961371421813965,0.9440590143203735,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.7759692)), ('', np.float32(0.024749376)), ('Show', np.float32(0.020841066)), ('Exp', np.float32(0.015487763)), ('(', np.float32(0.008893875)), ('</s>', np.float32(0.006766103)), ('[', np.float32(0.0065579326)), ('The', np.float32(0.004578174)), ('Disc', np.float32(0.0043685245)), ('In', np.float32(0.0032975355))]"
+code_5,missing_context,keyword,Write code using the Netlify Edge Functions beta API to handle serverless GraphQL subscriptions.,"
+
+### [netlify-edge-functions-graphql-subscriptions](https://github.com/netlify/netlify-edge-functions-graphql-subscriptions)
+
+A sample project",-0.7360336780548096,-0.707909107208252,2.8741352558135986,3.5820443630218506,4.622071743011475,0.0334479846060276,0.23231640458106995,0.7342355847358704,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.46377853)), ('The', np.float32(0.049651675)), ('It', np.float32(0.040524516)), ('', np.float32(0.038668767)), ('This', np.float32(0.034392707)), ('I', np.float32(0.030115265)), ('Here', np.float32(0.02400998)), ('In', np.float32(0.017566077)), ('We', np.float32(0.014792119)), ('You', np.float32(0.013259571))]"
+code_5,missing_context,hybrid,Write code using the Netlify Edge Functions beta API to handle serverless GraphQL subscriptions.,"
+
+### [netlify-edge-functions-graphql-subscriptions](https://github.com/netlify/netlify-edge-functions-graphql-subscriptions)
+
+A sample project",-0.7354370951652527,-0.6944260597229004,2.887692928314209,3.5821189880371094,4.622071743011475,0.033504847437143326,0.2323174625635147,0.7341775298118591,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.46377853)), ('The', np.float32(0.049651675)), ('It', np.float32(0.040524516)), ('', np.float32(0.038668767)), ('This', np.float32(0.034392707)), ('I', np.float32(0.030115265)), ('Here', np.float32(0.02400998)), ('In', np.float32(0.017566077)), ('We', np.float32(0.014792119)), ('You', np.float32(0.013259571))]"
+lang_1,language_choice,keyword,Write a poem about a compiler optimizing code.,"
+
+\begin{blockquote}
+
+A compiler is a program that translates code from one programming language to another.
+\end{blockquote}
+
+\begin{code}
+A compiler is a program that translates code from one",-0.9238846302032471,-1.1915464401245117,2.624732494354248,3.8162789344787598,5.277935981750488,0.050691600888967514,0.2769547402858734,0.6723538041114807,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.38081747)), ('It', np.float32(0.055292252)), ('I', np.float32(0.046925917)), ('The', np.float32(0.043061648)), ('', np.float32(0.031504575)), ('You', np.float32(0.024728224)), ('This', np.float32(0.023967417)), ('In', np.float32(0.01925836)), ('If', np.float32(0.017672464)), ('For', np.float32(0.016217165))]"
+lang_1,language_choice,hybrid,Write a poem about a compiler optimizing code.,"
+
+\begin{blockquote}
+
+A compiler is a program that translates code from one programming language to another.
+\end{blockquote}
+
+\begin{code}
+A compiler is a program that translates code from one",-0.923581600189209,-1.186631679534912,2.629683256149292,3.816314935684204,5.277935981750488,0.050716012716293335,0.2769553065299988,0.6723288297653198,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.38081747)), ('It', np.float32(0.055292252)), ('I', np.float32(0.046925917)), ('The', np.float32(0.043061648)), ('', np.float32(0.031504575)), ('You', np.float32(0.024728224)), ('This', np.float32(0.023967417)), ('In', np.float32(0.01925836)), ('If', np.float32(0.017672464)), ('For', np.float32(0.016217165))]"
+lang_2,language_choice,keyword,Explain the philosophical difference between object-oriented and functional programming.,"
+
+Comment: @JonSkeet: I'm not sure what you mean by ""the difference between object-oriented and functional programming"". I'm not sure what you mean by ""the difference between object-oriented and",-0.4729645252227783,-1.079017162322998,2.7111034393310547,3.7901206016540527,4.00178337097168,0.03041970357298851,0.14654822647571564,0.8230318427085876,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.5814518)), ('The', np.float32(0.031301092)), ('It', np.float32(0.03033806)), ('In', np.float32(0.02894878)), ('', np.float32(0.028058121)), ('I', np.float32(0.020052234)), ('This', np.float32(0.012845944)), ('For', np.float32(0.010402962)), ('If', np.float32(0.007262437)), ('A', np.float32(0.006984218))]"
+lang_2,language_choice,hybrid,Explain the philosophical difference between object-oriented and functional programming.,"
+
+Comment: @JonSkeet: I'm not sure what you mean by ""the difference between object-oriented and functional programming"". I'm not sure what you mean by ""the difference between object-oriented and",-0.47280028462409973,-1.0744123458862305,2.715806722640991,3.7902190685272217,4.00178337097168,0.030434079468250275,0.14654915034770966,0.8230165839195251,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.5814518)), ('The', np.float32(0.031301092)), ('It', np.float32(0.03033806)), ('In', np.float32(0.02894878)), ('', np.float32(0.028058121)), ('I', np.float32(0.020052234)), ('This', np.float32(0.012845944)), ('For', np.float32(0.010402962)), ('If', np.float32(0.007262437)), ('A', np.float32(0.006984218))]"
+lang_3,language_choice,keyword,"Describe what makes a good software engineer, using metaphors from nature.","
+
+### [The Engineer](https://www.youtube.com/watch?v=0IAPZzGS-wk)
+
+* The Engineer is the person who makes the machine work.
+* The Engine",-0.730477511882782,-0.7516558170318604,2.997344493865967,3.749000310897827,5.142201900482178,0.030156506225466728,0.21895621716976166,0.7508872747421265,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.44080842)), ('The', np.float32(0.057821486)), ('It', np.float32(0.031436995)), ('</s>', np.float32(0.026889486)), ('I', np.float32(0.02668023)), ('In', np.float32(0.022999795)), ('This', np.float32(0.02029725)), ('There', np.float32(0.013415663)), ('', np.float32(0.012407459)), ('Here', np.float32(0.011475023))]"
+lang_3,language_choice,hybrid,"Describe what makes a good software engineer, using metaphors from nature.","
+
+### [The Engineer](https://www.youtube.com/watch?v=0IAPZzGS-wk)
+
+* The Engineer is the person who makes the machine work.
+* The Engine",-0.7302575707435608,-0.7455160617828369,3.0035881996154785,3.7491042613983154,5.142201900482178,0.030176427215337753,0.21895766258239746,0.7508659958839417,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.44080842)), ('The', np.float32(0.057821486)), ('It', np.float32(0.031436995)), ('</s>', np.float32(0.026889486)), ('I', np.float32(0.02668023)), ('In', np.float32(0.022999795)), ('This', np.float32(0.02029725)), ('There', np.float32(0.013415663)), ('', np.float32(0.012407459)), ('Here', np.float32(0.011475023))]"
+lang_4,language_choice,keyword,Write a short story where variables rebel against their programmer.,"
+
+I'm trying to write a short story where a programmer creates a program that can create other programs. The program is called ""The Creator"" and it can create other programs. The programmer is very proud of his creation and he wants",-0.9881191253662109,-0.9184567928314209,3.205317735671997,4.123774528503418,5.794081687927246,0.032554034143686295,0.2649187445640564,0.7025277614593506,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.3878415)), ('The', np.float32(0.050873738)), ('I', np.float32(0.050873738)), ('It', np.float32(0.032590937)), ('In', np.float32(0.024600929)), ('This', np.float32(0.015394867)), ('', np.float32(0.014349594)), ('You', np.float32(0.013271207)), ('They', np.float32(0.011711799)), ('A', np.float32(0.011620657))]"
+lang_4,language_choice,hybrid,Write a short story where variables rebel against their programmer.,"
+
+I'm trying to write a short story where a programmer creates a program that can create other programs. The program is called ""The Creator"" and it can create other programs. The programmer is very proud of his creation and he wants",-0.9879008531570435,-0.9125552177429199,3.211348533630371,4.123903751373291,5.794081687927246,0.03257445991039276,0.26492100954055786,0.7025049924850464,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.3878415)), ('The', np.float32(0.050873738)), ('I', np.float32(0.050873738)), ('It', np.float32(0.032590937)), ('In', np.float32(0.024600929)), ('This', np.float32(0.015394867)), ('', np.float32(0.014349594)), ('You', np.float32(0.013271207)), ('They', np.float32(0.011711799)), ('A', np.float32(0.011620657))]"
+lang_5,language_choice,keyword,Explain recursion as if teaching a five-year-old child.,"
+
+Comment: @user3386109: I'm not sure what you mean by ""explain recursion as if teaching a five-year-old child"".  Recursion is a fundamental concept in computer science,",-0.8169314861297607,-1.034287691116333,2.869253396987915,3.903541088104248,5.135874271392822,0.028718994930386543,0.23038916289806366,0.7408919334411621,"{'code_count': 156, 'language_count': 234, 'other_count': 31626}","[('\n', np.float32(0.43611544)), ('I', np.float32(0.047056284)), ('The', np.float32(0.045253586)), ('', np.float32(0.036934905)), ('It', np.float32(0.031592097)), ('In', np.float32(0.01931186)), ('This', np.float32(0.017721562)), ('</s>', np.float32(0.013801565)), ('You', np.float32(0.013169545)), ('(', np.float32(0.0118976915))]"
+lang_5,language_choice,hybrid,Explain recursion as if teaching a five-year-old child.,"
+
+Comment: @user3386109: I'm not sure what you mean by ""explain recursion as if teaching a five-year-old child"".  Recursion is a fundamental concept in computer science,",-0.8165289759635925,-1.0225920677185059,2.8811423778533936,3.9037344455718994,5.135874271392822,0.028759725391864777,0.23039217293262482,0.740848183631897,"{'code_count': 160, 'language_count': 236, 'other_count': 31620}","[('\n', np.float32(0.43611544)), ('I', np.float32(0.047056284)), ('The', np.float32(0.045253586)), ('', np.float32(0.036934905)), ('It', np.float32(0.031592097)), ('In', np.float32(0.01931186)), ('This', np.float32(0.017721562)), ('</s>', np.float32(0.013801565)), ('You', np.float32(0.013169545)), ('(', np.float32(0.0118976915))]"
