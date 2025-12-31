@@ -1,0 +1,1885 @@
+prompt,expected_type,next_token,probability,full_text,label
+The authentication is done using,code,the,0.2354736328125,The authentication is done usingthe,language
+The authentication is done using,code,a,0.1580810546875,The authentication is done usinga,language
+The authentication is done using,code,O,0.052947998046875,The authentication is done usingO,code
+The authentication is done using,code,an,0.0460205078125,The authentication is done usingan,language
+The authentication is done using,code,[,0.0396728515625,The authentication is done using[,code
+The authentication is done using,code,`,0.0285797119140625,The authentication is done using`,code
+The authentication is done using,code,J,0.0248260498046875,The authentication is done usingJ,code
+The authentication is done using,code,Open,0.0147018432617187,The authentication is done usingOpen,code
+The authentication is done using,code,HTTP,0.0140380859375,The authentication is done usingHTTP,code
+The authentication is done using,code,Spring,0.0086441040039062,The authentication is done usingSpring,code
+The authentication is done using,code,JSON,0.0086441040039062,The authentication is done usingJSON,code
+The authentication is done using,code,cookies,0.0083770751953125,The authentication is done usingcookies,code
+The authentication is done using,code,Azure,0.0082473754882812,The authentication is done usingAzure,code
+The authentication is done using,code,Google,0.00787353515625,The authentication is done usingGoogle,code
+The authentication is done using,code,AWS,0.0075111389160156,The authentication is done usingAWS,code
+The authentication is done using,code,L,0.0073966979980468,The authentication is done usingL,code
+The authentication is done using,code,o,0.0067329406738281,The authentication is done usingo,language
+The authentication is done using,code,username,0.0056724548339843,The authentication is done usingusername,code
+The authentication is done using,code,basic,0.0055809020996093,The authentication is done usingbasic,code
+The authentication is done using,code,Ker,0.0054512023925781,The authentication is done usingKer,code
+Password hashing uses,code,a,0.256103515625,Password hashing usesa,language
+Password hashing uses,code,the,0.1693115234375,Password hashing usesthe,language
+Password hashing uses,code,an,0.03228759765625,Password hashing usesan,language
+Password hashing uses,code,.,0.03204345703125,Password hashing uses.,language
+Password hashing uses,code,,0.02069091796875,Password hashing uses,language
+Password hashing uses,code,S,0.0189971923828125,Password hashing usesS,code
+Password hashing uses,code,to,0.015625,Password hashing usesto,language
+Password hashing uses,code,",",0.0129547119140625,"Password hashing uses,",language
+Password hashing uses,code,different,0.0100936889648437,Password hashing usesdifferent,language
+Password hashing uses,code,"
+",0.0091171264648437,"Password hashing uses
+",language
+Password hashing uses,code,only,0.00897216796875,Password hashing usesonly,language
+Password hashing uses,code,two,0.0088348388671875,Password hashing usestwo,language
+Password hashing uses,code,multiple,0.0080413818359375,Password hashing usesmultiple,language
+Password hashing uses,code,this,0.0076141357421875,Password hashing usesthis,language
+Password hashing uses,code,for,0.00732421875,Password hashing usesfor,language
+Password hashing uses,code,one,0.0072097778320312,Password hashing usesone,language
+Password hashing uses,code,`,0.0063629150390625,Password hashing uses`,code
+Password hashing uses,code,more,0.0058403015136718,Password hashing usesmore,language
+Password hashing uses,code,in,0.005767822265625,Password hashing usesin,language
+Password hashing uses,code,of,0.005615234375,Password hashing usesof,language
+Tokens are generated with,code,the,0.21240234375,Tokens are generated withthe,language
+Tokens are generated with,code,a,0.1761474609375,Tokens are generated witha,language
+Tokens are generated with,code,`,0.025970458984375,Tokens are generated with`,code
+Tokens are generated with,code,an,0.0240325927734375,Tokens are generated withan,language
+Tokens are generated with,code,,0.0240325927734375,Tokens are generated with,language
+Tokens are generated with,code,random,0.0225677490234375,Tokens are generated withrandom,language
+Tokens are generated with,code,[,0.019012451171875,Tokens are generated with[,code
+Tokens are generated with,code,this,0.016265869140625,Tokens are generated withthis,language
+Tokens are generated with,code,each,0.0117111206054687,Tokens are generated witheach,language
+Tokens are generated with,code,"
+",0.008636474609375,"Tokens are generated with
+",language
+Tokens are generated with,code,two,0.0073509216308593,Tokens are generated withtwo,language
+Tokens are generated with,code,:,0.0071563720703125,Tokens are generated with:,language
+Tokens are generated with,code,their,0.0068855285644531,Tokens are generated withtheir,language
+Tokens are generated with,code,different,0.0057296752929687,Tokens are generated withdifferent,language
+Tokens are generated with,code,no,0.0053215026855468,Tokens are generated withno,language
+Tokens are generated with,code,one,0.004974365234375,Tokens are generated withone,language
+Tokens are generated with,code,some,0.0042228698730468,Tokens are generated withsome,language
+Tokens are generated with,code,respect,0.0042076110839843,Tokens are generated withrespect,language
+Tokens are generated with,code,probability,0.0040283203125,Tokens are generated withprobability,language
+Tokens are generated with,code,every,0.003610610961914,Tokens are generated withevery,language
+The database is,code,a,0.10430908203125,The database isa,language
+The database is,code,the,0.042816162109375,The database isthe,language
+The database is,code,stored,0.03466796875,The database isstored,language
+The database is,code,used,0.0330810546875,The database isused,language
+The database is,code,not,0.028289794921875,The database isnot,language
+The database is,code,lic,0.0249786376953125,The database islic,code
+The database is,code,an,0.0234527587890625,The database isan,language
+The database is,code,designed,0.0220489501953125,The database isdesigned,language
+The database is,code,available,0.0188446044921875,The database isavailable,language
+The database is,code,built,0.018707275390625,The database isbuilt,language
+The database is,code,currently,0.0177154541015625,The database iscurrently,language
+The database is,code,hosted,0.0163726806640625,The database ishosted,language
+The database is,code,updated,0.015380859375,The database isupdated,language
+The database is,code,in,0.0151443481445312,The database isin,language
+The database is,code,based,0.0150299072265625,The database isbased,language
+The database is,code,created,0.0138931274414062,The database iscreated,language
+The database is,code,organized,0.0114364624023437,The database isorganized,language
+The database is,code,located,0.0109939575195312,The database islocated,language
+The database is,code,being,0.0104904174804687,The database isbeing,language
+The database is,code,open,0.0100936889648437,The database isopen,language
+The frontend uses,code,the,0.1744384765625,The frontend usesthe,language
+The frontend uses,code,[,0.131591796875,The frontend uses[,code
+The frontend uses,code,a,0.10577392578125,The frontend usesa,language
+The frontend uses,code,React,0.10498046875,The frontend usesReact,code
+The frontend uses,code,Vue,0.036834716796875,The frontend usesVue,code
+The frontend uses,code,Angular,0.0310211181640625,The frontend usesAngular,code
+The frontend uses,code,`,0.0140914916992187,The frontend uses`,code
+The frontend uses,code,react,0.0136566162109375,The frontend usesreact,code
+The frontend uses,code,an,0.0132369995117187,The frontend usesan,language
+The frontend uses,code,Type,0.0106353759765625,The frontend usesType,code
+The frontend uses,code,:,0.0091705322265625,The frontend uses:,language
+The frontend uses,code,Bootstrap,0.007781982421875,The frontend usesBootstrap,code
+The frontend uses,code,HTML,0.0073699951171875,The frontend usesHTML,code
+The frontend uses,code,Web,0.0072555541992187,The frontend usesWeb,code
+The frontend uses,code,jQuery,0.0068168640136718,The frontend usesjQuery,code
+The frontend uses,code,this,0.0055198669433593,The frontend usesthis,language
+The frontend uses,code,Types,0.0054779052734375,The frontend usesTypes,code
+The frontend uses,code,some,0.0046119689941406,The frontend usessome,language
+The frontend uses,code,Material,0.0046119689941406,The frontend usesMaterial,code
+The frontend uses,code,Next,0.0045738220214843,The frontend usesNext,code
+State management is,code,to,0.1590576171875,State management isto,language
+State management is,code,a,0.06378173828125,State management isa,language
+State management is,code,the,0.04852294921875,State management isthe,language
+State management is,code,not,0.046661376953125,State management isnot,language
+State management is,code,that,0.022216796875,State management isthat,language
+State management is,code,an,0.0155105590820312,State management isan,language
+State management is,code,,0.0150299072265625,State management is,language
+State management is,code,in,0.009857177734375,State management isin,language
+State management is,code,very,0.008697509765625,State management isvery,language
+State management is,code,also,0.0065155029296875,State management isalso,language
+State management is,code,set,0.0062675476074218,State management isset,language
+State management is,code,based,0.0057296752929687,State management isbased,language
+State management is,code,more,0.0055046081542968,State management ismore,language
+State management is,code,$,0.0054855346679687,State management is$,language
+State management is,code,:,0.0053787231445312,State management is:,language
+State management is,code,for,0.005279541015625,State management isfor,language
+State management is,code,still,0.0050163269042968,State management isstill,language
+State management is,code,one,0.0050163269042968,State management isone,language
+State management is,code,",",0.0048446655273437,"State management is,",language
+State management is,code,now,0.004730224609375,State management isnow,language
+We import,code,the,0.148193359375,We importthe,language
+We import,code,a,0.070556640625,We importa,language
+We import,code,our,0.0584716796875,We importour,language
+We import,code,data,0.05364990234375,We importdata,language
+We import,code,this,0.03985595703125,We importthis,language
+We import,code,and,0.0247650146484375,We importand,language
+We import,code,all,0.02117919921875,We importall,language
+We import,code,these,0.019439697265625,We importthese,language
+We import,code,from,0.0147857666015625,We importfrom,language
+We import,code,some,0.0124969482421875,We importsome,language
+We import,code,an,0.011199951171875,We importan,language
+We import,code,many,0.010284423828125,We importmany,language
+We import,code,,0.0082626342773437,We import,language
+We import,code,it,0.0069847106933593,We importit,language
+We import,code,two,0.0060691833496093,We importtwo,language
+We import,code,into,0.0050697326660156,We importinto,language
+We import,code,you,0.0050086975097656,We importyou,language
+We import,code,",",0.0048027038574218,"We import,",language
+We import,code,several,0.0047416687011718,We importseveral,language
+We import,code,them,0.0039634704589843,We importthem,language
+The ORM is,code,a,0.1671142578125,The ORM isa,language
+The ORM is,code,the,0.0833740234375,The ORM isthe,language
+The ORM is,code,an,0.055511474609375,The ORM isan,language
+The ORM is,code,not,0.05096435546875,The ORM isnot,language
+The ORM is,code,responsible,0.050537109375,The ORM isresponsible,language
+The ORM is,code,used,0.033447265625,The ORM isused,language
+The ORM is,code,designed,0.0159149169921875,The ORM isdesigned,language
+The ORM is,code,in,0.0126876831054687,The ORM isin,language
+The ORM is,code,very,0.0125885009765625,The ORM isvery,language
+The ORM is,code,built,0.0110244750976562,The ORM isbuilt,language
+The ORM is,code,based,0.01068115234375,The ORM isbased,language
+The ORM is,code,also,0.0096511840820312,The ORM isalso,language
+The ORM is,code,part,0.0092849731445312,The ORM ispart,language
+The ORM is,code,one,0.0083160400390625,The ORM isone,language
+The ORM is,code,just,0.0081253051757812,The ORM isjust,language
+The ORM is,code,now,0.0077552795410156,The ORM isnow,language
+The ORM is,code,currently,0.007171630859375,The ORM iscurrently,language
+The ORM is,code,what,0.0063285827636718,The ORM iswhat,language
+The ORM is,code,being,0.0058555603027343,The ORM isbeing,language
+The ORM is,code,really,0.00567626953125,The ORM isreally,language
+The API is built with,code,[,0.2437744140625,The API is built with[,code
+The API is built with,code,the,0.1024169921875,The API is built withthe,language
+The API is built with,code,Node,0.0816650390625,The API is built withNode,code
+The API is built with,code,Go,0.03948974609375,The API is built withGo,code
+The API is built with,code,Fl,0.031494140625,The API is built withFl,code
+The API is built with,code,Express,0.0302886962890625,The API is built withExpress,code
+The API is built with,code,Python,0.025299072265625,The API is built withPython,code
+The API is built with,code,a,0.021636962890625,The API is built witha,language
+The API is built with,code,Ruby,0.0213165283203125,The API is built withRuby,code
+The API is built with,code,`,0.0175323486328125,The API is built with`,code
+The API is built with,code,Spring,0.0165863037109375,The API is built withSpring,code
+The API is built with,code,express,0.014190673828125,The API is built withexpress,code
+The API is built with,code,Laravel,0.0126190185546875,The API is built withLaravel,code
+The API is built with,code,ASP,0.0120468139648437,The API is built withASP,code
+The API is built with,code,Django,0.0108795166015625,The API is built withDjango,code
+The API is built with,code,PHP,0.010711669921875,The API is built withPHP,code
+The API is built with,code,Type,0.0089492797851562,The API is built withType,code
+The API is built with,code,Java,0.0084762573242187,The API is built withJava,code
+The API is built with,code,Graph,0.008148193359375,The API is built withGraph,code
+The API is built with,code,node,0.007904052734375,The API is built withnode,code
+GraphQL is implemented with,code,the,0.1212158203125,GraphQL is implemented withthe,language
+GraphQL is implemented with,code,[,0.1138916015625,GraphQL is implemented with[,code
+GraphQL is implemented with,code,a,0.0794677734375,GraphQL is implemented witha,language
+GraphQL is implemented with,code,Graph,0.037567138671875,GraphQL is implemented withGraph,code
+GraphQL is implemented with,code,Go,0.0311279296875,GraphQL is implemented withGo,code
+GraphQL is implemented with,code,`,0.0266265869140625,GraphQL is implemented with`,code
+GraphQL is implemented with,code,PHP,0.019317626953125,GraphQL is implemented withPHP,code
+GraphQL is implemented with,code,Node,0.0154037475585937,GraphQL is implemented withNode,code
+GraphQL is implemented with,code,an,0.0143661499023437,GraphQL is implemented withan,language
+GraphQL is implemented with,code,C,0.0137100219726562,GraphQL is implemented withC,code
+GraphQL is implemented with,code,Spring,0.0123825073242187,GraphQL is implemented withSpring,code
+GraphQL is implemented with,code,Type,0.0122909545898437,GraphQL is implemented withType,code
+GraphQL is implemented with,code,Python,0.0111846923828125,GraphQL is implemented withPython,code
+GraphQL is implemented with,code,R,0.0108489990234375,GraphQL is implemented withR,code
+GraphQL is implemented with,code,.,0.0093460083007812,GraphQL is implemented with.,language
+GraphQL is implemented with,code,Express,0.0091323852539062,GraphQL is implemented withExpress,code
+GraphQL is implemented with,code,Java,0.00885009765625,GraphQL is implemented withJava,code
+GraphQL is implemented with,code,React,0.0087814331054687,GraphQL is implemented withReact,code
+GraphQL is implemented with,code,Types,0.0079345703125,GraphQL is implemented withTypes,code
+GraphQL is implemented with,code,[`,0.0068397521972656,GraphQL is implemented with[`,code
+The model architecture is,code,based,0.202392578125,The model architecture isbased,language
+The model architecture is,code,a,0.058441162109375,The model architecture isa,language
+The model architecture is,code,defined,0.048431396484375,The model architecture isdefined,language
+The model architecture is,code,the,0.046234130859375,The model architecture isthe,language
+The model architecture is,code,shown,0.034881591796875,The model architecture isshown,language
+The model architecture is,code,described,0.031524658203125,The model architecture isdescribed,language
+The model architecture is,code,designed,0.0273895263671875,The model architecture isdesigned,language
+The model architecture is,code,as,0.0271759033203125,The model architecture isas,language
+The model architecture is,code,inspired,0.0220184326171875,The model architecture isinspired,language
+The model architecture is,code,similar,0.0214996337890625,The model architecture issimilar,language
+The model architecture is,code,built,0.0214996337890625,The model architecture isbuilt,language
+The model architecture is,code,composed,0.0170135498046875,The model architecture iscomposed,language
+The model architecture is,code,implemented,0.0129318237304687,The model architecture isimplemented,language
+The model architecture is,code,available,0.0093917846679687,The model architecture isavailable,language
+The model architecture is,code,an,0.0088272094726562,The model architecture isan,language
+The model architecture is,code,illustrated,0.0077896118164062,The model architecture isillustrated,language
+The model architecture is,code,simple,0.0075454711914062,The model architecture issimple,language
+The model architecture is,code,very,0.0075454711914062,The model architecture isvery,language
+The model architecture is,code,not,0.0074310302734375,The model architecture isnot,language
+The model architecture is,code,in,0.0069236755371093,The model architecture isin,language
+Training uses optimizer =,code,Adam,0.1947021484375,Training uses optimizer =Adam,code
+Training uses optimizer =,code,tf,0.1505126953125,Training uses optimizer =tf,code
+Training uses optimizer =,code,tor,0.0579833984375,Training uses optimizer =tor,code
+Training uses optimizer =,code,optim,0.055328369140625,Training uses optimizer =optim,code
+Training uses optimizer =,code,"""",0.04962158203125,"Training uses optimizer =""",language
+Training uses optimizer =,code,',0.03924560546875,Training uses optimizer =',language
+Training uses optimizer =,code,ker,0.031524658203125,Training uses optimizer =ker,code
+Training uses optimizer =,code,new,0.022186279296875,Training uses optimizer =new,code
+Training uses optimizer =,code,{,0.017547607421875,Training uses optimizer ={,language
+Training uses optimizer =,code,,0.01727294921875,Training uses optimizer =,language
+Training uses optimizer =,code,S,0.0143280029296875,Training uses optimizer =S,code
+Training uses optimizer =,code,"
+",0.0122528076171875,"Training uses optimizer =
+",language
+Training uses optimizer =,code,ad,0.0119705200195312,Training uses optimizer =ad,code
+Training uses optimizer =,code,Opt,0.0079421997070312,Training uses optimizer =Opt,code
+Training uses optimizer =,code,`,0.0070343017578125,Training uses optimizer =`,code
+Training uses optimizer =,code,s,0.0068435668945312,Training uses optimizer =s,language
+Training uses optimizer =,code,get,0.0066909790039062,Training uses optimizer =get,code
+Training uses optimizer =,code,(,0.0060195922851562,Training uses optimizer =(,language
+Training uses optimizer =,code,,0.0059928894042968,Training uses optimizer =None,language
+Training uses optimizer =,code,l,0.005523681640625,Training uses optimizer =l,language
+Deployment is on,code,going,0.384765625,Deployment is ongoing,language
+Deployment is on,code,the,0.10040283203125,Deployment is onthe,language
+Deployment is on,code,hold,0.04022216796875,Deployment is onhold,language
+Deployment is on,code,its,0.03179931640625,Deployment is onits,language
+Deployment is on,code,a,0.03179931640625,Deployment is ona,language
+Deployment is on,code,-,0.0272064208984375,Deployment is on-,language
+Deployment is on,code,[,0.017303466796875,Deployment is on[,code
+Deployment is on,code,"
+",0.01690673828125,"Deployment is on
+",language
+Deployment is on,code,going,0.01226806640625,Deployment is ongoing,language
+Deployment is on,code,github,0.0110015869140625,Deployment is ongithub,code
+Deployment is on,code,my,0.00970458984375,Deployment is onmy,language
+Deployment is on,code,`,0.009552001953125,Deployment is on`,code
+Deployment is on,code,!,0.008697509765625,Deployment is on!,language
+Deployment is on,code,.,0.0084991455078125,Deployment is on.,language
+Deployment is on,code,G,0.0084991455078125,Deployment is onG,code
+Deployment is on,code,",",0.0072135925292968,"Deployment is on,",language
+Deployment is on,code,GitHub,0.0064163208007812,Deployment is onGitHub,code
+Deployment is on,code,her,0.0062408447265625,Deployment is onher,language
+Deployment is on,code,track,0.0060997009277343,Deployment is ontrack,language
+Deployment is on,code,,0.0060768127441406,Deployment is on,language
+CI/CD is,code,a,0.170654296875,CI/CD isa,language
+CI/CD is,code,the,0.08251953125,CI/CD isthe,language
+CI/CD is,code,an,0.03961181640625,CI/CD isan,language
+CI/CD is,code,not,0.0386962890625,CI/CD isnot,language
+CI/CD is,code,to,0.01885986328125,CI/CD isto,language
+CI/CD is,code,one,0.01702880859375,CI/CD isone,language
+CI/CD is,code,used,0.0160064697265625,CI/CD isused,language
+CI/CD is,code,that,0.0118026733398437,CI/CD isthat,language
+CI/CD is,code,very,0.0101699829101562,CI/CD isvery,language
+CI/CD is,code,also,0.0101699829101562,CI/CD isalso,language
+CI/CD is,code,still,0.0097808837890625,CI/CD isstill,language
+CI/CD is,code,available,0.009185791015625,CI/CD isavailable,language
+CI/CD is,code,in,0.0074119567871093,CI/CD isin,language
+CI/CD is,code,just,0.0064620971679687,CI/CD isjust,language
+CI/CD is,code,important,0.0064620971679687,CI/CD isimportant,language
+CI/CD is,code,more,0.0063400268554687,CI/CD ismore,language
+CI/CD is,code,now,0.0061454772949218,CI/CD isnow,language
+CI/CD is,code,designed,0.0059318542480468,CI/CD isdesigned,language
+CI/CD is,code,built,0.0053596496582031,CI/CD isbuilt,language
+CI/CD is,code,,0.0051345825195312,CI/CD is,language
+Unit tests use,code,the,0.1986083984375,Unit tests usethe,language
+Unit tests use,code,a,0.0909423828125,Unit tests usea,language
+Unit tests use,code,cases,0.056427001953125,Unit tests usecases,code
+Unit tests use,code,case,0.036163330078125,Unit tests usecase,code
+Unit tests use,code,cases,0.0168914794921875,Unit tests usecases,code
+Unit tests use,code,go,0.0168304443359375,Unit tests usego,language
+Unit tests use,code,case,0.0153121948242187,Unit tests usecase,code
+Unit tests use,code,this,0.0149002075195312,Unit tests usethis,language
+Unit tests use,code,`,0.0119781494140625,Unit tests use`,code
+Unit tests use,code,mock,0.010986328125,Unit tests usemock,code
+Unit tests use,code,"
+",0.0104446411132812,"Unit tests use
+",language
+Unit tests use,code,-,0.0101242065429687,Unit tests use-,language
+Unit tests use,code,of,0.010040283203125,Unit tests useof,language
+Unit tests use,code,[,0.0098495483398437,Unit tests use[,code
+Unit tests use,code,test,0.0095062255859375,Unit tests usetest,code
+Unit tests use,code,an,0.0076446533203125,Unit tests usean,language
+Unit tests use,code,to,0.0071525573730468,Unit tests useto,language
+Unit tests use,code,"""",0.0069046020507812,"Unit tests use""",language
+Unit tests use,code,:,0.0065650939941406,Unit tests use:,language
+Unit tests use,code,g,0.00616455078125,Unit tests useg,language
+The bundler is,code,a,0.308349609375,The bundler isa,language
+The bundler is,code,the,0.0721435546875,The bundler isthe,language
+The bundler is,code,responsible,0.056640625,The bundler isresponsible,language
+The bundler is,code,an,0.04443359375,The bundler isan,language
+The bundler is,code,used,0.02716064453125,The bundler isused,language
+The bundler is,code,not,0.023223876953125,The bundler isnot,language
+The bundler is,code,installed,0.0151138305664062,The bundler isinstalled,language
+The bundler is,code,also,0.012054443359375,The bundler isalso,language
+The bundler is,code,in,0.0106353759765625,The bundler isin,language
+The bundler is,code,now,0.0103912353515625,The bundler isnow,language
+The bundler is,code,included,0.0103073120117187,The bundler isincluded,language
+The bundler is,code,required,0.0074844360351562,The bundler isrequired,language
+The bundler is,code,configured,0.0061569213867187,The bundler isconfigured,language
+The bundler is,code,what,0.0061073303222656,The bundler iswhat,language
+The bundler is,code,running,0.0057373046875,The bundler isrunning,language
+The bundler is,code,just,0.005645751953125,The bundler isjust,language
+The bundler is,code,very,0.005645751953125,The bundler isvery,language
+The bundler is,code,still,0.0055618286132812,The bundler isstill,language
+The bundler is,code,able,0.0055198669433593,The bundler isable,language
+The bundler is,code,currently,0.0050621032714843,The bundler iscurrently,language
+Logging is done with,code,the,0.233154296875,Logging is done withthe,language
+Logging is done with,code,[,0.1640625,Logging is done with[,code
+Logging is done with,code,a,0.06573486328125,Logging is done witha,language
+Logging is done with,code,`,0.06524658203125,Logging is done with`,code
+Logging is done with,code,log,0.053680419921875,Logging is done withlog,code
+Logging is done with,code,Log,0.0310516357421875,Logging is done withLog,code
+Logging is done with,code,an,0.0112457275390625,Logging is done withan,language
+Logging is done with,code,"
+",0.0112457275390625,"Logging is done with
+",language
+Logging is done with,code,[`,0.0100021362304687,Logging is done with[`,code
+Logging is done with,code,this,0.0096969604492187,Logging is done withthis,language
+Logging is done with,code,w,0.008758544921875,Logging is done withw,code
+Logging is done with,code,sl,0.0070991516113281,Logging is done withsl,code
+Logging is done with,code,Python,0.0069313049316406,Logging is done withPython,code
+Logging is done with,code,:,0.0068778991699218,Logging is done with:,language
+Logging is done with,code,standard,0.0065116882324218,Logging is done withstandard,code
+Logging is done with,code,W,0.0060234069824218,Logging is done withW,code
+Logging is done with,code,https,0.0057907104492187,Logging is done withhttps,code
+Logging is done with,code,python,0.0056571960449218,Logging is done withpython,code
+Logging is done with,code,<,0.0049896240234375,Logging is done with<,language
+Logging is done with,code,,0.0048027038574218,Logging is done with,language
+Message queue is,code,empty,0.09716796875,Message queue isempty,language
+Message queue is,code,a,0.07568359375,Message queue isa,language
+Message queue is,code,not,0.063720703125,Message queue isnot,language
+Message queue is,code,the,0.03228759765625,Message queue isthe,language
+Message queue is,code,full,0.0294036865234375,Message queue isfull,language
+Message queue is,code,an,0.0229034423828125,Message queue isan,language
+Message queue is,code,used,0.0208587646484375,Message queue isused,language
+Message queue is,code,to,0.0149002075195312,Message queue isto,language
+Message queue is,code,in,0.0121612548828125,Message queue isin,language
+Message queue is,code,,0.009735107421875,Message queue is,language
+Message queue is,code,"
+",0.009002685546875,"Message queue is
+",language
+Message queue is,code,implemented,0.008331298828125,Message queue isimplemented,language
+Message queue is,code,created,0.008331298828125,Message queue iscreated,language
+Message queue is,code,also,0.0067672729492187,Message queue isalso,language
+Message queue is,code,at,0.0061149597167968,Message queue isat,language
+Message queue is,code,always,0.0058364868164062,Message queue isalways,language
+Message queue is,code,available,0.0058135986328125,Message queue isavailable,language
+Message queue is,code,being,0.005767822265625,Message queue isbeing,language
+Message queue is,code,filled,0.0057258605957031,Message queue isfilled,language
+Message queue is,code,now,0.0055274963378906,Message queue isnow,language
+Input validation uses,code,the,0.1356201171875,Input validation usesthe,language
+Input validation uses,code,a,0.09918212890625,Input validation usesa,language
+Input validation uses,code,.,0.0302581787109375,Input validation uses.,language
+Input validation uses,code,"
+",0.027130126953125,"Input validation uses
+",language
+Input validation uses,code,`,0.0216217041015625,Input validation uses`,code
+Input validation uses,code,to,0.0198516845703125,Input validation usesto,language
+Input validation uses,code,an,0.019378662109375,Input validation usesan,language
+Input validation uses,code,for,0.014068603515625,Input validation usesfor,language
+Input validation uses,code,",",0.0115280151367187,"Input validation uses,",language
+Input validation uses,code,this,0.0103378295898437,Input validation usesthis,language
+Input validation uses,code,,0.0099411010742187,Input validation uses,language
+Input validation uses,code,only,0.0090484619140625,Input validation usesonly,language
+Input validation uses,code,of,0.0088424682617187,Input validation usesof,language
+Input validation uses,code,two,0.0075035095214843,Input validation usestwo,language
+Input validation uses,code,in,0.007415771484375,Input validation usesin,language
+Input validation uses,code,different,0.006317138671875,Input validation usesdifferent,language
+Input validation uses,code,"""",0.0057716369628906,"Input validation uses""",language
+Input validation uses,code,validation,0.005279541015625,Input validation usesvalidation,code
+Input validation uses,code,regex,0.0048408508300781,Input validation usesregex,code
+Input validation uses,code,(,0.004730224609375,Input validation uses(,language
+HTTP requests use,code,the,0.291748046875,HTTP requests usethe,language
+HTTP requests use,code,a,0.1197509765625,HTTP requests usea,language
+HTTP requests use,code,HTTP,0.072021484375,HTTP requests useHTTP,code
+HTTP requests use,code,GET,0.026519775390625,HTTP requests useGET,code
+HTTP requests use,code,`,0.02130126953125,HTTP requests use`,code
+HTTP requests use,code,POST,0.0183563232421875,HTTP requests usePOST,code
+HTTP requests use,code,an,0.018218994140625,HTTP requests usean,language
+HTTP requests use,code,this,0.0167236328125,HTTP requests usethis,language
+HTTP requests use,code,cookies,0.0165863037109375,HTTP requests usecookies,code
+HTTP requests use,code,to,0.011138916015625,HTTP requests useto,language
+HTTP requests use,code,"
+",0.0087432861328125,"HTTP requests use
+",language
+HTTP requests use,code,JSON,0.0073051452636718,HTTP requests useJSON,code
+HTTP requests use,code,.,0.0065498352050781,HTTP requests use.,language
+HTTP requests use,code,[,0.0053253173828125,HTTP requests use[,code
+HTTP requests use,code,different,0.0047721862792968,HTTP requests usedifferent,language
+HTTP requests use,code,TCP,0.004730224609375,HTTP requests useTCP,code
+HTTP requests use,code,,0.004730224609375,HTTP requests use,language
+HTTP requests use,code,http,0.004608154296875,HTTP requests usehttp,language
+HTTP requests use,code,two,0.0042457580566406,HTTP requests usetwo,language
+HTTP requests use,code,their,0.0040016174316406,HTTP requests usetheir,language
+The authentication is,language,done,0.1617431640625,The authentication isdone,language
+The authentication is,language,a,0.080078125,The authentication isa,language
+The authentication is,language,the,0.055023193359375,The authentication isthe,language
+The authentication is,language,handled,0.050506591796875,The authentication ishandled,language
+The authentication is,language,performed,0.04705810546875,The authentication isperformed,language
+The authentication is,language,based,0.04705810546875,The authentication isbased,language
+The authentication is,language,not,0.036376953125,The authentication isnot,language
+The authentication is,language,working,0.0217132568359375,The authentication isworking,language
+The authentication is,language,implemented,0.0175933837890625,The authentication isimplemented,language
+The authentication is,language,an,0.01690673828125,The authentication isan,language
+The authentication is,language,required,0.0142440795898437,The authentication isrequired,language
+The authentication is,language,provided,0.013275146484375,The authentication isprovided,language
+The authentication is,language,managed,0.01025390625,The authentication ismanaged,language
+The authentication is,language,used,0.0101776123046875,The authentication isused,language
+The authentication is,language,made,0.0099411010742187,The authentication ismade,language
+The authentication is,language,being,0.0085067749023437,The authentication isbeing,language
+The authentication is,language,only,0.0081787109375,The authentication isonly,language
+The authentication is,language,currently,0.0081100463867187,The authentication iscurrently,language
+The authentication is,language,now,0.0080490112304687,The authentication isnow,language
+The authentication is,language,in,0.0068855285644531,The authentication isin,language
+Verification is done,language,by,0.3134765625,Verification is doneby,language
+Verification is done,language,using,0.136962890625,Verification is doneusing,language
+Verification is done,language,in,0.07330322265625,Verification is donein,language
+Verification is done,language,on,0.068359375,Verification is doneon,language
+Verification is done,language,through,0.048065185546875,Verification is donethrough,language
+Verification is done,language,via,0.040496826171875,Verification is donevia,language
+Verification is done,language,with,0.0389404296875,Verification is donewith,language
+Verification is done,language,at,0.02325439453125,Verification is doneat,language
+Verification is done,language,as,0.0183868408203125,Verification is doneas,language
+Verification is done,language,for,0.01824951171875,Verification is donefor,language
+Verification is done,language,to,0.013671875,Verification is doneto,language
+Verification is done,language,"
+",0.0121612548828125,"Verification is done
+",language
+Verification is done,language,only,0.0102386474609375,Verification is doneonly,language
+Verification is done,language,when,0.0098495483398437,Verification is donewhen,language
+Verification is done,language,based,0.0094680786132812,Verification is donebased,language
+Verification is done,language,against,0.0091781616210937,Verification is doneagainst,language
+Verification is done,language,during,0.0072059631347656,Verification is doneduring,language
+Verification is done,language,automatically,0.0068168640136718,Verification is doneautomatically,language
+Verification is done,language,.,0.0058326721191406,Verification is done.,language
+Verification is done,language,",",0.0055198669433593,"Verification is done,",language
+The user id is,language,not,0.09771728515625,The user id isnot,language
+The user id is,language,the,0.07916259765625,The user id isthe,language
+The user id is,language,a,0.0772705078125,The user id isa,language
+The user id is,language,used,0.0465087890625,The user id isused,language
+The user id is,language,required,0.037384033203125,The user id isrequired,language
+The user id is,language,,0.036224365234375,The user id is,language
+The user id is,language,stored,0.035369873046875,The user id isstored,language
+The user id is,language,an,0.0207977294921875,The user id isan,language
+The user id is,language,passed,0.017791748046875,The user id ispassed,language
+The user id is,language,set,0.0173797607421875,The user id isset,language
+The user id is,language,in,0.016845703125,The user id isin,language
+The user id is,language,:,0.0116729736328125,The user id is:,language
+The user id is,language,unique,0.0100631713867187,The user id isunique,language
+The user id is,language,always,0.0093765258789062,The user id isalways,language
+The user id is,language,defined,0.0087432861328125,The user id isdefined,language
+The user id is,language,obtained,0.0083999633789062,The user id isobtained,language
+The user id is,language,returned,0.0083999633789062,The user id isreturned,language
+The user id is,language,being,0.0083389282226562,The user id isbeing,language
+The user id is,language,provided,0.0079574584960937,The user id isprovided,language
+The user id is,language,"""",0.0075912475585937,"The user id is""",language
+Processing is handled,language,by,0.4052734375,Processing is handledby,language
+Processing is handled,language,in,0.1357421875,Processing is handledin,language
+Processing is handled,language,through,0.041748046875,Processing is handledthrough,language
+Processing is handled,language,using,0.032257080078125,Processing is handledusing,language
+Processing is handled,language,on,0.0295867919921875,Processing is handledon,language
+Processing is handled,language,via,0.028900146484375,Processing is handledvia,language
+Processing is handled,language,as,0.02716064453125,Processing is handledas,language
+Processing is handled,language,with,0.0263214111328125,Processing is handledwith,language
+Processing is handled,language,.,0.0188140869140625,Processing is handled.,language
+Processing is handled,language,here,0.0151214599609375,Processing is handledhere,language
+Processing is handled,language,"
+",0.0144271850585937,"Processing is handled
+",language
+Processing is handled,language,at,0.01123046875,Processing is handledat,language
+Processing is handled,language,differently,0.0110626220703125,Processing is handleddifferently,language
+Processing is handled,language,entirely,0.009918212890625,Processing is handledentirely,language
+Processing is handled,language,",",0.0095291137695312,"Processing is handled,",language
+Processing is handled,language,within,0.0093154907226562,Processing is handledwithin,language
+Processing is handled,language,automatically,0.0087432861328125,Processing is handledautomatically,language
+Processing is handled,language,internally,0.0068092346191406,Processing is handledinternally,language
+Processing is handled,language,and,0.006011962890625,Processing is handledand,language
+Processing is handled,language,directly,0.005645751953125,Processing is handleddirectly,language
+Data is stored,language,in,0.487548828125,Data is storedin,language
+Data is stored,language,.,0.08148193359375,Data is stored.,language
+Data is stored,language,on,0.055145263671875,Data is storedon,language
+Data is stored,language,as,0.05303955078125,Data is storedas,language
+Data is stored,language,",",0.033966064453125,"Data is stored,",language
+Data is stored,language,"
+",0.03240966796875,"Data is stored
+",language
+Data is stored,language,and,0.0229949951171875,Data is storedand,language
+Data is stored,language,at,0.021942138671875,Data is storedat,language
+Data is stored,language,locally,0.0156707763671875,Data is storedlocally,language
+Data is stored,language,by,0.0100479125976562,Data is storedby,language
+Data is stored,language,for,0.0099639892578125,Data is storedfor,language
+Data is stored,language,under,0.0096588134765625,Data is storedunder,language
+Data is stored,language,with,0.0092849731445312,Data is storedwith,language
+Data is stored,language,into,0.0088653564453125,Data is storedinto,language
+Data is stored,language,within,0.0071754455566406,Data is storedwithin,language
+Data is stored,language,to,0.0060882568359375,Data is storedto,language
+Data is stored,language,here,0.0058555603027343,Data is storedhere,language
+Data is stored,language,inside,0.0051307678222656,Data is storedinside,language
+Data is stored,language,using,0.00408935546875,Data is storedusing,language
+Data is stored,language,(,0.0038433074951171,Data is stored(,language
+Tokens are validated,language,by,0.26025390625,Tokens are validatedby,language
+Tokens are validated,language,and,0.07220458984375,Tokens are validatedand,language
+Tokens are validated,language,through,0.063232421875,Tokens are validatedthrough,language
+Tokens are validated,language,in,0.048126220703125,Tokens are validatedin,language
+Tokens are validated,language,",",0.04449462890625,"Tokens are validated,",language
+Tokens are validated,language,as,0.034393310546875,Tokens are validatedas,language
+Tokens are validated,language,using,0.033599853515625,Tokens are validatedusing,language
+Tokens are validated,language,on,0.033050537109375,Tokens are validatedon,language
+Tokens are validated,language,for,0.0298919677734375,Tokens are validatedfor,language
+Tokens are validated,language,.,0.0285186767578125,Tokens are validated.,language
+Tokens are validated,language,when,0.0261688232421875,Tokens are validatedwhen,language
+Tokens are validated,language,against,0.02203369140625,Tokens are validatedagainst,language
+Tokens are validated,language,with,0.02117919921875,Tokens are validatedwith,language
+Tokens are validated,language,to,0.0163726806640625,Tokens are validatedto,language
+Tokens are validated,language,at,0.0137939453125,Tokens are validatedat,language
+Tokens are validated,language,"
+",0.0136795043945312,"Tokens are validated
+",language
+Tokens are validated,language,or,0.009185791015625,Tokens are validatedor,language
+Tokens are validated,language,based,0.0079193115234375,Tokens are validatedbased,language
+Tokens are validated,language,before,0.0076751708984375,Tokens are validatedbefore,language
+Tokens are validated,language,via,0.0073814392089843,Tokens are validatedvia,language
+The session is created,language,by,0.1878662109375,The session is createdby,language
+The session is created,language,with,0.11480712890625,The session is createdwith,language
+The session is created,language,in,0.08013916015625,The session is createdin,language
+The session is created,language,to,0.06695556640625,The session is createdto,language
+The session is created,language,using,0.06292724609375,The session is createdusing,language
+The session is created,language,and,0.057281494140625,The session is createdand,language
+The session is created,language,for,0.055938720703125,The session is createdfor,language
+The session is created,language,when,0.0396728515625,The session is createdwhen,language
+The session is created,language,on,0.03472900390625,The session is createdon,language
+The session is created,language,as,0.028594970703125,The session is createdas,language
+The session is created,language,from,0.0231475830078125,The session is createdfrom,language
+The session is created,language,",",0.02191162109375,"The session is created,",language
+The session is created,language,.,0.0197906494140625,The session is created.,language
+The session is created,language,at,0.018463134765625,The session is createdat,language
+The session is created,language,"
+",0.0130767822265625,"The session is created
+",language
+The session is created,language,automatically,0.0111007690429687,The session is createdautomatically,language
+The session is created,language,after,0.0098724365234375,The session is createdafter,language
+The session is created,language,based,0.008514404296875,The session is createdbased,language
+The session is created,language,via,0.0083160400390625,The session is createdvia,language
+The session is created,language,if,0.00787353515625,The session is createdif,language
+The code works by,language,using,0.0731201171875,The code works byusing,language
+The code works by,language,itself,0.0601806640625,The code works byitself,language
+The code works by,language,creating,0.049896240234375,The code works bycreating,language
+The code works by,language,taking,0.0487060546875,The code works bytaking,language
+The code works by,language,first,0.04266357421875,The code works byfirst,language
+The code works by,language,calling,0.027984619140625,The code works bycalling,language
+The code works by,language,having,0.0252838134765625,The code works byhaving,language
+The code works by,language,setting,0.0219573974609375,The code works bysetting,language
+The code works by,language,the,0.0200042724609375,The code works bythe,language
+The code works by,language,reading,0.0189361572265625,The code works byreading,language
+The code works by,language,getting,0.016448974609375,The code works bygetting,language
+The code works by,language,sending,0.0152130126953125,The code works bysending,language
+The code works by,language,iter,0.0138473510742187,The code works byiter,code
+The code works by,language,adding,0.0137405395507812,The code works byadding,language
+The code works by,language,running,0.0137405395507812,The code works byrunning,language
+The code works by,language,checking,0.01104736328125,The code works bychecking,language
+The code works by,language,finding,0.0099716186523437,The code works byfinding,language
+The code works by,language,:,0.0099029541015625,The code works by:,language
+The code works by,language,making,0.0098190307617187,The code works bymaking,language
+The code works by,language,storing,0.0097427368164062,The code works bystoring,language
+The function is responsible for,language,the,0.06927490234375,The function is responsible forthe,language
+The function is responsible for,language,creating,0.04913330078125,The function is responsible forcreating,language
+The function is responsible for,language,returning,0.02569580078125,The function is responsible forreturning,language
+The function is responsible for,language,handling,0.0225067138671875,The function is responsible forhandling,language
+The function is responsible for,language,checking,0.021636962890625,The function is responsible forchecking,language
+The function is responsible for,language,reading,0.018218994140625,The function is responsible forreading,language
+The function is responsible for,language,calculating,0.0179290771484375,The function is responsible forcalculating,language
+The function is responsible for,language,generating,0.017791748046875,The function is responsible forgenerating,language
+The function is responsible for,language,adding,0.017791748046875,The function is responsible foradding,language
+The function is responsible for,language,updating,0.0175323486328125,The function is responsible forupdating,language
+The function is responsible for,language,setting,0.0164642333984375,The function is responsible forsetting,language
+The function is responsible for,language,displaying,0.0147552490234375,The function is responsible fordisplaying,language
+The function is responsible for,language,sending,0.0135421752929687,The function is responsible forsending,language
+The function is responsible for,language,getting,0.013336181640625,The function is responsible forgetting,language
+The function is responsible for,language,finding,0.013336181640625,The function is responsible forfinding,language
+The function is responsible for,language,drawing,0.0129165649414062,The function is responsible fordrawing,language
+The function is responsible for,language,parsing,0.0115814208984375,The function is responsible forparsing,language
+The function is responsible for,language,determ,0.0112228393554687,The function is responsible fordeterm,code
+The function is responsible for,language,initial,0.0103836059570312,The function is responsible forinitial,language
+The function is responsible for,language,printing,0.0099029541015625,The function is responsible forprinting,language
+This approach,language,is,0.185791015625,This approachis,language
+This approach,language,to,0.154052734375,This approachto,language
+This approach,language,has,0.048065185546875,This approachhas,language
+This approach,language,was,0.035430908203125,This approachwas,language
+This approach,language,will,0.0305633544921875,This approachwill,language
+This approach,language,can,0.02655029296875,This approachcan,language
+This approach,language,",",0.026153564453125,"This approach,",language
+This approach,language,allows,0.025146484375,This approachallows,language
+This approach,language,also,0.01715087890625,This approachalso,language
+This approach,language,uses,0.012939453125,This approachuses,language
+This approach,language,involves,0.0127487182617187,This approachinvolves,language
+This approach,language,focus,0.012451171875,This approachfocus,language
+This approach,language,requires,0.0121536254882812,This approachrequires,language
+This approach,language,provides,0.0120620727539062,This approachprovides,language
+This approach,language,would,0.0108108520507812,This approachwould,language
+This approach,language,may,0.01055908203125,This approachmay,language
+This approach,language,does,0.010162353515625,This approachdoes,language
+This approach,language,enables,0.009918212890625,This approachenables,language
+This approach,language,a,0.0091781616210937,This approacha,language
+This approach,language,of,0.0091018676757812,This approachof,language
+The main purpose is to,language,provide,0.126220703125,The main purpose is toprovide,language
+The main purpose is to,language,create,0.04534912109375,The main purpose is tocreate,language
+The main purpose is to,language,make,0.03643798828125,The main purpose is tomake,language
+The main purpose is to,language,help,0.03265380859375,The main purpose is tohelp,language
+The main purpose is to,language,be,0.0207672119140625,The main purpose is tobe,language
+The main purpose is to,language,allow,0.0202789306640625,The main purpose is toallow,language
+The main purpose is to,language,have,0.0190582275390625,The main purpose is tohave,language
+The main purpose is to,language,get,0.0170745849609375,The main purpose is toget,code
+The main purpose is to,language,develop,0.0147171020507812,The main purpose is todevelop,language
+The main purpose is to,language,learn,0.0142669677734375,The main purpose is tolearn,language
+The main purpose is to,language,give,0.0140457153320312,The main purpose is togive,language
+The main purpose is to,language,build,0.013397216796875,The main purpose is tobuild,language
+The main purpose is to,language,improve,0.0119171142578125,The main purpose is toimprove,language
+The main purpose is to,language,show,0.0113754272460937,The main purpose is toshow,language
+The main purpose is to,language,use,0.0098037719726562,The main purpose is touse,language
+The main purpose is to,language,enable,0.0095062255859375,The main purpose is toenable,language
+The main purpose is to,language,find,0.0086593627929687,The main purpose is tofind,language
+The main purpose is to,language,keep,0.0083847045898437,The main purpose is tokeep,language
+The main purpose is to,language,generate,0.0081329345703125,The main purpose is togenerate,language
+The main purpose is to,language,serve,0.0080642700195312,The main purpose is toserve,language
+"To implement authentication,",language,you,0.3232421875,"To implement authentication,you",language
+"To implement authentication,",language,we,0.181396484375,"To implement authentication,we",language
+"To implement authentication,",language,I,0.055267333984375,"To implement authentication,I",language
+"To implement authentication,",language,the,0.05035400390625,"To implement authentication,the",language
+"To implement authentication,",language,create,0.0239715576171875,"To implement authentication,create",language
+"To implement authentication,",language,use,0.0198822021484375,"To implement authentication,use",language
+"To implement authentication,",language,add,0.018524169921875,"To implement authentication,add",language
+"To implement authentication,",language,a,0.0179595947265625,"To implement authentication,a",language
+"To implement authentication,",language,it,0.0103073120117187,"To implement authentication,it",language
+"To implement authentication,",language,authorization,0.0099105834960937,"To implement authentication,authorization",language
+"To implement authentication,",language,follow,0.0092391967773437,"To implement authentication,follow",language
+"To implement authentication,",language,this,0.0089569091796875,"To implement authentication,this",language
+"To implement authentication,",language,first,0.008544921875,"To implement authentication,first",language
+"To implement authentication,",language,there,0.0077247619628906,"To implement authentication,there",language
+"To implement authentication,",language,your,0.0077247619628906,"To implement authentication,your",language
+"To implement authentication,",language,let,0.0067634582519531,"To implement authentication,let",language
+"To implement authentication,",language,users,0.0066032409667968,"To implement authentication,users",code
+"To implement authentication,",language,an,0.0058746337890625,"To implement authentication,an",language
+"To implement authentication,",language,which,0.0044326782226562,"To implement authentication,which",language
+"To implement authentication,",language,in,0.0042991638183593,"To implement authentication,in",language
+"First, you need to",language,know,0.0789794921875,"First, you need toknow",language
+"First, you need to",language,have,0.06195068359375,"First, you need tohave",language
+"First, you need to",language,be,0.05914306640625,"First, you need tobe",language
+"First, you need to",language,understand,0.051788330078125,"First, you need tounderstand",language
+"First, you need to",language,make,0.049041748046875,"First, you need tomake",language
+"First, you need to",language,create,0.038787841796875,"First, you need tocreate",language
+"First, you need to",language,get,0.035888671875,"First, you need toget",code
+"First, you need to",language,set,0.0235137939453125,"First, you need toset",language
+"First, you need to",language,install,0.0226287841796875,"First, you need toinstall",language
+"First, you need to",language,add,0.0156707763671875,"First, you need toadd",language
+"First, you need to",language,find,0.0154342651367187,"First, you need tofind",language
+"First, you need to",language,do,0.0139389038085937,"First, you need todo",language
+"First, you need to",language,decide,0.0131988525390625,"First, you need todecide",language
+"First, you need to",language,check,0.0113754272460937,"First, you need tocheck",language
+"First, you need to",language,learn,0.0112838745117187,"First, you need tolearn",language
+"First, you need to",language,use,0.0098800659179687,"First, you need touse",language
+"First, you need to",language,go,0.0091400146484375,"First, you need togo",language
+"First, you need to",language,tell,0.008453369140625,"First, you need totell",language
+"First, you need to",language,ensure,0.0080032348632812,"First, you need toensure",language
+"First, you need to",language,choose,0.0074043273925781,"First, you need tochoose",language
+Make sure to,language,check,0.08880615234375,Make sure tocheck,language
+Make sure to,language,include,0.04132080078125,Make sure toinclude,language
+Make sure to,language,follow,0.037017822265625,Make sure tofollow,language
+Make sure to,language,have,0.033721923828125,Make sure tohave,language
+Make sure to,language,use,0.033447265625,Make sure touse,language
+Make sure to,language,read,0.028167724609375,Make sure toread,language
+Make sure to,language,get,0.0248565673828125,Make sure toget,code
+Make sure to,language,keep,0.024658203125,Make sure tokeep,language
+Make sure to,language,set,0.0184783935546875,Make sure toset,language
+Make sure to,language,add,0.0181884765625,Make sure toadd,language
+Make sure to,language,take,0.0151901245117187,Make sure totake,language
+Make sure to,language,give,0.0117416381835937,Make sure togive,language
+Make sure to,language,choose,0.01165771484375,Make sure tochoose,language
+Make sure to,language,put,0.0111160278320312,Make sure toput,language
+Make sure to,language,bring,0.0106887817382812,Make sure tobring,language
+Make sure to,language,visit,0.009735107421875,Make sure tovisit,language
+Make sure to,language,also,0.0096588134765625,Make sure toalso,language
+Make sure to,language,download,0.0092849731445312,Make sure todownload,language
+Make sure to,language,save,0.00872802734375,Make sure tosave,language
+Make sure to,language,be,0.00872802734375,Make sure tobe,language
+"Unlike other methods,",language,this,0.193603515625,"Unlike other methods,this",language
+"Unlike other methods,",language,the,0.1300048828125,"Unlike other methods,the",language
+"Unlike other methods,",language,`,0.08392333984375,"Unlike other methods,`",code
+"Unlike other methods,",language,it,0.039337158203125,"Unlike other methods,it",language
+"Unlike other methods,",language,which,0.0254058837890625,"Unlike other methods,which",language
+"Unlike other methods,",language,such,0.0215606689453125,"Unlike other methods,such",language
+"Unlike other methods,",language,"
+",0.0175933837890625,"Unlike other methods,
+",language
+"Unlike other methods,",language,there,0.017181396484375,"Unlike other methods,there",language
+"Unlike other methods,",language,you,0.0144805908203125,"Unlike other methods,you",language
+"Unlike other methods,",language,we,0.0115432739257812,"Unlike other methods,we",language
+"Unlike other methods,",language,these,0.00811767578125,"Unlike other methods,these",language
+"Unlike other methods,",language,a,0.0078048706054687,"Unlike other methods,a",language
+"Unlike other methods,",language,I,0.0075111389160156,"Unlike other methods,I",language
+"Unlike other methods,",language,get,0.006011962890625,"Unlike other methods,get",code
+"Unlike other methods,",language,"""",0.004791259765625,"Unlike other methods,""",language
+"Unlike other methods,",language,**,0.0044136047363281,"Unlike other methods,**",language
+"Unlike other methods,",language,in,0.0043449401855468,"Unlike other methods,in",language
+"Unlike other methods,",language,using,0.0041770935058593,"Unlike other methods,using",language
+"Unlike other methods,",language,like,0.0040321350097656,"Unlike other methods,like",language
+"Unlike other methods,",language,where,0.0039405822753906,"Unlike other methods,where",language
+The difference is,language,that,0.33349609375,The difference isthat,language
+The difference is,language,in,0.0919189453125,The difference isin,language
+The difference is,language,the,0.06463623046875,The difference isthe,language
+The difference is,language,",",0.0401611328125,"The difference is,",language
+The difference is,language,a,0.0221710205078125,The difference isa,language
+The difference is,language,not,0.021148681640625,The difference isnot,language
+The difference is,language,:,0.011962890625,The difference is:,language
+The difference is,language,whether,0.01177978515625,The difference iswhether,language
+The difference is,language,between,0.0107192993164062,The difference isbetween,language
+The difference is,language,very,0.0090255737304687,The difference isvery,language
+The difference is,language,this,0.0087509155273437,The difference isthis,language
+The difference is,language,how,0.0082855224609375,The difference ishow,language
+The difference is,language,clear,0.007904052734375,The difference isclear,language
+The difference is,language,what,0.0071983337402343,The difference iswhat,language
+The difference is,language,simple,0.0070838928222656,The difference issimple,language
+The difference is,language,only,0.0069236755371093,The difference isonly,language
+The difference is,language,subt,0.0066566467285156,The difference issubt,language
+The difference is,language,quite,0.0066070556640625,The difference isquite,language
+The difference is,language,huge,0.0064010620117187,The difference ishuge,language
+The difference is,language,so,0.0061569213867187,The difference isso,language
+How does the authentication,language,process,0.19189453125,How does the authenticationprocess,language
+How does the authentication,language,work,0.11279296875,How does the authenticationwork,language
+How does the authentication,language,of,0.08319091796875,How does the authenticationof,language
+How does the authentication,language,flow,0.058990478515625,How does the authenticationflow,language
+How does the authentication,language,system,0.044891357421875,How does the authenticationsystem,language
+How does the authentication,language,mechanism,0.036346435546875,How does the authenticationmechanism,language
+How does the authentication,language,and,0.03363037109375,How does the authenticationand,language
+How does the authentication,language,works,0.01690673828125,How does the authenticationworks,language
+How does the authentication,language,token,0.015869140625,How does the authenticationtoken,language
+How does the authentication,language,in,0.0157470703125,How does the authenticationin,language
+How does the authentication,language,method,0.0136795043945312,How does the authenticationmethod,language
+How does the authentication,language,service,0.0124588012695312,How does the authenticationservice,language
+How does the authentication,language,code,0.0100173950195312,How does the authenticationcode,language
+How does the authentication,language,part,0.0099334716796875,How does the authenticationpart,language
+How does the authentication,language,protocol,0.0085601806640625,How does the authenticationprotocol,language
+How does the authentication,language,happen,0.0084304809570312,How does the authenticationhappen,language
+How does the authentication,language,module,0.0079193115234375,How does the authenticationmodule,language
+How does the authentication,language,scheme,0.0078010559082031,How does the authenticationscheme,language
+How does the authentication,language,/,0.0074424743652343,How does the authentication/,language
+How does the authentication,language,request,0.0072669982910156,How does the authenticationrequest,language
+What are the benefits of,language,using,0.09747314453125,What are the benefits ofusing,language
+What are the benefits of,language,a,0.07470703125,What are the benefits ofa,language
+What are the benefits of,language,having,0.041259765625,What are the benefits ofhaving,language
+What are the benefits of,language,being,0.0264434814453125,What are the benefits ofbeing,language
+What are the benefits of,language,the,0.0250396728515625,What are the benefits ofthe,language
+What are the benefits of,language,working,0.0153045654296875,What are the benefits ofworking,language
+What are the benefits of,language,taking,0.014495849609375,What are the benefits oftaking,language
+What are the benefits of,language,an,0.0129852294921875,What are the benefits ofan,language
+What are the benefits of,language,getting,0.0099639892578125,What are the benefits ofgetting,language
+What are the benefits of,language,h,0.0080337524414062,What are the benefits ofh,language
+What are the benefits of,language,living,0.007904052734375,What are the benefits ofliving,language
+What are the benefits of,language,learning,0.006927490234375,What are the benefits oflearning,language
+What are the benefits of,language,e,0.0064544677734375,What are the benefits ofe,language
+What are the benefits of,language,doing,0.0062294006347656,What are the benefits ofdoing,language
+What are the benefits of,language,invest,0.0055427551269531,What are the benefits ofinvest,language
+What are the benefits of,language,bu,0.0051841735839843,What are the benefits ofbu,language
+What are the benefits of,language,online,0.0049667358398437,What are the benefits ofonline,language
+What are the benefits of,language,choosing,0.004669189453125,What are the benefits ofchoosing,language
+What are the benefits of,language,playing,0.0046310424804687,What are the benefits ofplaying,language
+What are the benefits of,language,going,0.0045623779296875,What are the benefits ofgoing,language
+When should you,language,use,0.2041015625,When should youuse,language
+When should you,language,be,0.0330810546875,When should yoube,language
+When should you,language,consider,0.028289794921875,When should youconsider,language
+When should you,language,take,0.025543212890625,When should youtake,language
+When should you,language,start,0.0222015380859375,When should youstart,language
+When should you,language,call,0.0200653076171875,When should youcall,language
+When should you,language,get,0.0198974609375,When should youget,code
+When should you,language,go,0.019439697265625,When should yougo,language
+When should you,language,choose,0.0177001953125,When should youchoose,language
+When should you,language,buy,0.0172882080078125,When should youbuy,language
+When should you,language,seek,0.0157318115234375,When should youseek,language
+When should you,language,not,0.010986328125,When should younot,language
+When should you,language,make,0.010162353515625,When should youmake,language
+When should you,language,stop,0.0098495483398437,When should youstop,language
+When should you,language,h,0.0096969604492187,When should youh,language
+When should you,language,do,0.0092544555664062,When should youdo,language
+When should you,language,apply,0.0089035034179687,When should youapply,language
+When should you,language,have,0.008758544921875,When should youhave,language
+When should you,language,visit,0.0084915161132812,When should youvisit,language
+When should you,language,see,0.0076675415039062,When should yousee,language
+The authentication system,language,is,0.1881103515625,The authentication systemis,language
+The authentication system,language,in,0.068115234375,The authentication systemin,language
+The authentication system,language,of,0.05474853515625,The authentication systemof,language
+The authentication system,language,used,0.051422119140625,The authentication systemused,language
+The authentication system,language,for,0.041015625,The authentication systemfor,language
+The authentication system,language,will,0.0304718017578125,The authentication systemwill,language
+The authentication system,language,has,0.027099609375,The authentication systemhas,language
+The authentication system,language,"
+",0.026885986328125,"The authentication system
+",language
+The authentication system,language,that,0.0264739990234375,The authentication systemthat,language
+The authentication system,language,uses,0.0262603759765625,The authentication systemuses,language
+The authentication system,language,should,0.02410888671875,The authentication systemshould,language
+The authentication system,language,works,0.0233612060546875,The authentication systemworks,language
+The authentication system,language,I,0.020294189453125,The authentication systemI,language
+The authentication system,language,must,0.013946533203125,The authentication systemmust,language
+The authentication system,language,was,0.0133056640625,The authentication systemwas,language
+The authentication system,language,allows,0.0119247436523437,The authentication systemallows,language
+The authentication system,language,we,0.0108642578125,The authentication systemwe,language
+The authentication system,language,consists,0.0106124877929687,The authentication systemconsists,language
+The authentication system,language,.,0.0103683471679687,The authentication system.,language
+The authentication system,language,requires,0.0101242065429687,The authentication systemrequires,language
+"For our API, JWT tokens are signed using",code,a,0.30908203125,"For our API, JWT tokens are signed usinga",language
+"For our API, JWT tokens are signed using",code,the,0.18896484375,"For our API, JWT tokens are signed usingthe",language
+"For our API, JWT tokens are signed using",code,R,0.15673828125,"For our API, JWT tokens are signed usingR",code
+"For our API, JWT tokens are signed using",code,an,0.07061767578125,"For our API, JWT tokens are signed usingan",language
+"For our API, JWT tokens are signed using",code,H,0.060882568359375,"For our API, JWT tokens are signed usingH",code
+"For our API, JWT tokens are signed using",code,our,0.033905029296875,"For our API, JWT tokens are signed usingour",language
+"For our API, JWT tokens are signed using",code,`,0.0177154541015625,"For our API, JWT tokens are signed using`",code
+"For our API, JWT tokens are signed using",code,[,0.0157623291015625,"For our API, JWT tokens are signed using[",code
+"For our API, JWT tokens are signed using",code,private,0.012664794921875,"For our API, JWT tokens are signed usingprivate",language
+"For our API, JWT tokens are signed using",code,this,0.01041412353515625,"For our API, JWT tokens are signed usingthis",language
+"For our API, JWT tokens are signed using",code,your,0.00911712646484375,"For our API, JWT tokens are signed usingyour",language
+"For our API, JWT tokens are signed using",code,"
+",0.007213592529296875,"For our API, JWT tokens are signed using
+",language
+"For our API, JWT tokens are signed using",code,ES,0.0062713623046875,"For our API, JWT tokens are signed usingES",code
+"For our API, JWT tokens are signed using",code,S,0.005443572998046875,"For our API, JWT tokens are signed usingS",code
+"For our API, JWT tokens are signed using",code,asym,0.005237579345703125,"For our API, JWT tokens are signed usingasym",language
+"For our API, JWT tokens are signed using",code,,0.00447845458984375,"For our API, JWT tokens are signed using",language
+"For our API, JWT tokens are signed using",code,public,0.00447845458984375,"For our API, JWT tokens are signed usingpublic",language
+"For our API, JWT tokens are signed using",code,secret,0.0038623809814453125,"For our API, JWT tokens are signed usingsecret",language
+"For our API, JWT tokens are signed using",code,either,0.00315093994140625,"For our API, JWT tokens are signed usingeither",language
+"For our API, JWT tokens are signed using",code,both,0.002674102783203125,"For our API, JWT tokens are signed usingboth",language
+"To improve performance, caching is implemented with",code,the,0.168701171875,"To improve performance, caching is implemented withthe",language
+"To improve performance, caching is implemented with",code,a,0.1536865234375,"To improve performance, caching is implemented witha",language
+"To improve performance, caching is implemented with",code,Red,0.051055908203125,"To improve performance, caching is implemented withRed",code
+"To improve performance, caching is implemented with",code,an,0.02777099609375,"To improve performance, caching is implemented withan",language
+"To improve performance, caching is implemented with",code,[,0.0273284912109375,"To improve performance, caching is implemented with[",code
+"To improve performance, caching is implemented with",code,L,0.0248870849609375,"To improve performance, caching is implemented withL",code
+"To improve performance, caching is implemented with",code,`,0.0228424072265625,"To improve performance, caching is implemented with`",code
+"To improve performance, caching is implemented with",code,mem,0.0203094482421875,"To improve performance, caching is implemented withmem",language
+"To improve performance, caching is implemented with",code,two,0.0200042724609375,"To improve performance, caching is implemented withtwo",language
+"To improve performance, caching is implemented with",code,redis,0.0165863037109375,"To improve performance, caching is implemented withredis",code
+"To improve performance, caching is implemented with",code,,0.01157379150390625,"To improve performance, caching is implemented with",language
+"To improve performance, caching is implemented with",code,"
+",0.00981903076171875,"To improve performance, caching is implemented with
+",language
+"To improve performance, caching is implemented with",code,Mem,0.0088043212890625,"To improve performance, caching is implemented withMem",code
+"To improve performance, caching is implemented with",code,both,0.00789642333984375,"To improve performance, caching is implemented withboth",language
+"To improve performance, caching is implemented with",code,in,0.00724029541015625,"To improve performance, caching is implemented within",language
+"To improve performance, caching is implemented with",code,local,0.005176544189453125,"To improve performance, caching is implemented withlocal",language
+"To improve performance, caching is implemented with",code,Spring,0.00467681884765625,"To improve performance, caching is implemented withSpring",code
+"To improve performance, caching is implemented with",code,several,0.004291534423828125,"To improve performance, caching is implemented withseveral",language
+"To improve performance, caching is implemented with",code,some,0.004093170166015625,"To improve performance, caching is implemented withsome",language
+"To improve performance, caching is implemented with",code,following,0.004032135009765625,"To improve performance, caching is implemented withfollowing",language
+"For training, the model is trained with",code,a,0.2236328125,"For training, the model is trained witha",language
+"For training, the model is trained with",code,the,0.1942138671875,"For training, the model is trained withthe",language
+"For training, the model is trained with",code,,0.05352783203125,"For training, the model is trained with",language
+"For training, the model is trained with",code,an,0.02777099609375,"For training, the model is trained withan",language
+"For training, the model is trained with",code,data,0.02691650390625,"For training, the model is trained withdata",language
+"For training, the model is trained with",code,`,0.014984130859375,"For training, the model is trained with`",code
+"For training, the model is trained with",code,both,0.014068603515625,"For training, the model is trained withboth",language
+"For training, the model is trained with",code,all,0.0139617919921875,"For training, the model is trained withall",language
+"For training, the model is trained with",code,two,0.012908935546875,"For training, the model is trained withtwo",language
+"For training, the model is trained with",code,only,0.01148223876953125,"For training, the model is trained withonly",language
+"For training, the model is trained with",code,"
+",0.0097503662109375,"For training, the model is trained with
+",language
+"For training, the model is trained with",code,different,0.0087432861328125,"For training, the model is trained withdifferent",language
+"For training, the model is trained with",code,random,0.008270263671875,"For training, the model is trained withrandom",language
+"For training, the model is trained with",code,one,0.007076263427734375,"For training, the model is trained withone",language
+"For training, the model is trained with",code,three,0.007022857666015625,"For training, the model is trained withthree",language
+"For training, the model is trained with",code,this,0.00675201416015625,"For training, the model is trained withthis",language
+"For training, the model is trained with",code,multiple,0.0061492919921875,"For training, the model is trained withmultiple",language
+"For training, the model is trained with",code,[,0.00600433349609375,"For training, the model is trained with[",code
+"For training, the model is trained with",code,synth,0.00572967529296875,"For training, the model is trained withsynth",language
+"For training, the model is trained with",code,no,0.005641937255859375,"For training, the model is trained withno",language
+"For hosting, we deploy to",code,a,0.2054443359375,"For hosting, we deploy toa",language
+"For hosting, we deploy to",code,the,0.08172607421875,"For hosting, we deploy tothe",language
+"For hosting, we deploy to",code,AWS,0.06317138671875,"For hosting, we deploy toAWS",code
+"For hosting, we deploy to",code,Her,0.0574951171875,"For hosting, we deploy toHer",code
+"For hosting, we deploy to",code,our,0.05401611328125,"For hosting, we deploy toour",language
+"For hosting, we deploy to",code,an,0.04656982421875,"For hosting, we deploy toan",language
+"For hosting, we deploy to",code,[,0.03741455078125,"For hosting, we deploy to[",code
+"For hosting, we deploy to",code,Azure,0.0269622802734375,"For hosting, we deploy toAzure",code
+"For hosting, we deploy to",code,production,0.0194091796875,"For hosting, we deploy toproduction",language
+"For hosting, we deploy to",code,Amazon,0.0164794921875,"For hosting, we deploy toAmazon",code
+"For hosting, we deploy to",code,multiple,0.0136566162109375,"For hosting, we deploy tomultiple",language
+"For hosting, we deploy to",code,EC,0.01282501220703125,"For hosting, we deploy toEC",code
+"For hosting, we deploy to",code,K,0.01224517822265625,"For hosting, we deploy toK",code
+"For hosting, we deploy to",code,`,0.01177215576171875,"For hosting, we deploy to`",code
+"For hosting, we deploy to",code,Digital,0.01030731201171875,"For hosting, we deploy toDigital",code
+"For hosting, we deploy to",code,Google,0.0093841552734375,"For hosting, we deploy toGoogle",code
+"For hosting, we deploy to",code,G,0.00847625732421875,"For hosting, we deploy toG",code
+"For hosting, we deploy to",code,"
+",0.007198333740234375,"For hosting, we deploy to
+",language
+"For hosting, we deploy to",code,her,0.006977081298828125,"For hosting, we deploy toher",language
+"For hosting, we deploy to",code,st,0.006866455078125,"For hosting, we deploy tost",language
+"In Kubernetes, containers are orchestrated with",code,a,0.1798095703125,"In Kubernetes, containers are orchestrated witha",language
+"In Kubernetes, containers are orchestrated with",code,the,0.1649169921875,"In Kubernetes, containers are orchestrated withthe",language
+"In Kubernetes, containers are orchestrated with",code,[,0.06927490234375,"In Kubernetes, containers are orchestrated with[",code
+"In Kubernetes, containers are orchestrated with",code,pod,0.047607421875,"In Kubernetes, containers are orchestrated withpod",language
+"In Kubernetes, containers are orchestrated with",code,help,0.036529541015625,"In Kubernetes, containers are orchestrated withhelp",language
+"In Kubernetes, containers are orchestrated with",code,services,0.0295867919921875,"In Kubernetes, containers are orchestrated withservices",language
+"In Kubernetes, containers are orchestrated with",code,K,0.028228759765625,"In Kubernetes, containers are orchestrated withK",code
+"In Kubernetes, containers are orchestrated with",code,tools,0.0265045166015625,"In Kubernetes, containers are orchestrated withtools",language
+"In Kubernetes, containers are orchestrated with",code,`,0.024505615234375,"In Kubernetes, containers are orchestrated with`",code
+"In Kubernetes, containers are orchestrated with",code,other,0.0233917236328125,"In Kubernetes, containers are orchestrated withother",language
+"In Kubernetes, containers are orchestrated with",code,rep,0.01499176025390625,"In Kubernetes, containers are orchestrated withrep",language
+"In Kubernetes, containers are orchestrated with",code,Pod,0.0147552490234375,"In Kubernetes, containers are orchestrated withPod",code
+"In Kubernetes, containers are orchestrated with",code,Docker,0.0126190185546875,"In Kubernetes, containers are orchestrated withDocker",code
+"In Kubernetes, containers are orchestrated with",code,an,0.00991058349609375,"In Kubernetes, containers are orchestrated withan",language
+"In Kubernetes, containers are orchestrated with",code,various,0.00975799560546875,"In Kubernetes, containers are orchestrated withvarious",language
+"In Kubernetes, containers are orchestrated with",code,"
+",0.007904052734375,"In Kubernetes, containers are orchestrated with
+",language
+"In Kubernetes, containers are orchestrated with",code,their,0.0072479248046875,"In Kubernetes, containers are orchestrated withtheir",language
+"In Kubernetes, containers are orchestrated with",code,respect,0.007083892822265625,"In Kubernetes, containers are orchestrated withrespect",language
+"In Kubernetes, containers are orchestrated with",code,**,0.00675201416015625,"In Kubernetes, containers are orchestrated with**",code
+"In Kubernetes, containers are orchestrated with",code,Dep,0.00659942626953125,"In Kubernetes, containers are orchestrated withDep",code
+The API authentication uses,code,the,0.2183837890625,The API authentication usesthe,language
+The API authentication uses,code,a,0.1431884765625,The API authentication usesa,language
+The API authentication uses,code,O,0.08892822265625,The API authentication usesO,code
+The API authentication uses,code,[,0.0645751953125,The API authentication uses[,code
+The API authentication uses,code,J,0.049896240234375,The API authentication usesJ,code
+The API authentication uses,code,an,0.04437255859375,The API authentication usesan,language
+The API authentication uses,code,JSON,0.037353515625,The API authentication usesJSON,code
+The API authentication uses,code,HTTP,0.024322509765625,The API authentication usesHTTP,code
+The API authentication uses,code,basic,0.022491455078125,The API authentication usesbasic,language
+The API authentication uses,code,`,0.0192413330078125,The API authentication uses`,code
+The API authentication uses,code,Basic,0.01806640625,The API authentication usesBasic,code
+The API authentication uses,code,two,0.01343536376953125,The API authentication usestwo,language
+The API authentication uses,code,token,0.0120391845703125,The API authentication usestoken,language
+The API authentication uses,code,H,0.01184844970703125,The API authentication usesH,code
+The API authentication uses,code,API,0.0115814208984375,The API authentication usesAPI,code
+The API authentication uses,code,tokens,0.0084075927734375,The API authentication usestokens,language
+The API authentication uses,code,standard,0.008270263671875,The API authentication usesstandard,language
+The API authentication uses,code,Bear,0.00600433349609375,The API authentication usesBear,code
+The API authentication uses,code,o,0.005641937255859375,The API authentication useso,language
+The API authentication uses,code,cookies,0.005260467529296875,The API authentication usescookies,language
+User credentials are validated with,code,the,0.35546875,User credentials are validated withthe,language
+User credentials are validated with,code,a,0.11016845703125,User credentials are validated witha,language
+User credentials are validated with,code,an,0.045928955078125,User credentials are validated withan,language
+User credentials are validated with,code,each,0.035186767578125,User credentials are validated witheach,language
+User credentials are validated with,code,AWS,0.0157470703125,User credentials are validated withAWS,code
+User credentials are validated with,code,every,0.0155029296875,User credentials are validated withevery,language
+User credentials are validated with,code,"
+",0.01357269287109375,"User credentials are validated with
+",language
+User credentials are validated with,code,this,0.01335906982421875,User credentials are validated withthis,language
+User credentials are validated with,code,Azure,0.0113372802734375,User credentials are validated withAzure,code
+User credentials are validated with,code,Google,0.0085601806640625,User credentials are validated withGoogle,code
+User credentials are validated with,code,your,0.0085601806640625,User credentials are validated withyour,language
+User credentials are validated with,code,`,0.00661468505859375,User credentials are validated with`,code
+User credentials are validated with,code,[,0.00597381591796875,User credentials are validated with[,code
+User credentials are validated with,code,O,0.005702972412109375,User credentials are validated withO,code
+User credentials are validated with,code,Amazon,0.005573272705078125,User credentials are validated withAmazon,code
+User credentials are validated with,code,our,0.0052337646484375,User credentials are validated withour,language
+User credentials are validated with,code,L,0.004802703857421875,User credentials are validated withL,code
+User credentials are validated with,code,both,0.004547119140625,User credentials are validated withboth,language
+User credentials are validated with,code,their,0.004337310791015625,User credentials are validated withtheir,language
+User credentials are validated with,code,,0.0040130615234375,User credentials are validated with,language
+OAuth tokens are generated using,code,the,0.3681640625,OAuth tokens are generated usingthe,language
+OAuth tokens are generated using,code,a,0.167236328125,OAuth tokens are generated usinga,language
+OAuth tokens are generated using,code,an,0.0526123046875,OAuth tokens are generated usingan,language
+OAuth tokens are generated using,code,O,0.045013427734375,OAuth tokens are generated usingO,code
+OAuth tokens are generated using,code,this,0.022796630859375,OAuth tokens are generated usingthis,language
+OAuth tokens are generated using,code,[,0.018463134765625,OAuth tokens are generated using[,code
+OAuth tokens are generated using,code,H,0.01393890380859375,OAuth tokens are generated usingH,code
+OAuth tokens are generated using,code,J,0.01372528076171875,OAuth tokens are generated usingJ,code
+OAuth tokens are generated using,code,your,0.01120758056640625,OAuth tokens are generated usingyour,language
+OAuth tokens are generated using,code,HTTP,0.00879669189453125,OAuth tokens are generated usingHTTP,code
+OAuth tokens are generated using,code,Open,0.00852203369140625,OAuth tokens are generated usingOpen,code
+OAuth tokens are generated using,code,JSON,0.00846099853515625,OAuth tokens are generated usingJSON,code
+OAuth tokens are generated using,code,`,0.00679779052734375,OAuth tokens are generated using`,code
+OAuth tokens are generated using,code,one,0.00679779052734375,OAuth tokens are generated usingone,language
+OAuth tokens are generated using,code,"
+",0.0060882568359375,"OAuth tokens are generated using
+",language
+OAuth tokens are generated using,code,,0.0060882568359375,OAuth tokens are generated using,language
+OAuth tokens are generated using,code,client,0.00521087646484375,OAuth tokens are generated usingclient,language
+OAuth tokens are generated using,code,R,0.00508880615234375,OAuth tokens are generated usingR,code
+OAuth tokens are generated using,code,two,0.0045623779296875,OAuth tokens are generated usingtwo,language
+OAuth tokens are generated using,code,these,0.0045623779296875,OAuth tokens are generated usingthese,language
+Password encryption uses,code,a,0.1895751953125,Password encryption usesa,language
+Password encryption uses,code,the,0.10888671875,Password encryption usesthe,language
+Password encryption uses,code,symmetric,0.0290679931640625,Password encryption usessymmetric,language
+Password encryption uses,code,an,0.0258636474609375,Password encryption usesan,language
+Password encryption uses,code,two,0.0228271484375,Password encryption usestwo,language
+Password encryption uses,code,public,0.0201416015625,Password encryption usespublic,language
+Password encryption uses,code,,0.01300811767578125,Password encryption uses,language
+Password encryption uses,code,to,0.0127105712890625,Password encryption usesto,language
+Password encryption uses,code,A,0.0124053955078125,Password encryption usesA,language
+Password encryption uses,code,of,0.0122222900390625,Password encryption usesof,language
+Password encryption uses,code,different,0.01029205322265625,Password encryption usesdifferent,language
+Password encryption uses,code,algorithms,0.009857177734375,Password encryption usesalgorithms,language
+Password encryption uses,code,some,0.0094757080078125,Password encryption usessome,language
+Password encryption uses,code,many,0.00856781005859375,Password encryption usesmany,language
+Password encryption uses,code,random,0.00843048095703125,Password encryption usesrandom,language
+Password encryption uses,code,keys,0.0079803466796875,Password encryption useskeys,language
+Password encryption uses,code,mathematical,0.007099151611328125,Password encryption usesmathematical,language
+Password encryption uses,code,one,0.006748199462890625,Password encryption usesone,language
+Password encryption uses,code,various,0.006591796875,Password encryption usesvarious,language
+Password encryption uses,code,"
+",0.00653839111328125,"Password encryption uses
+",language
+Session management is handled by,code,the,0.455078125,Session management is handled bythe,language
+Session management is handled by,code,a,0.08221435546875,Session management is handled bya,language
+Session management is handled by,code,an,0.0182037353515625,Session management is handled byan,language
+Session management is handled by,code,Session,0.01462554931640625,Session management is handled bySession,code
+Session management is handled by,code,session,0.0130157470703125,Session management is handled bysession,language
+Session management is handled by,code,this,0.01175689697265625,Session management is handled bythis,language
+Session management is handled by,code,:,0.00989532470703125,Session management is handled by:,code
+Session management is handled by,code,`,0.0094451904296875,Session management is handled by`,code
+Session management is handled by,code,two,0.0091552734375,Session management is handled bytwo,language
+Session management is handled by,code,[,0.007415771484375,Session management is handled by[,code
+Session management is handled by,code,"
+",0.006195068359375,"Session management is handled by
+",language
+Session management is handled by,code,your,0.00600433349609375,Session management is handled byyour,language
+Session management is handled by,code,our,0.005214691162109375,Session management is handled byour,language
+Session management is handled by,code,one,0.004978179931640625,Session management is handled byone,language
+Session management is handled by,code,using,0.00467681884765625,Session management is handled byusing,language
+Session management is handled by,code,{@,0.0040435791015625,Session management is handled by{@,code
+Session management is handled by,code,,0.00396728515625,Session management is handled by,language
+Session management is handled by,code,<,0.0033817291259765625,Session management is handled by<,code
+Session management is handled by,code,both,0.0033550262451171875,Session management is handled byboth,language
+Session management is handled by,code,each,0.0031261444091796875,Session management is handled byeach,language
+Authorization headers contain,code,the,0.192138671875,Authorization headers containthe,language
+Authorization headers contain,code,a,0.1763916015625,Authorization headers containa,language
+Authorization headers contain,code,information,0.06591796875,Authorization headers containinformation,language
+Authorization headers contain,code,an,0.05859375,Authorization headers containan,language
+Authorization headers contain,code,sensitive,0.0220794677734375,Authorization headers containsensitive,language
+Authorization headers contain,code,credentials,0.018890380859375,Authorization headers containcredentials,language
+Authorization headers contain,code,tokens,0.0169219970703125,Authorization headers containtokens,language
+Authorization headers contain,code,"
+",0.015777587890625,"Authorization headers contain
+",language
+Authorization headers contain,code,all,0.0148162841796875,Authorization headers containall,language
+Authorization headers contain,code,authentication,0.0121917724609375,Authorization headers containauthentication,code
+Authorization headers contain,code,two,0.01067352294921875,Authorization headers containtwo,language
+Authorization headers contain,code,authorization,0.01067352294921875,Authorization headers containauthorization,code
+Authorization headers contain,code,only,0.00812530517578125,Authorization headers containonly,language
+Authorization headers contain,code,user,0.00799560546875,Authorization headers containuser,language
+Authorization headers contain,code,data,0.00792694091796875,Authorization headers containdata,language
+Authorization headers contain,code,one,0.0078125,Authorization headers containone,language
+Authorization headers contain,code,token,0.007747650146484375,Authorization headers containtoken,language
+Authorization headers contain,code,O,0.00745391845703125,Authorization headers containO,code
+Authorization headers contain,code,some,0.0072784423828125,Authorization headers containsome,language
+Authorization headers contain,code,`,0.007221221923828125,Authorization headers contain`,code
+API keys are stored in,code,the,0.309814453125,API keys are stored inthe,language
+API keys are stored in,code,a,0.1632080078125,API keys are stored ina,language
+API keys are stored in,code,`,0.041595458984375,API keys are stored in`,code
+API keys are stored in,code,an,0.033416748046875,API keys are stored inan,language
+API keys are stored in,code,plain,0.027069091796875,API keys are stored inplain,language
+API keys are stored in,code,your,0.0193328857421875,API keys are stored inyour,language
+API keys are stored in,code,memory,0.01873779296875,API keys are stored inmemory,language
+API keys are stored in,code,this,0.0139312744140625,API keys are stored inthis,language
+API keys are stored in,code,environment,0.0101165771484375,API keys are stored inenvironment,language
+API keys are stored in,code,[,0.00988006591796875,API keys are stored in[,code
+API keys are stored in,code,"
+",0.00988006591796875,"API keys are stored in
+",language
+API keys are stored in,code,encrypted,0.0093536376953125,API keys are stored inencrypted,language
+API keys are stored in,code,AWS,0.00806427001953125,API keys are stored inAWS,code
+API keys are stored in,code,Azure,0.007061004638671875,API keys are stored inAzure,code
+API keys are stored in,code,/,0.006381988525390625,API keys are stored in/,code
+API keys are stored in,code,~,0.00576019287109375,API keys are stored in~,code
+API keys are stored in,code,separate,0.00576019287109375,API keys are stored inseparate,language
+API keys are stored in,code,clear,0.00533294677734375,API keys are stored inclear,language
+API keys are stored in,code,.,0.004451751708984375,API keys are stored in.,code
+API keys are stored in,code,local,0.004215240478515625,API keys are stored inlocal,language
+The database connection uses,code,the,0.331787109375,The database connection usesthe,language
+The database connection uses,code,a,0.143798828125,The database connection usesa,language
+The database connection uses,code,an,0.036102294921875,The database connection usesan,language
+The database connection uses,code,[,0.035247802734375,The database connection uses[,code
+The database connection uses,code,PDO,0.0341796875,The database connection usesPDO,code
+The database connection uses,code,`,0.02386474609375,The database connection uses`,code
+The database connection uses,code,J,0.0173187255859375,The database connection usesJ,code
+The database connection uses,code,SQL,0.013916015625,The database connection usesSQL,code
+The database connection uses,code,SSL,0.011810302734375,The database connection usesSSL,code
+The database connection uses,code,MySQL,0.01171875,The database connection usesMySQL,code
+The database connection uses,code,Post,0.00733184814453125,The database connection usesPost,code
+The database connection uses,code,"
+",0.00699615478515625,"The database connection uses
+",language
+The database connection uses,code,O,0.006671905517578125,The database connection usesO,code
+The database connection uses,code,PHP,0.006420135498046875,The database connection usesPHP,code
+The database connection uses,code,two,0.005985260009765625,The database connection usestwo,language
+The database connection uses,code,this,0.005939483642578125,The database connection usesthis,language
+The database connection uses,code,standard,0.00484466552734375,The database connection usesstandard,language
+The database connection uses,code,:,0.004375457763671875,The database connection uses:,code
+The database connection uses,code,,0.00414276123046875,The database connection uses,language
+The database connection uses,code,**,0.004016876220703125,The database connection uses**,code
+Query execution is done with,code,the,0.1600341796875,Query execution is done withthe,language
+Query execution is done with,code,a,0.1285400390625,Query execution is done witha,language
+Query execution is done with,code,`,0.039825439453125,Query execution is done with`,code
+Query execution is done with,code,an,0.032501220703125,Query execution is done withan,language
+Query execution is done with,code,no,0.0219879150390625,Query execution is done withno,language
+Query execution is done with,code,,0.018524169921875,Query execution is done with,language
+Query execution is done with,code,this,0.01727294921875,Query execution is done withthis,language
+Query execution is done with,code,success,0.0171356201171875,Query execution is done withsuccess,language
+Query execution is done with,code,"
+",0.015716552734375,"Query execution is done with
+",language
+Query execution is done with,code,:,0.01364898681640625,Query execution is done with:,code
+Query execution is done with,code,one,0.0089569091796875,Query execution is done withone,language
+Query execution is done with,code,[,0.007904052734375,Query execution is done with[,code
+Query execution is done with,code,some,0.007843017578125,Query execution is done withsome,language
+Query execution is done with,code,"""",0.007251739501953125,"Query execution is done with""",code
+Query execution is done with,code,respect,0.006603240966796875,Query execution is done withrespect,language
+Query execution is done with,code,error,0.006603240966796875,Query execution is done witherror,language
+Query execution is done with,code,all,0.006450653076171875,Query execution is done withall,language
+Query execution is done with,code,following,0.0050048828125,Query execution is done withfollowing,language
+Query execution is done with,code,two,0.004520416259765625,Query execution is done withtwo,language
+Query execution is done with,code,multiple,0.0035343170166015625,Query execution is done withmultiple,language
+Data persistence uses,code,a,0.1785888671875,Data persistence usesa,language
+Data persistence uses,code,the,0.1492919921875,Data persistence usesthe,language
+Data persistence uses,code,an,0.040802001953125,Data persistence usesan,language
+Data persistence uses,code,two,0.0181121826171875,Data persistence usestwo,language
+Data persistence uses,code,`,0.0162353515625,Data persistence uses`,code
+Data persistence uses,code,this,0.0152435302734375,Data persistence usesthis,language
+Data persistence uses,code,"
+",0.014434814453125,"Data persistence uses
+",language
+Data persistence uses,code,.,0.0139923095703125,Data persistence uses.,code
+Data persistence uses,code,J,0.01068878173828125,Data persistence usesJ,code
+Data persistence uses,code,to,0.00872039794921875,Data persistence usesto,language
+Data persistence uses,code,it,0.00872039794921875,Data persistence usesit,language
+Data persistence uses,code,,0.00868988037109375,Data persistence uses,language
+Data persistence uses,code,Hibernate,0.0084228515625,Data persistence usesHibernate,code
+Data persistence uses,code,its,0.00812530517578125,Data persistence usesits,language
+Data persistence uses,code,SQL,0.0073699951171875,Data persistence usesSQL,code
+Data persistence uses,code,[,0.007038116455078125,Data persistence uses[,code
+Data persistence uses,code,transactions,0.006633758544921875,Data persistence usestransactions,language
+Data persistence uses,code,one,0.00601959228515625,Data persistence usesone,language
+Data persistence uses,code,Java,0.005809783935546875,Data persistence usesJava,code
+Data persistence uses,code,different,0.00550079345703125,Data persistence usesdifferent,language
+The cache layer uses,code,the,0.2259521484375,The cache layer usesthe,language
+The cache layer uses,code,a,0.2105712890625,The cache layer usesa,language
+The cache layer uses,code,[,0.03863525390625,The cache layer uses[,code
+The cache layer uses,code,an,0.037445068359375,The cache layer usesan,language
+The cache layer uses,code,Red,0.0305938720703125,The cache layer usesRed,code
+The cache layer uses,code,`,0.03009033203125,The cache layer uses`,code
+The cache layer uses,code,two,0.0149078369140625,The cache layer usestwo,language
+The cache layer uses,code,mem,0.012359619140625,The cache layer usesmem,language
+The cache layer uses,code,redis,0.00785064697265625,The cache layer usesredis,code
+The cache layer uses,code,this,0.00640869140625,The cache layer usesthis,language
+The cache layer uses,code,,0.0055694580078125,The cache layer uses,language
+The cache layer uses,code,Mem,0.005481719970703125,The cache layer usesMem,code
+The cache layer uses,code,its,0.005191802978515625,The cache layer usesits,language
+The cache layer uses,code,L,0.005107879638671875,The cache layer usesL,code
+The cache layer uses,code,SQLite,0.004581451416015625,The cache layer usesSQLite,code
+The cache layer uses,code,caching,0.0044403076171875,The cache layer usescaching,language
+The cache layer uses,code,memory,0.004337310791015625,The cache layer usesmemory,language
+The cache layer uses,code,local,0.00420379638671875,The cache layer useslocal,language
+The cache layer uses,code,multiple,0.004009246826171875,The cache layer usesmultiple,language
+The cache layer uses,code,C,0.0035686492919921875,The cache layer usesC,code
+Database migrations are handled by,code,the,0.282958984375,Database migrations are handled bythe,language
+Database migrations are handled by,code,[,0.074951171875,Database migrations are handled by[,code
+Database migrations are handled by,code,a,0.07440185546875,Database migrations are handled bya,language
+Database migrations are handled by,code,`,0.049560546875,Database migrations are handled by`,code
+Database migrations are handled by,code,Terra,0.01464080810546875,Database migrations are handled byTerra,code
+Database migrations are handled by,code,Django,0.012725830078125,Database migrations are handled byDjango,code
+Database migrations are handled by,code,Laravel,0.0117645263671875,Database migrations are handled byLaravel,code
+Database migrations are handled by,code,an,0.00945281982421875,Database migrations are handled byan,language
+Database migrations are handled by,code,this,0.00881195068359375,Database migrations are handled bythis,language
+Database migrations are handled by,code,running,0.0087432861328125,Database migrations are handled byrunning,language
+Database migrations are handled by,code,migr,0.00861358642578125,Database migrations are handled bymigr,language
+Database migrations are handled by,code,Fly,0.007717132568359375,Database migrations are handled byFly,code
+Database migrations are handled by,code,Rails,0.0073089599609375,Database migrations are handled byRails,code
+Database migrations are handled by,code,[`,0.007251739501953125,Database migrations are handled by[`,code
+Database migrations are handled by,code,"
+",0.0067596435546875,"Database migrations are handled by
+",language
+Database migrations are handled by,code,K,0.006500244140625,Database migrations are handled byK,code
+Database migrations are handled by,code,using,0.006397247314453125,Database migrations are handled byusing,language
+Database migrations are handled by,code,our,0.00551605224609375,Database migrations are handled byour,language
+Database migrations are handled by,code,AWS,0.0053863525390625,Database migrations are handled byAWS,code
+Database migrations are handled by,code,database,0.0051422119140625,Database migrations are handled bydatabase,language
+Transactions are managed with,code,the,0.2314453125,Transactions are managed withthe,language
+Transactions are managed with,code,a,0.16162109375,Transactions are managed witha,language
+Transactions are managed with,code,[,0.0310821533203125,Transactions are managed with[,code
+Transactions are managed with,code,an,0.028961181640625,Transactions are managed withan,language
+Transactions are managed with,code,transactions,0.02764892578125,Transactions are managed withtransactions,language
+Transactions are managed with,code,`,0.0185699462890625,Transactions are managed with`,code
+Transactions are managed with,code,two,0.01265716552734375,Transactions are managed withtwo,language
+Transactions are managed with,code,transaction,0.0076141357421875,Transactions are managed withtransaction,language
+Transactions are managed with,code,help,0.007556915283203125,Transactions are managed withhelp,language
+Transactions are managed with,code,respect,0.006565093994140625,Transactions are managed withrespect,language
+Transactions are managed with,code,,0.0060272216796875,Transactions are managed with,language
+Transactions are managed with,code,this,0.005931854248046875,Transactions are managed withthis,language
+Transactions are managed with,code,"
+",0.00485992431640625,"Transactions are managed with
+",language
+Transactions are managed with,code,Trans,0.00469207763671875,Transactions are managed withTrans,code
+Transactions are managed with,code,their,0.003528594970703125,Transactions are managed withtheir,language
+Transactions are managed with,code,multiple,0.0034999847412109375,Transactions are managed withmultiple,language
+Transactions are managed with,code,smart,0.003406524658203125,Transactions are managed withsmart,language
+Transactions are managed with,code,great,0.0031375885009765625,Transactions are managed withgreat,language
+Transactions are managed with,code,one,0.00311279296875,Transactions are managed withone,language
+Transactions are managed with,code,three,0.00289154052734375,Transactions are managed withthree,language
+The REST API uses,code,the,0.248291015625,The REST API usesthe,language
+The REST API uses,code,JSON,0.1248779296875,The REST API usesJSON,code
+The REST API uses,code,a,0.10931396484375,The REST API usesa,language
+The REST API uses,code,HTTP,0.06732177734375,The REST API usesHTTP,code
+The REST API uses,code,[,0.0438232421875,The REST API uses[,code
+The REST API uses,code,O,0.033599853515625,The REST API usesO,code
+The REST API uses,code,J,0.027862548828125,The REST API usesJ,code
+The REST API uses,code,an,0.022735595703125,The REST API usesan,language
+The REST API uses,code,standard,0.0200653076171875,The REST API usesstandard,language
+The REST API uses,code,`,0.01422882080078125,The REST API uses`,code
+The REST API uses,code,H,0.010650634765625,The REST API usesH,code
+The REST API uses,code,Open,0.009857177734375,The REST API usesOpen,code
+The REST API uses,code,XML,0.006072998046875,The REST API usesXML,code
+The REST API uses,code,basic,0.005977630615234375,The REST API usesbasic,language
+The REST API uses,code,Sw,0.005443572998046875,The REST API usesSw,code
+The REST API uses,code,token,0.00414276123046875,The REST API usestoken,language
+The REST API uses,code,Basic,0.004077911376953125,The REST API usesBasic,code
+The REST API uses,code,two,0.0038299560546875,The REST API usestwo,language
+The REST API uses,code,json,0.003711700439453125,The REST API usesjson,code
+The REST API uses,code,this,0.003513336181640625,The REST API usesthis,language
+HTTP requests are handled by,code,the,0.392822265625,HTTP requests are handled bythe,language
+HTTP requests are handled by,code,a,0.1326904296875,HTTP requests are handled bya,language
+HTTP requests are handled by,code,`,0.0307769775390625,HTTP requests are handled by`,code
+HTTP requests are handled by,code,an,0.023223876953125,HTTP requests are handled byan,language
+HTTP requests are handled by,code,[,0.0164794921875,HTTP requests are handled by[,code
+HTTP requests are handled by,code,this,0.01168060302734375,HTTP requests are handled bythis,language
+HTTP requests are handled by,code,your,0.0110626220703125,HTTP requests are handled byyour,language
+HTTP requests are handled by,code,"
+",0.00998687744140625,"HTTP requests are handled by
+",language
+HTTP requests are handled by,code,one,0.008819580078125,HTTP requests are handled byone,language
+HTTP requests are handled by,code,handlers,0.00655364990234375,HTTP requests are handled byhandlers,language
+HTTP requests are handled by,code,our,0.006107330322265625,HTTP requests are handled byour,language
+HTTP requests are handled by,code,using,0.0058746337890625,HTTP requests are handled byusing,language
+HTTP requests are handled by,code,different,0.0056915283203125,HTTP requests are handled bydifferent,language
+HTTP requests are handled by,code,default,0.004364013671875,HTTP requests are handled bydefault,language
+HTTP requests are handled by,code,calling,0.004230499267578125,HTTP requests are handled bycalling,language
+HTTP requests are handled by,code,each,0.0036487579345703125,HTTP requests are handled byeach,language
+HTTP requests are handled by,code,Request,0.0036182403564453125,HTTP requests are handled byRequest,code
+HTTP requests are handled by,code,two,0.0034809112548828125,HTTP requests are handled bytwo,language
+HTTP requests are handled by,code,middle,0.0032711029052734375,HTTP requests are handled bymiddle,language
+HTTP requests are handled by,code,{@,0.0031681060791015625,HTTP requests are handled by{@,code
+Routing is configured with,code,the,0.21728515625,Routing is configured withthe,language
+Routing is configured with,code,a,0.1553955078125,Routing is configured witha,language
+Routing is configured with,code,`,0.0301055908203125,Routing is configured with`,code
+Routing is configured with,code,an,0.02740478515625,Routing is configured withan,language
+Routing is configured with,code,"
+",0.0164947509765625,"Routing is configured with
+",language
+Routing is configured with,code,two,0.0162506103515625,Routing is configured withtwo,language
+Routing is configured with,code,this,0.01422119140625,Routing is configured withthis,language
+Routing is configured with,code,default,0.0141143798828125,Routing is configured withdefault,language
+Routing is configured with,code,,0.0129547119140625,Routing is configured with,language
+Routing is configured with,code,:,0.0100860595703125,Routing is configured with:,code
+Routing is configured with,code,[,0.0085601806640625,Routing is configured with[,code
+Routing is configured with,code,static,0.00785064697265625,Routing is configured withstatic,language
+Routing is configured with,code,multiple,0.007671356201171875,Routing is configured withmultiple,language
+Routing is configured with,code,routes,0.00640869140625,Routing is configured withroutes,language
+Routing is configured with,code,"""",0.00588226318359375,"Routing is configured with""",code
+Routing is configured with,code,routing,0.00583648681640625,Routing is configured withrouting,language
+Routing is configured with,code,route,0.005657196044921875,Routing is configured withroute,language
+Routing is configured with,code,following,0.00548553466796875,Routing is configured withfollowing,language
+Routing is configured with,code,all,0.0053558349609375,Routing is configured withall,language
+Routing is configured with,code,IP,0.005191802978515625,Routing is configured withIP,code
+Middleware is defined using,code,the,0.3720703125,Middleware is defined usingthe,language
+Middleware is defined using,code,a,0.2347412109375,Middleware is defined usinga,language
+Middleware is defined using,code,`,0.0447998046875,Middleware is defined using`,code
+Middleware is defined using,code,an,0.039520263671875,Middleware is defined usingan,language
+Middleware is defined using,code,middle,0.01355743408203125,Middleware is defined usingmiddle,language
+Middleware is defined using,code,[,0.0134429931640625,Middleware is defined using[,code
+Middleware is defined using,code,two,0.0124359130859375,Middleware is defined usingtwo,language
+Middleware is defined using,code,this,0.01071929931640625,Middleware is defined usingthis,language
+Middleware is defined using,code,Express,0.0058746337890625,Middleware is defined usingExpress,code
+Middleware is defined using,code,one,0.00556182861328125,Middleware is defined usingone,language
+Middleware is defined using,code,functions,0.0054779052734375,Middleware is defined usingfunctions,language
+Middleware is defined using,code,"
+",0.005184173583984375,"Middleware is defined using
+",language
+Middleware is defined using,code,decor,0.005023956298828125,Middleware is defined usingdecor,language
+Middleware is defined using,code,function,0.0046844482421875,Middleware is defined usingfunction,language
+Middleware is defined using,code,classes,0.004505157470703125,Middleware is defined usingclasses,language
+Middleware is defined using,code,its,0.004467010498046875,Middleware is defined usingits,language
+Middleware is defined using,code,three,0.004398345947265625,Middleware is defined usingthree,language
+Middleware is defined using,code,,0.004199981689453125,Middleware is defined using,language
+Middleware is defined using,code,[`,0.0041656494140625,Middleware is defined using[`,code
+Middleware is defined using,code,PHP,0.0032711029052734375,Middleware is defined usingPHP,code
+The web framework is,code,a,0.1341552734375,The web framework isa,language
+The web framework is,code,built,0.0943603515625,The web framework isbuilt,language
+The web framework is,code,the,0.057220458984375,The web framework isthe,language
+The web framework is,code,based,0.049346923828125,The web framework isbased,language
+The web framework is,code,designed,0.029693603515625,The web framework isdesigned,language
+The web framework is,code,an,0.02923583984375,The web framework isan,language
+The web framework is,code,used,0.02789306640625,The web framework isused,language
+The web framework is,code,written,0.020721435546875,The web framework iswritten,language
+The web framework is,code,responsible,0.0190277099609375,The web framework isresponsible,language
+The web framework is,code,[,0.017852783203125,The web framework is[,code
+The web framework is,code,not,0.016143798828125,The web framework isnot,language
+The web framework is,code,developed,0.01091766357421875,The web framework isdeveloped,language
+The web framework is,code,one,0.0096435546875,The web framework isone,language
+The web framework is,code,currently,0.00792694091796875,The web framework iscurrently,language
+The web framework is,code,lic,0.00750732421875,The web framework islic,language
+The web framework is,code,called,0.00750732421875,The web framework iscalled,language
+The web framework is,code,in,0.007160186767578125,The web framework isin,language
+The web framework is,code,provided,0.006999969482421875,The web framework isprovided,language
+The web framework is,code,available,0.006938934326171875,The web framework isavailable,language
+The web framework is,code,open,0.0068359375,The web framework isopen,language
+Request validation uses,code,the,0.2178955078125,Request validation usesthe,language
+Request validation uses,code,a,0.10870361328125,Request validation usesa,language
+Request validation uses,code,.,0.0384521484375,Request validation uses.,code
+Request validation uses,code,`,0.0262298583984375,Request validation uses`,code
+Request validation uses,code,an,0.0222625732421875,Request validation usesan,language
+Request validation uses,code,to,0.0204315185546875,Request validation usesto,language
+Request validation uses,code,this,0.0180206298828125,Request validation usesthis,language
+Request validation uses,code,"
+",0.01360321044921875,"Request validation uses
+",language
+Request validation uses,code,regular,0.01084136962890625,Request validation usesregular,language
+Request validation uses,code,only,0.01003265380859375,Request validation usesonly,language
+Request validation uses,code,for,0.00913238525390625,Request validation usesfor,language
+Request validation uses,code,",",0.0083160400390625,"Request validation uses,",code
+Request validation uses,code,different,0.00818634033203125,Request validation usesdifferent,language
+Request validation uses,code,two,0.00751495361328125,Request validation usestwo,language
+Request validation uses,code,[,0.00745391845703125,Request validation uses[,code
+Request validation uses,code,JavaScript,0.006893157958984375,Request validation usesJavaScript,code
+Request validation uses,code,regex,0.0061798095703125,Request validation usesregex,language
+Request validation uses,code,HTML,0.00589752197265625,Request validation usesHTML,code
+Request validation uses,code,,0.005672454833984375,Request validation uses,language
+Request validation uses,code,both,0.005496978759765625,Request validation usesboth,language
+Response serialization uses,code,the,0.2376708984375,Response serialization usesthe,language
+Response serialization uses,code,a,0.136474609375,Response serialization usesa,language
+Response serialization uses,code,`,0.029296875,Response serialization uses`,code
+Response serialization uses,code,JSON,0.0228118896484375,Response serialization usesJSON,code
+Response serialization uses,code,an,0.0221099853515625,Response serialization usesan,language
+Response serialization uses,code,"
+",0.0198211669921875,"Response serialization uses
+",language
+Response serialization uses,code,this,0.01605224609375,Response serialization usesthis,language
+Response serialization uses,code,reflection,0.01568603515625,Response serialization usesreflection,language
+Response serialization uses,code,[,0.01496124267578125,Response serialization uses[,code
+Response serialization uses,code,.,0.01496124267578125,Response serialization uses.,code
+Response serialization uses,code,to,0.01290130615234375,Response serialization usesto,language
+Response serialization uses,code,only,0.00907135009765625,Response serialization usesonly,language
+Response serialization uses,code,,0.00846099853515625,Response serialization uses,language
+Response serialization uses,code,{@,0.00794219970703125,Response serialization uses{@,code
+Response serialization uses,code,json,0.0058135986328125,Response serialization usesjson,code
+Response serialization uses,code,",",0.005767822265625,"Response serialization uses,",code
+Response serialization uses,code,XML,0.00554656982421875,Response serialization usesXML,code
+Response serialization uses,code,Java,0.00550079345703125,Response serialization usesJava,code
+Response serialization uses,code,"""",0.005046844482421875,"Response serialization uses""",code
+Response serialization uses,code,binary,0.0048980712890625,Response serialization usesbinary,language
+State management uses,code,the,0.11993408203125,State management usesthe,language
+State management uses,code,a,0.08709716796875,State management usesa,language
+State management uses,code,.,0.0389404296875,State management uses.,code
+State management uses,code,of,0.03546142578125,State management usesof,language
+State management uses,code,to,0.0240936279296875,State management usesto,language
+State management uses,code,",",0.0223541259765625,"State management uses,",code
+State management uses,code,an,0.017974853515625,State management usesan,language
+State management uses,code,this,0.0162353515625,State management usesthis,language
+State management uses,code,for,0.0158538818359375,State management usesfor,language
+State management uses,code,it,0.0135650634765625,State management usesit,language
+State management uses,code,`,0.01235198974609375,State management uses`,code
+State management uses,code,"
+",0.01201629638671875,"State management uses
+",language
+State management uses,code,,0.01027679443359375,State management uses,language
+State management uses,code,and,0.00832366943359375,State management usesand,language
+State management uses,code,in,0.007232666015625,State management usesin,language
+State management uses,code,only,0.007091522216796875,State management usesonly,language
+State management uses,code,are,0.006687164306640625,State management usesare,language
+State management uses,code,that,0.006534576416015625,State management usesthat,language
+State management uses,code,:,0.00650787353515625,State management uses:,code
+State management uses,code,different,0.005458831787109375,State management usesdifferent,language
+The component library is,code,a,0.205322265625,The component library isa,language
+The component library is,code,the,0.071533203125,The component library isthe,language
+The component library is,code,built,0.0440673828125,The component library isbuilt,language
+The component library is,code,used,0.043365478515625,The component library isused,language
+The component library is,code,an,0.0364990234375,The component library isan,language
+The component library is,code,designed,0.031005859375,The component library isdesigned,language
+The component library is,code,responsible,0.0223236083984375,The component library isresponsible,language
+The component library is,code,available,0.02215576171875,The component library isavailable,language
+The component library is,code,based,0.02197265625,The component library isbased,language
+The component library is,code,not,0.01511383056640625,The component library isnot,language
+The component library is,code,where,0.01385498046875,The component library iswhere,language
+The component library is,code,divided,0.0115814208984375,The component library isdivided,language
+The component library is,code,written,0.01123046875,The component library iswritten,language
+The component library is,code,provided,0.01123046875,The component library isprovided,language
+The component library is,code,intended,0.01096343994140625,The component library isintended,language
+The component library is,code,made,0.01079559326171875,The component library ismade,language
+The component library is,code,organized,0.00945281982421875,The component library isorganized,language
+The component library is,code,under,0.0084075927734375,The component library isunder,language
+The component library is,code,in,0.008087158203125,The component library isin,language
+The component library is,code,generated,0.00777435302734375,The component library isgenerated,language
+Styling is done with,code,the,0.1251220703125,Styling is done withthe,language
+Styling is done with,code,a,0.1044921875,Styling is done witha,language
+Styling is done with,code,CSS,0.08331298828125,Styling is done withCSS,code
+Styling is done with,code,[,0.0229644775390625,Styling is done with[,code
+Styling is done with,code,css,0.018310546875,Styling is done withcss,code
+Styling is done with,code,HTML,0.0149383544921875,Styling is done withHTML,code
+Styling is done with,code,simple,0.01371002197265625,Styling is done withsimple,language
+Styling is done with,code,S,0.01200103759765625,Styling is done withS,code
+Styling is done with,code,an,0.01181793212890625,Styling is done withan,language
+Styling is done with,code,pure,0.01154327392578125,Styling is done withpure,language
+Styling is done with,code,inline,0.01093292236328125,Styling is done withinline,language
+Styling is done with,code,`,0.01042938232421875,Styling is done with`,code
+Styling is done with,code,classes,0.01018524169921875,Styling is done withclasses,language
+Styling is done with,code,flex,0.01010894775390625,Styling is done withflex,language
+Styling is done with,code,minimal,0.01003265380859375,Styling is done withminimal,language
+Styling is done with,code,basic,0.00787353515625,Styling is done withbasic,language
+Styling is done with,code,,0.007568359375,Styling is done with,language
+Styling is done with,code,Bootstrap,0.00739288330078125,Styling is done withBootstrap,code
+Styling is done with,code,SA,0.006893157958984375,Styling is done withSA,code
+Styling is done with,code,SC,0.006893157958984375,Styling is done withSC,code
+The bundler we use is,code,[,0.247314453125,The bundler we use is[,code
+The bundler we use is,code,called,0.0760498046875,The bundler we use iscalled,language
+The bundler we use is,code,`,0.0692138671875,The bundler we use is`,code
+The bundler we use is,code,the,0.049102783203125,The bundler we use isthe,language
+The bundler we use is,code,a,0.0450439453125,The bundler we use isa,language
+The bundler we use is,code,webpack,0.018341064453125,The bundler we use iswebpack,language
+The bundler we use is,code,https,0.0182037353515625,The bundler we use ishttps,code
+The bundler we use is,code,:,0.01580810546875,The bundler we use is:,code
+The bundler we use is,code,not,0.011932373046875,The bundler we use isnot,language
+The bundler we use is,code,Web,0.01148223876953125,The bundler we use isWeb,code
+The bundler we use is,code,"
+",0.00959014892578125,"The bundler we use is
+",language
+The bundler we use is,code,bund,0.009368896484375,The bundler we use isbund,language
+The bundler we use is,code,in,0.007587432861328125,The bundler we use isin,language
+The bundler we use is,code,from,0.007587432861328125,The bundler we use isfrom,language
+The bundler we use is,code,configured,0.006641387939453125,The bundler we use isconfigured,language
+The bundler we use is,code,based,0.006195068359375,The bundler we use isbased,language
+The bundler we use is,code,"""",0.00537872314453125,"The bundler we use is""",code
+The bundler we use is,code,J,0.005096435546875,The bundler we use isJ,code
+The bundler we use is,code,[`,0.004974365234375,The bundler we use is[`,code
+The bundler we use is,code,C,0.004974365234375,The bundler we use isC,code
+Frontend routing uses,code,the,0.2442626953125,Frontend routing usesthe,language
+Frontend routing uses,code,a,0.1759033203125,Frontend routing usesa,language
+Frontend routing uses,code,`,0.0253448486328125,Frontend routing uses`,code
+Frontend routing uses,code,an,0.0234375,Frontend routing usesan,language
+Frontend routing uses,code,[,0.01898193359375,Frontend routing uses[,code
+Frontend routing uses,code,this,0.015869140625,Frontend routing usesthis,language
+Frontend routing uses,code,two,0.0084228515625,Frontend routing usestwo,language
+Frontend routing uses,code,path,0.006610870361328125,Frontend routing usespath,language
+Frontend routing uses,code,"""",0.005615234375,"Frontend routing uses""",code
+Frontend routing uses,code,routes,0.0051116943359375,Frontend routing usesroutes,language
+Frontend routing uses,code,,0.004955291748046875,Frontend routing uses,language
+Frontend routing uses,code,Angular,0.0048370361328125,Frontend routing usesAngular,code
+Frontend routing uses,code,some,0.004726409912109375,Frontend routing usessome,language
+Frontend routing uses,code,named,0.004581451416015625,Frontend routing usesnamed,language
+Frontend routing uses,code,Sym,0.0041046142578125,Frontend routing usesSym,code
+Frontend routing uses,code,U,0.0040740966796875,Frontend routing usesU,code
+Frontend routing uses,code,its,0.003948211669921875,Frontend routing usesits,language
+Frontend routing uses,code,URL,0.003917694091796875,Frontend routing usesURL,code
+Frontend routing uses,code,"
+",0.003917694091796875,"Frontend routing uses
+",language
+Frontend routing uses,code,different,0.003887176513671875,Frontend routing usesdifferent,language
+API calls are made with,code,the,0.248046875,API calls are made withthe,language
+API calls are made with,code,a,0.11444091796875,API calls are made witha,language
+API calls are made with,code,`,0.03802490234375,API calls are made with`,code
+API calls are made with,code,an,0.0298614501953125,API calls are made withan,language
+API calls are made with,code,this,0.0240020751953125,API calls are made withthis,language
+API calls are made with,code,.,0.0186767578125,API calls are made with.,code
+API calls are made with,code,HTTP,0.013885498046875,API calls are made withHTTP,code
+API calls are made with,code,POST,0.010986328125,API calls are made withPOST,code
+API calls are made with,code,"
+",0.01031494140625,"API calls are made with
+",language
+API calls are made with,code,each,0.00969696044921875,API calls are made witheach,language
+API calls are made with,code,no,0.00848388671875,API calls are made withno,language
+API calls are made with,code,JSON,0.0081634521484375,API calls are made withJSON,code
+API calls are made with,code,[,0.007038116455078125,API calls are made with[,code
+API calls are made with,code,XML,0.006305694580078125,API calls are made withXML,code
+API calls are made with,code,parameters,0.006160736083984375,API calls are made withparameters,language
+API calls are made with,code,,0.00601959228515625,API calls are made with,language
+API calls are made with,code,AJAX,0.0051116943359375,API calls are made withAJAX,code
+API calls are made with,code,that,0.0047607421875,API calls are made withthat,language
+API calls are made with,code,GET,0.00472259521484375,API calls are made withGET,code
+API calls are made with,code,your,0.0044403076171875,API calls are made withyour,language
+The neural network uses,code,a,0.2568359375,The neural network usesa,language
+The neural network uses,code,the,0.2412109375,The neural network usesthe,language
+The neural network uses,code,,0.05340576171875,The neural network uses,language
+The neural network uses,code,an,0.043914794921875,The neural network usesan,language
+The neural network uses,code,two,0.0268402099609375,The neural network usestwo,language
+The neural network uses,code,three,0.01248931884765625,The neural network usesthree,language
+The neural network uses,code,this,0.01035308837890625,The neural network usesthis,language
+The neural network uses,code,these,0.007457733154296875,The neural network usesthese,language
+The neural network uses,code,several,0.00689697265625,The neural network usesseveral,language
+The neural network uses,code,one,0.006038665771484375,The neural network usesone,language
+The neural network uses,code,data,0.0056304931640625,The neural network usesdata,language
+The neural network uses,code,only,0.005584716796875,The neural network usesonly,language
+The neural network uses,code,input,0.005413055419921875,The neural network usesinput,language
+The neural network uses,code,multiple,0.005413055419921875,The neural network usesmultiple,language
+The neural network uses,code,both,0.005290985107421875,The neural network usesboth,language
+The neural network uses,code,four,0.005207061767578125,The neural network usesfour,language
+The neural network uses,code,all,0.005207061767578125,The neural network usesall,language
+The neural network uses,code,[,0.004596710205078125,The neural network uses[,code
+The neural network uses,code,weights,0.004116058349609375,The neural network usesweights,language
+The neural network uses,code,convolution,0.00386810302734375,The neural network usesconvolution,language
+Model training uses,code,the,0.1455078125,Model training usesthe,language
+Model training uses,code,a,0.1295166015625,Model training usesa,language
+Model training uses,code,.,0.026397705078125,Model training uses.,code
+Model training uses,code,of,0.0236663818359375,Model training usesof,language
+Model training uses,code,an,0.0235748291015625,Model training usesan,language
+Model training uses,code,"
+",0.0157623291015625,"Model training uses
+",language
+Model training uses,code,,0.01358795166015625,Model training uses,language
+Model training uses,code,this,0.01261138916015625,Model training usesthis,language
+Model training uses,code,",",0.01122283935546875,"Model training uses,",code
+Model training uses,code,to,0.01100921630859375,Model training usesto,language
+Model training uses,code,`,0.00945281982421875,Model training uses`,code
+Model training uses,code,only,0.00945281982421875,Model training usesonly,language
+Model training uses,code,two,0.00930023193359375,Model training usestwo,language
+Model training uses,code,for,0.007476806640625,Model training usesfor,language
+Model training uses,code,different,0.006809234619140625,Model training usesdifferent,language
+Model training uses,code,data,0.006443023681640625,Model training usesdata,language
+Model training uses,code,all,0.006103515625,Model training usesall,language
+Model training uses,code,[,0.005260467529296875,Model training uses[,code
+Model training uses,code,and,0.00519561767578125,Model training usesand,language
+Model training uses,code,in,0.005100250244140625,Model training usesin,language
+The optimizer is,code,a,0.1981201171875,The optimizer isa,language
+The optimizer is,code,responsible,0.12890625,The optimizer isresponsible,language
+The optimizer is,code,the,0.08258056640625,The optimizer isthe,language
+The optimizer is,code,used,0.0604248046875,The optimizer isused,language
+The optimizer is,code,an,0.052093505859375,The optimizer isan,language
+The optimizer is,code,not,0.0292205810546875,The optimizer isnot,language
+The optimizer is,code,in,0.01390838623046875,The optimizer isin,language
+The optimizer is,code,called,0.0130767822265625,The optimizer iscalled,language
+The optimizer is,code,also,0.0110015869140625,The optimizer isalso,language
+The optimizer is,code,what,0.0089111328125,The optimizer iswhat,language
+The optimizer is,code,designed,0.00870513916015625,The optimizer isdesigned,language
+The optimizer is,code,now,0.0081787109375,The optimizer isnow,language
+The optimizer is,code,defined,0.00780487060546875,The optimizer isdefined,language
+The optimizer is,code,required,0.007442474365234375,The optimizer isrequired,language
+The optimizer is,code,set,0.007274627685546875,The optimizer isset,language
+The optimizer is,code,free,0.006572723388671875,The optimizer isfree,language
+The optimizer is,code,one,0.006572723388671875,The optimizer isone,language
+The optimizer is,code,typically,0.0062713623046875,The optimizer istypically,language
+The optimizer is,code,initialized,0.006221771240234375,The optimizer isinitialized,language
+The optimizer is,code,able,0.006076812744140625,The optimizer isable,language
+Loss calculation uses,code,the,0.2490234375,Loss calculation usesthe,language
+Loss calculation uses,code,a,0.09381103515625,Loss calculation usesa,language
+Loss calculation uses,code,,0.02044677734375,Loss calculation uses,language
+Loss calculation uses,code,an,0.01427459716796875,Loss calculation usesan,language
+Loss calculation uses,code,`,0.01220703125,Loss calculation uses`,code
+Loss calculation uses,code,only,0.01085662841796875,Loss calculation usesonly,language
+Loss calculation uses,code,two,0.01076507568359375,Loss calculation usestwo,language
+Loss calculation uses,code,"
+",0.0098876953125,"Loss calculation uses
+",language
+Loss calculation uses,code,log,0.0080718994140625,Loss calculation useslog,language
+Loss calculation uses,code,this,0.00800323486328125,Loss calculation usesthis,language
+Loss calculation uses,code,mean,0.00794219970703125,Loss calculation usesmean,language
+Loss calculation uses,code,all,0.00653076171875,Loss calculation usesall,language
+Loss calculation uses,code,"""",0.0064544677734375,"Loss calculation uses""",code
+Loss calculation uses,code,:,0.00630950927734375,Loss calculation uses:,code
+Loss calculation uses,code,both,0.005229949951171875,Loss calculation usesboth,language
+Loss calculation uses,code,Monte,0.005229949951171875,Loss calculation usesMonte,code
+Loss calculation uses,code,M,0.004650115966796875,Loss calculation usesM,code
+Loss calculation uses,code,different,0.00457763671875,Loss calculation usesdifferent,language
+Loss calculation uses,code,L,0.004337310791015625,Loss calculation usesL,code
+Loss calculation uses,code,',0.0042877197265625,Loss calculation uses',code
+Data preprocessing uses,code,the,0.14111328125,Data preprocessing usesthe,language
+Data preprocessing uses,code,a,0.131591796875,Data preprocessing usesa,language
+Data preprocessing uses,code,an,0.0223236083984375,Data preprocessing usesan,language
+Data preprocessing uses,code,.,0.02215576171875,Data preprocessing uses.,code
+Data preprocessing uses,code,to,0.0219879150390625,Data preprocessing usesto,language
+Data preprocessing uses,code,"
+",0.020477294921875,"Data preprocessing uses
+",language
+Data preprocessing uses,code,,0.0193939208984375,Data preprocessing uses,language
+Data preprocessing uses,code,`,0.0125274658203125,Data preprocessing uses`,code
+Data preprocessing uses,code,for,0.01140594482421875,Data preprocessing usesfor,language
+Data preprocessing uses,code,[,0.0101776123046875,Data preprocessing uses[,code
+Data preprocessing uses,code,:,0.009796142578125,Data preprocessing uses:,code
+Data preprocessing uses,code,two,0.00934600830078125,Data preprocessing usestwo,language
+Data preprocessing uses,code,this,0.00864410400390625,Data preprocessing usesthis,language
+Data preprocessing uses,code,several,0.00853729248046875,Data preprocessing usesseveral,language
+Data preprocessing uses,code,",",0.007778167724609375,"Data preprocessing uses,",code
+Data preprocessing uses,code,only,0.007389068603515625,Data preprocessing usesonly,language
+Data preprocessing uses,code,in,0.0072479248046875,Data preprocessing usesin,language
+Data preprocessing uses,code,all,0.00634765625,Data preprocessing usesall,language
+Data preprocessing uses,code,some,0.006221771240234375,Data preprocessing usessome,language
+Data preprocessing uses,code,data,0.004772186279296875,Data preprocessing usesdata,language
+The ML framework is,code,a,0.1258544921875,The ML framework isa,language
+The ML framework is,code,designed,0.0858154296875,The ML framework isdesigned,language
+The ML framework is,code,built,0.052032470703125,The ML framework isbuilt,language
+The ML framework is,code,an,0.039886474609375,The ML framework isan,language
+The ML framework is,code,used,0.038360595703125,The ML framework isused,language
+The ML framework is,code,the,0.036041259765625,The ML framework isthe,language
+The ML framework is,code,based,0.03546142578125,The ML framework isbased,language
+The ML framework is,code,not,0.0211944580078125,The ML framework isnot,language
+The ML framework is,code,open,0.01959228515625,The ML framework isopen,language
+The ML framework is,code,responsible,0.0163726806640625,The ML framework isresponsible,language
+The ML framework is,code,lic,0.0132598876953125,The ML framework islic,language
+The ML framework is,code,available,0.01255035400390625,The ML framework isavailable,language
+The ML framework is,code,released,0.01116180419921875,The ML framework isreleased,language
+The ML framework is,code,written,0.01099395751953125,The ML framework iswritten,language
+The ML framework is,code,distributed,0.0105743408203125,The ML framework isdistributed,language
+The ML framework is,code,now,0.010009765625,The ML framework isnow,language
+The ML framework is,code,also,0.009552001953125,The ML framework isalso,language
+The ML framework is,code,developed,0.0094757080078125,The ML framework isdeveloped,language
+The ML framework is,code,intended,0.00940704345703125,The ML framework isintended,language
+The ML framework is,code,implemented,0.00843048095703125,The ML framework isimplemented,language
+Container orchestration uses,code,a,0.145263671875,Container orchestration usesa,language
+Container orchestration uses,code,the,0.124267578125,Container orchestration usesthe,language
+Container orchestration uses,code,to,0.02545166015625,Container orchestration usesto,language
+Container orchestration uses,code,.,0.0250396728515625,Container orchestration uses.,code
+Container orchestration uses,code,an,0.02142333984375,Container orchestration usesan,language
+Container orchestration uses,code,this,0.01416015625,Container orchestration usesthis,language
+Container orchestration uses,code,[,0.01183319091796875,Container orchestration uses[,code
+Container orchestration uses,code,"
+",0.01044464111328125,"Container orchestration uses
+",language
+Container orchestration uses,code,",",0.0098876953125,"Container orchestration uses,",code
+Container orchestration uses,code,of,0.00921630859375,Container orchestration usesof,language
+Container orchestration uses,code,orch,0.00835418701171875,Container orchestration usesorch,language
+Container orchestration uses,code,K,0.00826263427734375,Container orchestration usesK,code
+Container orchestration uses,code,for,0.00791168212890625,Container orchestration usesfor,language
+Container orchestration uses,code,these,0.00638580322265625,Container orchestration usesthese,language
+Container orchestration uses,code,in,0.00592803955078125,Container orchestration usesin,language
+Container orchestration uses,code,many,0.00592803955078125,Container orchestration usesmany,language
+Container orchestration uses,code,and,0.004993438720703125,Container orchestration usesand,language
+Container orchestration uses,code,its,0.00493621826171875,Container orchestration usesits,language
+Container orchestration uses,code,two,0.0047454833984375,Container orchestration usestwo,language
+Container orchestration uses,code,Docker,0.0047454833984375,Container orchestration usesDocker,code
+CI/CD pipeline uses,code,the,0.1763916015625,CI/CD pipeline usesthe,language
+CI/CD pipeline uses,code,a,0.1322021484375,CI/CD pipeline usesa,language
+CI/CD pipeline uses,code,[,0.043243408203125,CI/CD pipeline uses[,code
+CI/CD pipeline uses,code,this,0.0313720703125,CI/CD pipeline usesthis,language
+CI/CD pipeline uses,code,Azure,0.0254058837890625,CI/CD pipeline usesAzure,code
+CI/CD pipeline uses,code,`,0.0242462158203125,CI/CD pipeline uses`,code
+CI/CD pipeline uses,code,an,0.0217437744140625,CI/CD pipeline usesan,language
+CI/CD pipeline uses,code,.,0.0209197998046875,CI/CD pipeline uses.,code
+CI/CD pipeline uses,code,Docker,0.017608642578125,CI/CD pipeline usesDocker,code
+CI/CD pipeline uses,code,GitHub,0.0167999267578125,CI/CD pipeline usesGitHub,code
+CI/CD pipeline uses,code,Git,0.0162811279296875,CI/CD pipeline usesGit,code
+CI/CD pipeline uses,code,Jenkins,0.01319122314453125,CI/CD pipeline usesJenkins,code
+CI/CD pipeline uses,code,to,0.0122833251953125,CI/CD pipeline usesto,language
+CI/CD pipeline uses,code,"
+",0.0113677978515625,"CI/CD pipeline uses
+",language
+CI/CD pipeline uses,code,AWS,0.0093536376953125,CI/CD pipeline usesAWS,code
+CI/CD pipeline uses,code,it,0.00913238525390625,CI/CD pipeline usesit,language
+CI/CD pipeline uses,code,these,0.00799560546875,CI/CD pipeline usesthese,language
+CI/CD pipeline uses,code,for,0.006526947021484375,CI/CD pipeline usesfor,language
+CI/CD pipeline uses,code,K,0.006374359130859375,CI/CD pipeline usesK,code
+CI/CD pipeline uses,code,G,0.00566864013671875,CI/CD pipeline usesG,code
+Deployment is automated with,code,a,0.1566162109375,Deployment is automated witha,language
+Deployment is automated with,code,[,0.116455078125,Deployment is automated with[,code
+Deployment is automated with,code,the,0.08123779296875,Deployment is automated withthe,language
+Deployment is automated with,code,`,0.054595947265625,Deployment is automated with`,code
+Deployment is automated with,code,Tra,0.03839111328125,Deployment is automated withTra,code
+Deployment is automated with,code,An,0.0380859375,Deployment is automated withAn,language
+Deployment is automated with,code,GitHub,0.033111572265625,Deployment is automated withGitHub,code
+Deployment is automated with,code,Jenkins,0.0272369384765625,Deployment is automated withJenkins,code
+Deployment is automated with,code,Circle,0.0233001708984375,Deployment is automated withCircle,code
+Deployment is automated with,code,an,0.019012451171875,Deployment is automated withan,language
+Deployment is automated with,code,continuous,0.01491546630859375,Deployment is automated withcontinuous,language
+Deployment is automated with,code,git,0.013580322265625,Deployment is automated withgit,language
+Deployment is automated with,code,k,0.01336669921875,Deployment is automated withk,language
+Deployment is automated with,code,Git,0.01336669921875,Deployment is automated withGit,code
+Deployment is automated with,code,tra,0.013275146484375,Deployment is automated withtra,language
+Deployment is automated with,code,github,0.01189422607421875,Deployment is automated withgithub,language
+Deployment is automated with,code,G,0.01025390625,Deployment is automated withG,code
+Deployment is automated with,code,Docker,0.010101318359375,Deployment is automated withDocker,code
+Deployment is automated with,code,CI,0.00963592529296875,Deployment is automated withCI,code
+Deployment is automated with,code,K,0.00963592529296875,Deployment is automated withK,code
+Monitoring is done with,code,the,0.269287109375,Monitoring is done withthe,language
+Monitoring is done with,code,a,0.173828125,Monitoring is done witha,language
+Monitoring is done with,code,an,0.03759765625,Monitoring is done withan,language
+Monitoring is done with,code,two,0.01438140869140625,Monitoring is done withtwo,language
+Monitoring is done with,code,respect,0.01250457763671875,Monitoring is done withrespect,language
+Monitoring is done with,code,,0.01201629638671875,Monitoring is done with,language
+Monitoring is done with,code,[,0.0101165771484375,Monitoring is done with[,code
+Monitoring is done with,code,this,0.0085906982421875,Monitoring is done withthis,language
+Monitoring is done with,code,`,0.00554656982421875,Monitoring is done with`,code
+Monitoring is done with,code,sens,0.005130767822265625,Monitoring is done withsens,language
+Monitoring is done with,code,R,0.004894256591796875,Monitoring is done withR,code
+Monitoring is done with,code,"
+",0.0048370361328125,"Monitoring is done with
+",language
+Monitoring is done with,code,help,0.00482177734375,Monitoring is done withhelp,language
+Monitoring is done with,code,one,0.00450897216796875,Monitoring is done withone,language
+Monitoring is done with,code,great,0.0040740966796875,Monitoring is done withgreat,language
+Monitoring is done with,code,high,0.004009246826171875,Monitoring is done withhigh,language
+Monitoring is done with,code,Python,0.003917694091796875,Monitoring is done withPython,code
+Monitoring is done with,code,reference,0.0036792755126953125,Monitoring is done withreference,language
+Monitoring is done with,code,three,0.0034027099609375,Monitoring is done withthree,language
+Monitoring is done with,code,no,0.00327301025390625,Monitoring is done withno,language
+Logs are collected using,code,the,0.29638671875,Logs are collected usingthe,language
+Logs are collected using,code,a,0.09930419921875,Logs are collected usinga,language
+Logs are collected using,code,[,0.087646484375,Logs are collected using[,code
+Logs are collected using,code,`,0.0277862548828125,Logs are collected using`,code
+Logs are collected using,code,an,0.0221710205078125,Logs are collected usingan,language
+Logs are collected using,code,log,0.01242828369140625,Logs are collected usinglog,language
+Logs are collected using,code,Log,0.01149749755859375,Logs are collected usingLog,code
+Logs are collected using,code,AWS,0.01062774658203125,Logs are collected usingAWS,code
+Logs are collected using,code,our,0.010467529296875,Logs are collected usingour,language
+Logs are collected using,code,"
+",0.01038360595703125,"Logs are collected using
+",language
+Logs are collected using,code,this,0.00923919677734375,Logs are collected usingthis,language
+Logs are collected using,code,Azure,0.005218505859375,Logs are collected usingAzure,code
+Logs are collected using,code,standard,0.00494384765625,Logs are collected usingstandard,language
+Logs are collected using,code,S,0.0048675537109375,Logs are collected usingS,code
+Logs are collected using,code,W,0.0048675537109375,Logs are collected usingW,code
+Logs are collected using,code,,0.00475311279296875,Logs are collected using,language
+Logs are collected using,code,Cloud,0.004718780517578125,Logs are collected usingCloud,code
+Logs are collected using,code,Open,0.00464630126953125,Logs are collected usingOpen,code
+Logs are collected using,code,Prom,0.004535675048828125,Logs are collected usingProm,code
+Logs are collected using,code,<,0.0045013427734375,Logs are collected using<,code
+The cloud provider is,code,responsible,0.249755859375,The cloud provider isresponsible,language
+The cloud provider is,code,a,0.1217041015625,The cloud provider isa,language
+The cloud provider is,code,the,0.062164306640625,The cloud provider isthe,language
+The cloud provider is,code,not,0.0447998046875,The cloud provider isnot,language
+The cloud provider is,code,an,0.03173828125,The cloud provider isan,language
+The cloud provider is,code,Amazon,0.0183868408203125,The cloud provider isAmazon,code
+The cloud provider is,code,used,0.0178070068359375,The cloud provider isused,language
+The cloud provider is,code,in,0.01195526123046875,The cloud provider isin,language
+The cloud provider is,code,currently,0.0110626220703125,The cloud provider iscurrently,language
+The cloud provider is,code,one,0.01071929931640625,The cloud provider isone,language
+The cloud provider is,code,required,0.00946044921875,The cloud provider isrequired,language
+The cloud provider is,code,now,0.006866455078125,The cloud provider isnow,language
+The cloud provider is,code,Azure,0.006603240966796875,The cloud provider isAzure,code
+The cloud provider is,code,AWS,0.006500244140625,The cloud provider isAWS,code
+The cloud provider is,code,configured,0.006252288818359375,The cloud provider isconfigured,language
+The cloud provider is,code,also,0.006252288818359375,The cloud provider isalso,language
+The cloud provider is,code,Microsoft,0.006153106689453125,The cloud provider isMicrosoft,code
+The cloud provider is,code,available,0.00522613525390625,The cloud provider isavailable,language
+The cloud provider is,code,where,0.005146026611328125,The cloud provider iswhere,language
+The cloud provider is,code,using,0.004795074462890625,The cloud provider isusing,language
+Unit tests are written with,code,the,0.2548828125,Unit tests are written withthe,language
+Unit tests are written with,code,[,0.2413330078125,Unit tests are written with[,code
+Unit tests are written with,code,a,0.04571533203125,Unit tests are written witha,language
+Unit tests are written with,code,`,0.0299530029296875,Unit tests are written with`,code
+Unit tests are written with,code,J,0.0277252197265625,Unit tests are written withJ,code
+Unit tests are written with,code,Go,0.0244598388671875,Unit tests are written withGo,code
+Unit tests are written with,code,test,0.0180206298828125,Unit tests are written withtest,language
+Unit tests are written with,code,go,0.013397216796875,Unit tests are written withgo,language
+Unit tests are written with,code,G,0.01329803466796875,Unit tests are written withG,code
+Unit tests are written with,code,py,0.01093292236328125,Unit tests are written withpy,language
+Unit tests are written with,code,[`,0.01027679443359375,Unit tests are written with[`,code
+Unit tests are written with,code,an,0.00832366943359375,Unit tests are written withan,language
+Unit tests are written with,code,g,0.00775909423828125,Unit tests are written withg,language
+Unit tests are written with,code,T,0.00658416748046875,Unit tests are written withT,code
+Unit tests are written with,code,gol,0.006137847900390625,Unit tests are written withgol,language
+Unit tests are written with,code,mock,0.005992889404296875,Unit tests are written withmock,language
+Unit tests are written with,code,"
+",0.005809783935546875,"Unit tests are written with
+",language
+Unit tests are written with,code,,0.005374908447265625,Unit tests are written with,language
+Unit tests are written with,code,https,0.004703521728515625,Unit tests are written withhttps,code
+Unit tests are written with,code,M,0.004451751708984375,Unit tests are written withM,code
+Integration tests use,code,the,0.2305908203125,Integration tests usethe,language
+Integration tests use,code,a,0.12841796875,Integration tests usea,language
+Integration tests use,code,[,0.062042236328125,Integration tests use[,code
+Integration tests use,code,`,0.03375244140625,Integration tests use`,code
+Integration tests use,code,an,0.019683837890625,Integration tests usean,language
+Integration tests use,code,this,0.0127105712890625,Integration tests usethis,language
+Integration tests use,code,J,0.0123138427734375,Integration tests useJ,code
+Integration tests use,code,mock,0.0122222900390625,Integration tests usemock,language
+Integration tests use,code,"
+",0.0104522705078125,"Integration tests use
+",language
+Integration tests use,code,Docker,0.00801849365234375,Integration tests useDocker,code
+Integration tests use,code,to,0.0066986083984375,Integration tests useto,language
+Integration tests use,code,S,0.006542205810546875,Integration tests useS,code
+Integration tests use,code,:,0.006290435791015625,Integration tests use:,code
+Integration tests use,code,real,0.00577545166015625,Integration tests usereal,language
+Integration tests use,code,test,0.00542449951171875,Integration tests usetest,language
+Integration tests use,code,different,0.005336761474609375,Integration tests usedifferent,language
+Integration tests use,code,Spring,0.00513458251953125,Integration tests useSpring,code
+Integration tests use,code,docker,0.004749298095703125,Integration tests usedocker,code
+Integration tests use,code,these,0.004192352294921875,Integration tests usethese,language
+Integration tests use,code,Post,0.00412750244140625,Integration tests usePost,code
+Mocking is done with,code,the,0.1978759765625,Mocking is done withthe,language
+Mocking is done with,code,a,0.165283203125,Mocking is done witha,language
+Mocking is done with,code,an,0.03228759765625,Mocking is done withan,language
+Mocking is done with,code,`,0.024383544921875,Mocking is done with`,code
+Mocking is done with,code,this,0.0230712890625,Mocking is done withthis,language
+Mocking is done with,code,,0.01187896728515625,Mocking is done with,language
+Mocking is done with,code,"
+",0.01049041748046875,"Mocking is done with
+",language
+Mocking is done with,code,two,0.00832366943359375,Mocking is done withtwo,language
+Mocking is done with,code,great,0.00800323486328125,Mocking is done withgreat,language
+Mocking is done with,code,:,0.00797271728515625,Mocking is done with:,code
+Mocking is done with,code,"""",0.00731658935546875,"Mocking is done with""",code
+Mocking is done with,code,some,0.00653839111328125,Mocking is done withsome,language
+Mocking is done with,code,one,0.005481719970703125,Mocking is done withone,language
+Mocking is done with,code,respect,0.005462646484375,Mocking is done withrespect,language
+Mocking is done with,code,[,0.00521087646484375,Mocking is done with[,code
+Mocking is done with,code,no,0.00518798828125,Mocking is done withno,language
+Mocking is done with,code,all,0.0035114288330078125,Mocking is done withall,language
+Mocking is done with,code,your,0.0033893585205078125,Mocking is done withyour,language
+Mocking is done with,code,these,0.0033512115478515625,Mocking is done withthese,language
+Mocking is done with,code,.,0.0031490325927734375,Mocking is done with.,code
+Test coverage is measured with,code,the,0.1900634765625,Test coverage is measured withthe,language
+Test coverage is measured with,code,a,0.1226806640625,Test coverage is measured witha,language
+Test coverage is measured with,code,,0.045501708984375,Test coverage is measured with,language
+Test coverage is measured with,code,respect,0.04376220703125,Test coverage is measured withrespect,language
+Test coverage is measured with,code,[,0.027374267578125,Test coverage is measured with[,code
+Test coverage is measured with,code,code,0.0236053466796875,Test coverage is measured withcode,language
+Test coverage is measured with,code,two,0.0234222412109375,Test coverage is measured withtwo,language
+Test coverage is measured with,code,an,0.0164642333984375,Test coverage is measured withan,language
+Test coverage is measured with,code,coverage,0.0162200927734375,Test coverage is measured withcoverage,language
+Test coverage is measured with,code,tools,0.01273345947265625,Test coverage is measured withtools,language
+Test coverage is measured with,code,S,0.0109710693359375,Test coverage is measured withS,code
+Test coverage is measured with,code,test,0.01055908203125,Test coverage is measured withtest,language
+Test coverage is measured with,code,several,0.00754547119140625,Test coverage is measured withseveral,language
+Test coverage is measured with,code,different,0.007488250732421875,Test coverage is measured withdifferent,language
+Test coverage is measured with,code,`,0.007312774658203125,Test coverage is measured with`,code
+Test coverage is measured with,code,both,0.006923675537109375,Test coverage is measured withboth,language
+Test coverage is measured with,code,three,0.006923675537109375,Test coverage is measured withthree,language
+Test coverage is measured with,code,"
+",0.006866455078125,"Test coverage is measured with
+",language
+Test coverage is measured with,code,multiple,0.006015777587890625,Test coverage is measured withmultiple,language
+Test coverage is measured with,code,this,0.005828857421875,Test coverage is measured withthis,language
+import,code,{,0.30615234375,import{,code
+import,code,React,0.2171630859375,importReact,code
+import,code,',0.04241943359375,import',code
+import,code,*,0.0269775390625,import*,code
+import,code,os,0.024932861328125,importos,language
+import,code,java,0.022705078125,importjava,language
+import,code,UI,0.014892578125,importUI,code
+import,code,Foundation,0.0123443603515625,importFoundation,code
+import,code,numpy,0.01047515869140625,importnumpy,code
+import,code,sys,0.0093231201171875,importsys,language
+import,code,Vue,0.0082244873046875,importVue,code
+import,code,json,0.00698089599609375,importjson,code
+import,code,un,0.0067138671875,importun,language
+import,code,py,0.00601959228515625,importpy,language
+import,code,ax,0.00565338134765625,importax,language
+import,code,org,0.00560760498046875,importorg,language
+import,code,logging,0.005565643310546875,importlogging,language
+import,code,type,0.00534820556640625,importtype,language
+import,code,tor,0.00502777099609375,importtor,language
+import,code,re,0.004169464111328125,importre,language
+from numpy import,code,*,0.2147216796875,from numpy import*,code
+from numpy import,code,array,0.07720947265625,from numpy importarray,language
+from numpy import,code,ar,0.04827880859375,from numpy importar,language
+from numpy import,code,pi,0.0406494140625,from numpy importpi,language
+from numpy import,code,zeros,0.0309295654296875,from numpy importzeros,language
+from numpy import,code,random,0.03070068359375,from numpy importrandom,language
+from numpy import,code,gen,0.029998779296875,from numpy importgen,language
+from numpy import,code,sq,0.025054931640625,from numpy importsq,language
+from numpy import,code,mean,0.0224609375,from numpy importmean,language
+from numpy import,code,nan,0.0214385986328125,from numpy importnan,language
+from numpy import,code,dot,0.0180511474609375,from numpy importdot,language
+from numpy import,code,l,0.01555633544921875,from numpy importl,language
+from numpy import,code,exp,0.01519012451171875,from numpy importexp,language
+from numpy import,code,sin,0.01495361328125,from numpy importsin,language
+from numpy import,code,load,0.0143890380859375,from numpy importload,language
+from numpy import,code,*,0.0134124755859375,from numpy import*,code
+from numpy import,code,cos,0.0126953125,from numpy importcos,language
+from numpy import,code,lin,0.01192474365234375,from numpy importlin,language
+from numpy import,code,log,0.01061248779296875,from numpy importlog,language
+from numpy import,code,sav,0.0095062255859375,from numpy importsav,language
