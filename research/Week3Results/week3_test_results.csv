@@ -1,0 +1,47 @@
+prompt,expected_stop,predicted_stop,code_votes,entropy,correct
+"In our React app, authentication is done using",True,True,0.5615234375,5.69774055480957,True
+"In the backend, passwords are hashed with",True,True,0.3666839599609375,4.363030433654785,True
+"For our API, JWT tokens are signed using",True,True,0.32171630859375,3.658578634262085,True
+"In production, the OAuth provider we use is",True,True,0.384613037109375,6.6096343994140625,True
+"On the server, session data is stored in",True,True,0.45836639404296875,3.6189990043640137,True
+"For data persistence, the database we use is",True,True,0.43947601318359375,6.63277530670166,True
+"In the application, we query the database using",True,True,0.291961669921875,5.5962958335876465,True
+"For database access, the ORM library is",True,False,0.0,7.1282806396484375,False
+"To improve performance, caching is implemented with",True,True,0.1261138916015625,7.01793098449707,True
+"For the REST API, the framework we use is",True,True,0.48281097412109375,6.199334621429443,True
+"In production, the web server runs on",True,True,0.070648193359375,4.339627265930176,True
+"In the client code, HTTP requests are made using",True,True,0.59307861328125,4.715592384338379,True
+"For data fetching, our GraphQL server uses",True,True,0.5229949951171875,5.3701653480529785,True
+"For the UI, the frontend framework is",True,True,0.4351654052734375,6.098883628845215,True
+"In the application, state management is handled by",True,True,0.1621246337890625,6.024312973022461,True
+"For the interface, components are built with",True,True,0.33917999267578125,6.882015228271484,True
+"In the SPA, routing is done using",True,True,0.393463134765625,5.965526580810547,True
+"For training, the model is trained with",True,False,0.014984130859375,6.21237325668335,False
+"In our neural network, deep learning is implemented using",True,True,0.4660491943359375,5.985958099365234,True
+"For gradient descent, the optimizer we use is",True,True,0.32089996337890625,4.867953300476074,True
+"For hosting, we deploy to",True,True,0.1849212646484375,5.916100025177002,True
+"In Kubernetes, containers are orchestrated with",True,True,0.12200927734375,5.706191539764404,True
+"For automation, the CI/CD pipeline uses",True,True,0.08287811279296875,5.868820667266846,True
+"In the test suite, unit tests are written with",True,True,0.548431396484375,5.196528911590576,True
+"For building assets, the bundler we use is",True,True,0.40386199951171875,6.109314918518066,True
+"For dependencies, package management is done with",True,True,0.5671844482421875,5.869534015655518,True
+The weather today is,False,False,0.0,7.865837574005127,True
+The meeting yesterday was,False,False,0.0,6.89145565032959,True
+My favorite color has always been,False,False,0.0,5.643287181854248,True
+The book I read last week was,False,False,0.0271148681640625,7.344639301300049,True
+The movie we watched seemed,False,False,0.0,3.721933364868164,True
+The main idea of the story is to,False,False,0.0,7.45808219909668,True
+The cooking process works by,False,False,0.0,7.888330936431885,True
+This teaching approach helps to,False,False,0.0,7.279046535491943,True
+The benefit of exercise is,False,False,0.0,5.4309773445129395,True
+"When installing furniture in my home, you should",False,False,0.0,6.013059139251709,True
+"To debug a relationship problem, first",False,False,0.0,6.493152618408203,True
+"Before deploying troops, the general needs to",False,False,0.0,6.831201553344727,True
+The configuration of the room requires,False,False,0.0,6.185727596282959,True
+"To optimize your morning routine, try",False,False,0.0,5.718875885009766,True
+The framework of the argument is,False,False,0.0,6.361091136932373,True
+My mental state is managed by,False,True,0.35382080078125,6.396625518798828,False
+The library in town has,False,False,0.050872802734375,5.758480072021484,True
+Running the business takes,False,False,0.0,6.215884208679199,True
+The function of the heart is,False,False,0.0,2.3259122371673584,True
+Implementing the new policy will,False,False,0.0,5.129462242126465,True

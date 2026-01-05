@@ -1,0 +1,23 @@
+{
+  "model_name": "codellama/CodeLlama-7b-Instruct-hf",
+  "layers": [
+    16,
+    24,
+    31
+  ],
+  "lookahead": 2,
+  "top_k": 10,
+  "threshold": 0.06,
+  "entropy_threshold": 3.0,
+  "cv_accuracy": 0.9539325842696629,
+  "test_accuracy": 0.9347826086956522,
+  "test_precision": 0.96,
+  "test_recall": 0.9230769230769231,
+  "test_f1": 0.9411764705882353,
+  "n_errors": 3,
+  "n_fn": 2,
+  "n_fp": 1,
+  "n_test_cases": 46,
+  "n_training_examples": 1780,
+  "feature_dim": 12288
+}
