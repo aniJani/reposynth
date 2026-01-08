@@ -68,6 +68,7 @@ class MonitorState:
     measurements: List[UncertaintyResult] = field(default_factory=list)
     retrieval_events: List[Dict] = field(default_factory=list)
     total_retrievals: int = 0
+    last_retrieval_position: int = -100  # For cooldown tracking
 
 
 class UncertaintyMonitor:
@@ -97,6 +98,7 @@ class UncertaintyMonitor:
         tokenizer = None,
         measurement_strategy: str = "semantic_boundary",
         max_retrievals: int = 3,
+        cooldown_tokens: int = 0,
         cce_use_hybrid: bool = True,
         cce_embedding_model: str = 'all-MiniLM-L6-v2',
         probe_model = None,
@@ -114,6 +116,7 @@ class UncertaintyMonitor:
             measurement_strategy: When to measure ('every_token', 'semantic_boundary',
                                  'line_start', 'every_n')
             max_retrievals: Maximum number of retrievals per generation
+            cooldown_tokens: Minimum tokens between retrievals (0 = no cooldown)
             cce_use_hybrid: Use hybrid classifier for CCE
             cce_embedding_model: Embedding model for CCE
             probe_model: Trained probe model (for 'probe' method)
@@ -124,6 +127,7 @@ class UncertaintyMonitor:
         self.threshold = threshold
         self.tokenizer = tokenizer
         self.max_retrievals = max_retrievals
+        self.cooldown_tokens = cooldown_tokens
 
         # Set up measurement strategy
         if isinstance(measurement_strategy, str):
@@ -209,7 +213,20 @@ class UncertaintyMonitor:
 
         # Check if retrieval should be triggered
         if result.should_retrieve:
-            if self.state.total_retrievals < self.max_retrievals:
+            # Check cooldown
+            tokens_since_last = result.position - self.state.last_retrieval_position
+            in_cooldown = tokens_since_last < self.cooldown_tokens
+
+            if in_cooldown:
+                result.should_retrieve = False
+                result.details['in_cooldown'] = True
+                result.details['tokens_until_cooldown_end'] = self.cooldown_tokens - tokens_since_last
+            elif self.state.total_retrievals >= self.max_retrievals:
+                # Max retrievals reached, override decision
+                result.should_retrieve = False
+                result.details['max_retrievals_reached'] = True
+            else:
+                # Proceed with retrieval
                 self.state.retrieval_events.append({
                     'position': result.position,
                     'value': result.value,
@@ -217,10 +234,7 @@ class UncertaintyMonitor:
                     'context': result.generated_context[-200:],  # Last 200 chars
                 })
                 self.state.total_retrievals += 1
-            else:
-                # Max retrievals reached, override decision
-                result.should_retrieve = False
-                result.details['max_retrievals_reached'] = True
+                self.state.last_retrieval_position = result.position
 
         self.state.position += 1
         return result
