@@ -1,37 +1,37 @@
 """
-Evaluation Metrics Module for Adaptive Code Generation.
+Evaluation Metrics for CCE Research.
 
-This module implements 8 evaluation metrics for comprehensive assessment:
-
-1. Answer Correctness - LLM-as-judge scoring [0-1]
-2. Answer Completeness - Semantic similarity to ground truth
-3. Hallucination Rate - Fraction of unsupported claims
-4. Context Precision - |retrieved ∩ truth| / |retrieved|
-5. Context Recall - |retrieved ∩ truth| / |truth|
-6. Token Efficiency - 1 - (tokens_used / baseline)
-7. Spike Precision - Accuracy of uncertainty triggers
-8. Spike Recall - Coverage of needed retrievals
+Implements 8 metrics for assessing adaptive retrieval quality:
+1. answer_correctness - LLM/keyword scoring
+2. answer_completeness - semantic similarity
+3. hallucination_rate - unsupported claims
+4. context_precision - retrieved accuracy
+5. context_recall - coverage of ground truth
+6. token_efficiency - tokens saved vs baseline
+7. spike_precision - trigger accuracy
+8. spike_recall - trigger coverage
 
 Phase 4, Week 8-9: Evaluation Framework
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any, Set
-import numpy as np
 import re
+from dataclasses import dataclass, field
+from typing import List, Dict, Any, Optional, Set
+import numpy as np
 
 
 @dataclass
 class EvaluationResult:
     """Result of evaluating a single example."""
     example_id: str
+    method: str = ""
 
-    # Core metrics
+    # Answer quality metrics
     answer_correctness: float = 0.0      # [0, 1]
     answer_completeness: float = 0.0     # [0, 1]
     hallucination_rate: float = 0.0      # [0, 1] (lower is better)
 
-    # Context metrics
+    # Context quality metrics
     context_precision: float = 0.0       # [0, 1]
     context_recall: float = 0.0          # [0, 1]
 
@@ -47,77 +47,67 @@ class EvaluationResult:
     # Metadata
     generation_time: float = 0.0
     num_retrievals: int = 0
-    method: str = ""
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def get_f1_context(self) -> float:
         """Compute F1 score for context retrieval."""
         if self.context_precision + self.context_recall == 0:
             return 0.0
-        return 2 * (self.context_precision * self.context_recall) / \
-               (self.context_precision + self.context_recall)
+        return 2 * (self.context_precision * self.context_recall) / (
+            self.context_precision + self.context_recall
+        )
 
     def get_f1_spike(self) -> float:
         """Compute F1 score for spike detection."""
         if self.spike_precision + self.spike_recall == 0:
             return 0.0
-        return 2 * (self.spike_precision * self.spike_recall) / \
-               (self.spike_precision + self.spike_recall)
+        return 2 * (self.spike_precision * self.spike_recall) / (
+            self.spike_precision + self.spike_recall
+        )
 
     def get_composite_score(self, weights: Optional[Dict[str, float]] = None) -> float:
         """
         Compute weighted composite score.
-
-        Args:
-            weights: Dict mapping metric names to weights (default: equal weights)
-
-        Returns:
-            Weighted average score [0, 1]
+        Default weights prioritize correctness and context quality.
         """
         if weights is None:
             weights = {
-                'answer_correctness': 0.25,
-                'answer_completeness': 0.15,
-                'hallucination_rate': 0.15,  # Inverted: 1 - rate
-                'context_precision': 0.10,
-                'context_recall': 0.10,
-                'token_efficiency': 0.10,
-                'spike_precision': 0.075,
-                'spike_recall': 0.075,
+                "answer_correctness": 0.25,
+                "answer_completeness": 0.15,
+                "hallucination_rate": 0.15,  # Inverted: lower is better
+                "context_f1": 0.25,
+                "token_efficiency": 0.20,
             }
 
         score = 0.0
-        score += weights.get('answer_correctness', 0) * self.answer_correctness
-        score += weights.get('answer_completeness', 0) * self.answer_completeness
-        score += weights.get('hallucination_rate', 0) * (1 - self.hallucination_rate)
-        score += weights.get('context_precision', 0) * self.context_precision
-        score += weights.get('context_recall', 0) * self.context_recall
-        score += weights.get('token_efficiency', 0) * self.token_efficiency
-        score += weights.get('spike_precision', 0) * self.spike_precision
-        score += weights.get('spike_recall', 0) * self.spike_recall
+        score += weights.get("answer_correctness", 0) * self.answer_correctness
+        score += weights.get("answer_completeness", 0) * self.answer_completeness
+        score += weights.get("hallucination_rate", 0) * (1 - self.hallucination_rate)
+        score += weights.get("context_f1", 0) * self.get_f1_context()
+        score += weights.get("token_efficiency", 0) * self.token_efficiency
 
         return score
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         return {
-            'example_id': self.example_id,
-            'answer_correctness': self.answer_correctness,
-            'answer_completeness': self.answer_completeness,
-            'hallucination_rate': self.hallucination_rate,
-            'context_precision': self.context_precision,
-            'context_recall': self.context_recall,
-            'token_efficiency': self.token_efficiency,
-            'tokens_used': self.tokens_used,
-            'baseline_tokens': self.baseline_tokens,
-            'spike_precision': self.spike_precision,
-            'spike_recall': self.spike_recall,
-            'f1_context': self.get_f1_context(),
-            'f1_spike': self.get_f1_spike(),
-            'composite_score': self.get_composite_score(),
-            'generation_time': self.generation_time,
-            'num_retrievals': self.num_retrievals,
-            'method': self.method,
+            "example_id": self.example_id,
+            "method": self.method,
+            "answer_correctness": self.answer_correctness,
+            "answer_completeness": self.answer_completeness,
+            "hallucination_rate": self.hallucination_rate,
+            "context_precision": self.context_precision,
+            "context_recall": self.context_recall,
+            "context_f1": self.get_f1_context(),
+            "token_efficiency": self.token_efficiency,
+            "tokens_used": self.tokens_used,
+            "baseline_tokens": self.baseline_tokens,
+            "spike_precision": self.spike_precision,
+            "spike_recall": self.spike_recall,
+            "spike_f1": self.get_f1_spike(),
+            "composite_score": self.get_composite_score(),
+            "generation_time": self.generation_time,
+            "num_retrievals": self.num_retrievals,
         }
 
     def __repr__(self) -> str:
@@ -130,196 +120,120 @@ class EvaluationResult:
 
 class EvaluationMetrics:
     """
-    Compute evaluation metrics for adaptive code generation.
+    Evaluation metrics calculator.
 
-    This class provides methods to compute all 8 evaluation metrics
-    used in the research evaluation.
-
-    Example:
-        >>> metrics = EvaluationMetrics(embedding_model='all-MiniLM-L6-v2')
-        >>> result = metrics.evaluate(
-        ...     example_id='test_001',
-        ...     generated_answer='The auth uses JWT...',
-        ...     ground_truth_answer='Authentication is done via JWT...',
-        ...     retrieved_files=['auth.py', 'config.py'],
-        ...     ground_truth_files=['auth.py', 'routes.py'],
-        ... )
-        >>> print(f"Correctness: {result.answer_correctness:.2f}")
+    Uses sentence-transformers for semantic similarity and optionally
+    LLM-as-judge for correctness scoring.
     """
 
     def __init__(
         self,
-        embedding_model: str = 'all-MiniLM-L6-v2',
+        embedding_model: str = "all-MiniLM-L6-v2",
         llm_judge_model: Optional[str] = None,
         llm_judge_api_key: Optional[str] = None,
     ):
         """
-        Initialize evaluation metrics.
+        Initialize metrics calculator.
 
         Args:
-            embedding_model: Sentence transformer model for embeddings
-            llm_judge_model: Model for LLM-as-judge (e.g., 'gpt-4')
+            embedding_model: SentenceTransformer model name
+            llm_judge_model: Optional LLM model for judging (e.g., 'gpt-4')
             llm_judge_api_key: API key for LLM judge
         """
         self.embedding_model_name = embedding_model
         self.llm_judge_model = llm_judge_model
         self.llm_judge_api_key = llm_judge_api_key
-
-        # Lazy load embedding model
-        self._embedding_model = None
+        self._model = None
 
     @property
-    def embedding_model(self):
-        """Lazy load sentence transformer model."""
-        if self._embedding_model is None:
+    def model(self):
+        """Lazy load the embedding model."""
+        if self._model is None:
             try:
                 from sentence_transformers import SentenceTransformer
-                self._embedding_model = SentenceTransformer(self.embedding_model_name)
+                self._model = SentenceTransformer(self.embedding_model_name)
             except ImportError:
-                print("Warning: sentence-transformers not available")
-                self._embedding_model = None
-        return self._embedding_model
+                print("Warning: sentence-transformers not available, using fallback methods")
+                self._model = None
+        return self._model
 
-    def evaluate(
-        self,
-        example_id: str,
-        generated_answer: str,
-        ground_truth_answer: str,
-        retrieved_files: List[str],
-        ground_truth_files: List[str],
-        ground_truth_keywords: Optional[List[str]] = None,
-        tokens_used: int = 0,
-        baseline_tokens: int = 0,
-        spike_positions: Optional[List[int]] = None,
-        expected_spike_positions: Optional[List[int]] = None,
-        generation_time: float = 0.0,
-        num_retrievals: int = 0,
-        method: str = "",
-    ) -> EvaluationResult:
-        """
-        Compute all evaluation metrics for a single example.
+    def _get_embedding(self, text: str) -> Optional[np.ndarray]:
+        """Get embedding for text."""
+        if self.model is None:
+            return None
+        return self.model.encode(text, convert_to_numpy=True)
 
-        Args:
-            example_id: Unique identifier for the example
-            generated_answer: Model's generated response
-            ground_truth_answer: Expected answer
-            retrieved_files: Files retrieved by the system
-            ground_truth_files: Files that should have been retrieved
-            ground_truth_keywords: Key terms that should appear
-            tokens_used: Tokens used in context
-            baseline_tokens: Tokens used by baseline (for efficiency)
-            spike_positions: Positions where retrieval was triggered
-            expected_spike_positions: Positions where retrieval should trigger
-            generation_time: Time to generate response
-            num_retrievals: Number of retrievals performed
-            method: Name of the method being evaluated
+    def _cosine_similarity(self, a: np.ndarray, b: np.ndarray) -> float:
+        """Compute cosine similarity between two vectors."""
+        norm_a = np.linalg.norm(a)
+        norm_b = np.linalg.norm(b)
+        if norm_a == 0 or norm_b == 0:
+            return 0.0
+        return float(np.dot(a, b) / (norm_a * norm_b))
 
-        Returns:
-            EvaluationResult with all metrics
-        """
-        result = EvaluationResult(
-            example_id=example_id,
-            tokens_used=tokens_used,
-            baseline_tokens=baseline_tokens,
-            generation_time=generation_time,
-            num_retrievals=num_retrievals,
-            method=method,
-        )
+    def _split_into_sentences(self, text: str) -> List[str]:
+        """Split text into sentences (claims)."""
+        sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+        return [s.strip() for s in sentences if len(s.strip()) > 10]
 
-        # 1. Answer Correctness (LLM judge or keyword-based fallback)
-        result.answer_correctness = self.answer_correctness(
-            generated=generated_answer,
-            ground_truth=ground_truth_answer,
-            keywords=ground_truth_keywords,
-        )
-
-        # 2. Answer Completeness (semantic similarity)
-        result.answer_completeness = self.answer_completeness(
-            generated=generated_answer,
-            ground_truth=ground_truth_answer,
-        )
-
-        # 3. Hallucination Rate
-        result.hallucination_rate = self.hallucination_rate(
-            generated=generated_answer,
-            ground_truth=ground_truth_answer,
-            keywords=ground_truth_keywords,
-        )
-
-        # 4. Context Precision
-        result.context_precision = self.context_precision(
-            retrieved=retrieved_files,
-            ground_truth=ground_truth_files,
-        )
-
-        # 5. Context Recall
-        result.context_recall = self.context_recall(
-            retrieved=retrieved_files,
-            ground_truth=ground_truth_files,
-        )
-
-        # 6. Token Efficiency
-        result.token_efficiency = self.token_efficiency(
-            tokens_used=tokens_used,
-            baseline_tokens=baseline_tokens,
-        )
-
-        # 7. Spike Precision
-        if spike_positions is not None and expected_spike_positions is not None:
-            result.spike_precision = self.spike_precision(
-                detected=spike_positions,
-                expected=expected_spike_positions,
-            )
-
-        # 8. Spike Recall
-        if spike_positions is not None and expected_spike_positions is not None:
-            result.spike_recall = self.spike_recall(
-                detected=spike_positions,
-                expected=expected_spike_positions,
-            )
-
-        return result
-
-    # ========================================================================
-    # INDIVIDUAL METRICS
-    # ========================================================================
-
+    # =========================================================================
+    # Metric 1: Answer Correctness
+    # =========================================================================
     def answer_correctness(
         self,
-        generated: str,
+        predicted: str,
         ground_truth: str,
         keywords: Optional[List[str]] = None,
+        keyword_weight: float = 0.4,
+        semantic_weight: float = 0.6,
     ) -> float:
         """
-        Compute answer correctness score.
+        Compute answer correctness as weighted combination of keyword and semantic match.
 
-        Uses LLM-as-judge if available, otherwise falls back to
-        keyword matching + semantic similarity.
+        Uses LLM-as-judge if available, otherwise falls back to keyword + semantic.
 
         Args:
-            generated: Generated answer
-            ground_truth: Expected answer
-            keywords: Key terms that should appear
+            predicted: Generated answer
+            ground_truth: Reference answer
+            keywords: Important keywords that should appear
+            keyword_weight: Weight for keyword matching (default 0.4)
+            semantic_weight: Weight for semantic similarity (default 0.6)
 
         Returns:
-            Correctness score [0, 1]
+            Score between 0 and 1
         """
+        # Try LLM judge first
         if self.llm_judge_model and self.llm_judge_api_key:
-            return self._llm_judge_correctness(generated, ground_truth)
+            llm_score = self._llm_judge_correctness(predicted, ground_truth)
+            if llm_score is not None:
+                return llm_score
 
-        # Fallback: combine keyword matching and semantic similarity
+        # Keyword score
         keyword_score = 0.0
         if keywords:
-            keyword_score = self._keyword_overlap(generated, keywords)
+            predicted_lower = predicted.lower()
+            matches = sum(1 for kw in keywords if kw.lower() in predicted_lower)
+            keyword_score = matches / len(keywords) if keywords else 0.0
 
-        semantic_score = self.answer_completeness(generated, ground_truth)
+        # Semantic score
+        pred_emb = self._get_embedding(predicted)
+        truth_emb = self._get_embedding(ground_truth)
 
-        # Weight: 40% keywords, 60% semantic
+        if pred_emb is not None and truth_emb is not None:
+            semantic_score = max(0.0, self._cosine_similarity(pred_emb, truth_emb))
+        else:
+            # Fallback to word overlap
+            pred_words = set(predicted.lower().split())
+            truth_words = set(ground_truth.lower().split())
+            semantic_score = len(pred_words & truth_words) / max(len(truth_words), 1)
+
+        # Weighted combination
         if keywords:
-            return 0.4 * keyword_score + 0.6 * semantic_score
-        return semantic_score
+            return keyword_weight * keyword_score + semantic_weight * semantic_score
+        else:
+            return semantic_score
 
-    def _llm_judge_correctness(self, generated: str, ground_truth: str) -> float:
+    def _llm_judge_correctness(self, generated: str, ground_truth: str) -> Optional[float]:
         """Use LLM as judge for correctness scoring."""
         try:
             import openai
@@ -352,157 +266,137 @@ Respond with ONLY a number between 0.0 and 1.0:"""
 
         except Exception as e:
             print(f"LLM judge error: {e}")
-            return self.answer_completeness(generated, ground_truth)
+            return None
 
-    def _keyword_overlap(self, text: str, keywords: List[str]) -> float:
-        """Compute fraction of keywords present in text."""
-        text_lower = text.lower()
-        found = sum(1 for kw in keywords if kw.lower() in text_lower)
-        return found / len(keywords) if keywords else 0.0
-
-    def answer_completeness(
-        self,
-        generated: str,
-        ground_truth: str,
-    ) -> float:
+    # =========================================================================
+    # Metric 2: Answer Completeness
+    # =========================================================================
+    def answer_completeness(self, predicted: str, ground_truth: str) -> float:
         """
-        Compute semantic similarity between generated and ground truth.
+        Compute answer completeness as semantic similarity.
 
-        Uses sentence embeddings to measure how complete the answer is.
+        Higher score means the predicted answer covers more of the ground truth.
 
         Args:
-            generated: Generated answer
-            ground_truth: Expected answer
+            predicted: Generated answer
+            ground_truth: Reference answer
 
         Returns:
-            Completeness score [0, 1]
+            Score between 0 and 1
         """
-        if not self.embedding_model:
-            # Fallback to simple word overlap
-            gen_words = set(generated.lower().split())
+        pred_emb = self._get_embedding(predicted)
+        truth_emb = self._get_embedding(ground_truth)
+
+        if pred_emb is not None and truth_emb is not None:
+            return max(0.0, self._cosine_similarity(pred_emb, truth_emb))
+        else:
+            # Fallback to word overlap
+            pred_words = set(predicted.lower().split())
             truth_words = set(ground_truth.lower().split())
             if not truth_words:
                 return 0.0
-            overlap = len(gen_words & truth_words)
-            return overlap / len(truth_words)
+            return len(pred_words & truth_words) / len(truth_words)
 
-        try:
-            embeddings = self.embedding_model.encode(
-                [generated, ground_truth],
-                convert_to_numpy=True,
-            )
-            # Cosine similarity
-            similarity = np.dot(embeddings[0], embeddings[1]) / (
-                np.linalg.norm(embeddings[0]) * np.linalg.norm(embeddings[1])
-            )
-            # Normalize to [0, 1]
-            return float(max(0, (similarity + 1) / 2))
-        except Exception:
-            return 0.0
-
+    # =========================================================================
+    # Metric 3: Hallucination Rate
+    # =========================================================================
     def hallucination_rate(
         self,
-        generated: str,
-        ground_truth: str,
+        predicted: str,
+        context: str,
         keywords: Optional[List[str]] = None,
+        similarity_threshold: float = 0.7,
     ) -> float:
         """
-        Estimate hallucination rate in generated answer.
+        Compute fraction of predicted claims not supported by context.
 
-        Measures fraction of claims that are not supported by ground truth.
-        Uses multiple signals:
-        1. Semantic similarity (stricter threshold)
-        2. Entity/fact overlap
-        3. Contradiction detection
-        4. Keyword validation
+        A claim is supported if:
+        1. It contains at least one keyword from the ground truth, OR
+        2. It has semantic similarity > threshold to any context sentence, OR
+        3. It contains facts/entities that match the context
 
         Args:
-            generated: Generated answer
-            ground_truth: Expected answer
-            keywords: Key terms (helps identify valid claims)
+            predicted: Generated answer
+            context: Provided context (ground truth answer or retrieved docs)
+            keywords: Keywords that indicate supported claims
+            similarity_threshold: Threshold for semantic support (default 0.7)
 
         Returns:
-            Hallucination rate [0, 1] (lower is better)
+            Fraction of unsupported claims (0 = no hallucination, 1 = all hallucinated)
         """
-        # Extract claims from generated answer
-        gen_claims = self._extract_claims(generated)
-        if not gen_claims:
-            return 0.0
+        # Extract claims from predicted answer
+        claims = self._extract_claims(predicted)
+        if not claims:
+            return 0.0  # No claims to evaluate
 
-        truth_lower = ground_truth.lower()
-        valid_keywords = set(kw.lower() for kw in (keywords or []))
+        # Split context into sentences for semantic matching
+        context_sentences = self._split_into_sentences(context)
+        if not context_sentences:
+            context_sentences = [context]
 
-        # Extract facts/entities from ground truth
-        truth_facts = self._extract_facts(ground_truth)
+        # Get embeddings for context sentences
+        context_embeddings = []
+        if self.model is not None:
+            context_embeddings = [self._get_embedding(s) for s in context_sentences]
+            context_embeddings = [e for e in context_embeddings if e is not None]
 
-        hallucinated = 0
-        for claim in gen_claims:
+        # Prepare keywords for matching
+        keywords_lower: Set[str] = set()
+        if keywords:
+            keywords_lower = {kw.lower() for kw in keywords}
+
+        # Extract facts from context
+        context_facts = self._extract_facts(context)
+
+        unsupported_count = 0
+
+        for claim in claims:
             claim_lower = claim.lower()
+            is_supported = False
 
-            # Score 1: Keyword overlap (valid terms present)
-            keyword_score = sum(1 for kw in valid_keywords if kw in claim_lower)
-            keyword_score = min(keyword_score / max(len(valid_keywords), 1), 1.0)
+            # Check 1: Keyword presence
+            if keywords_lower:
+                for kw in keywords_lower:
+                    if kw in claim_lower:
+                        is_supported = True
+                        break
 
-            # Score 2: Fact/entity overlap
-            claim_facts = self._extract_facts(claim)
-            fact_overlap = len(claim_facts & truth_facts)
-            fact_score = fact_overlap / max(len(claim_facts), 1) if claim_facts else 0.0
+            # Check 2: Fact/entity overlap
+            if not is_supported:
+                claim_facts = self._extract_facts(claim)
+                if claim_facts and context_facts:
+                    overlap = len(claim_facts & context_facts)
+                    if overlap > 0:
+                        is_supported = True
 
-            # Score 3: Semantic similarity (stricter threshold of 0.5)
-            semantic_score = 0.0
-            if self.embedding_model:
-                try:
-                    # Compare claim to each ground truth sentence
-                    truth_sentences = self._extract_sentences(ground_truth)
-                    if truth_sentences:
-                        embeddings = self.embedding_model.encode(
-                            [claim] + truth_sentences,
-                            convert_to_numpy=True,
-                        )
-                        claim_emb = embeddings[0]
-                        max_sim = 0.0
-                        for truth_emb in embeddings[1:]:
-                            sim = np.dot(claim_emb, truth_emb) / (
-                                np.linalg.norm(claim_emb) * np.linalg.norm(truth_emb) + 1e-8
-                            )
-                            max_sim = max(max_sim, sim)
-                        semantic_score = max_sim
-                except Exception:
-                    semantic_score = 0.0
-            else:
-                # Fallback: word overlap ratio
-                claim_words = set(claim_lower.split())
-                truth_words = set(truth_lower.split())
-                overlap = len(claim_words & truth_words)
-                semantic_score = overlap / max(len(claim_words), 1)
+            # Check 3: Semantic similarity to context
+            if not is_supported and context_embeddings:
+                claim_emb = self._get_embedding(claim)
+                if claim_emb is not None:
+                    max_similarity = max(
+                        self._cosine_similarity(claim_emb, ctx_emb)
+                        for ctx_emb in context_embeddings
+                    )
+                    if max_similarity >= similarity_threshold:
+                        is_supported = True
 
-            # Score 4: Check for contradictions
-            contradiction_penalty = self._check_contradiction(claim, ground_truth)
+            # Check 4: Check for contradictions
+            if is_supported:
+                contradiction_penalty = self._check_contradiction(claim, context)
+                if contradiction_penalty > 0.3:
+                    is_supported = False
 
-            # Combined support score
-            # Weighted: 30% keywords, 30% facts, 40% semantic
-            support_score = (
-                0.30 * keyword_score +
-                0.30 * fact_score +
-                0.40 * semantic_score
-            ) - contradiction_penalty
+            if not is_supported:
+                unsupported_count += 1
 
-            # Threshold for hallucination: support score below 0.3
-            if support_score < 0.3:
-                hallucinated += 1
-
-        return hallucinated / len(gen_claims)
+        return unsupported_count / len(claims)
 
     def _extract_claims(self, text: str) -> List[str]:
         """
         Extract factual claims from text.
 
-        Splits on sentence boundaries and filters out:
-        - Very short statements
-        - Pure questions
-        - Filler phrases
+        Splits on sentence boundaries and filters out non-claims.
         """
-        # Split on sentence boundaries
         sentences = re.split(r'[.!?]\n|\n\d+\.\s+|(?<=[.!?])\s+', text)
 
         claims = []
@@ -546,12 +440,7 @@ Respond with ONLY a number between 0.0 and 1.0:"""
         """
         Extract factual elements from text.
 
-        Looks for:
-        - Technical terms (CamelCase, snake_case)
-        - Function/method names
-        - File paths
-        - Numbers with context
-        - Quoted strings
+        Looks for technical terms, function names, file paths, etc.
         """
         facts = set()
         text_lower = text.lower()
@@ -594,7 +483,6 @@ Respond with ONLY a number between 0.0 and 1.0:"""
         claim_lower = claim.lower()
         truth_lower = ground_truth.lower()
 
-        # Pattern pairs that indicate contradiction
         contradiction_patterns = [
             (r'\bdoes not\b', r'\bdoes\b'),
             (r'\bcannot\b', r'\bcan\b'),
@@ -612,8 +500,6 @@ Respond with ONLY a number between 0.0 and 1.0:"""
             claim_has_pos = bool(re.search(pos_pattern, claim_lower))
             truth_has_neg = bool(re.search(neg_pattern, truth_lower))
 
-            # Contradiction: claim says "not X" but truth says "X"
-            # or claim says "X" but truth says "not X"
             if (claim_has_neg and truth_has_pos and not truth_has_neg):
                 penalty += 0.15
             elif (claim_has_pos and truth_has_neg and not claim_has_neg):
@@ -621,169 +507,253 @@ Respond with ONLY a number between 0.0 and 1.0:"""
 
         return min(penalty, 0.5)
 
-    def _extract_sentences(self, text: str) -> List[str]:
-        """Extract sentences from text."""
-        # Split on sentence boundaries
-        sentences = re.split(r'[.!?]\s+|\n', text)
-        return [s.strip() for s in sentences if len(s.strip()) > 10]
-
+    # =========================================================================
+    # Metric 4: Context Precision
+    # =========================================================================
     def context_precision(
         self,
-        retrieved: List[str],
-        ground_truth: List[str],
+        retrieved_files: List[str],
+        ground_truth_files: List[str],
     ) -> float:
         """
-        Compute context precision.
+        Compute precision of retrieved files.
 
-        Precision = |retrieved ∩ truth| / |retrieved|
+        Precision = |retrieved ∩ ground_truth| / |retrieved|
 
         Args:
-            retrieved: Files/chunks retrieved
-            ground_truth: Files that should be retrieved
+            retrieved_files: Files retrieved by the system
+            ground_truth_files: Files that should have been retrieved
 
         Returns:
-            Precision score [0, 1]
+            Precision score between 0 and 1
         """
-        if not retrieved:
+        if not retrieved_files:
             return 0.0
 
-        retrieved_set = self._normalize_paths(retrieved)
-        truth_set = self._normalize_paths(ground_truth)
+        retrieved_set = self._normalize_paths(retrieved_files)
+        truth_set = self._normalize_paths(ground_truth_files)
 
-        correct = len(retrieved_set & truth_set)
-        return correct / len(retrieved_set)
+        intersection = retrieved_set & truth_set
+        return len(intersection) / len(retrieved_set)
 
+    # =========================================================================
+    # Metric 5: Context Recall
+    # =========================================================================
     def context_recall(
         self,
-        retrieved: List[str],
-        ground_truth: List[str],
+        retrieved_files: List[str],
+        ground_truth_files: List[str],
     ) -> float:
         """
-        Compute context recall.
+        Compute recall of retrieved files.
 
-        Recall = |retrieved ∩ truth| / |truth|
+        Recall = |retrieved ∩ ground_truth| / |ground_truth|
 
         Args:
-            retrieved: Files/chunks retrieved
-            ground_truth: Files that should be retrieved
+            retrieved_files: Files retrieved by the system
+            ground_truth_files: Files that should have been retrieved
 
         Returns:
-            Recall score [0, 1]
+            Recall score between 0 and 1
         """
-        if not ground_truth:
+        if not ground_truth_files:
             return 1.0  # No ground truth to retrieve
 
-        retrieved_set = self._normalize_paths(retrieved)
-        truth_set = self._normalize_paths(ground_truth)
+        retrieved_set = self._normalize_paths(retrieved_files)
+        truth_set = self._normalize_paths(ground_truth_files)
 
-        correct = len(retrieved_set & truth_set)
-        return correct / len(truth_set)
+        intersection = retrieved_set & truth_set
+        return len(intersection) / len(truth_set)
 
     def _normalize_paths(self, paths: List[str]) -> Set[str]:
         """Normalize file paths for comparison."""
         normalized = set()
         for path in paths:
-            # Extract filename
-            name = path.split('/')[-1].split('\\')[-1]
-            normalized.add(name.lower())
+            # Extract filename and normalize
+            name = path.strip().replace("\\", "/").strip("/")
+            # Get just the filename for comparison
+            basename = name.split("/")[-1]
+            normalized.add(basename.lower())
         return normalized
 
-    def token_efficiency(
-        self,
-        tokens_used: int,
-        baseline_tokens: int,
-    ) -> float:
+    # =========================================================================
+    # Metric 6: Token Efficiency
+    # =========================================================================
+    def token_efficiency(self, tokens_used: int, baseline_tokens: int) -> float:
         """
-        Compute token efficiency.
+        Compute token efficiency relative to baseline.
 
         Efficiency = 1 - (tokens_used / baseline_tokens)
-
-        Higher is better (using fewer tokens than baseline).
+        Higher is better (using fewer tokens).
 
         Args:
             tokens_used: Tokens used by adaptive method
-            baseline_tokens: Tokens used by baseline (e.g., full context)
+            baseline_tokens: Tokens used by full-context baseline
 
         Returns:
-            Efficiency score [0, 1]
+            Efficiency score between 0 and 1
         """
         if baseline_tokens <= 0:
             return 0.0
         if tokens_used >= baseline_tokens:
             return 0.0
+        return 1.0 - (tokens_used / baseline_tokens)
 
-        return 1 - (tokens_used / baseline_tokens)
-
+    # =========================================================================
+    # Metric 7: Spike Precision
+    # =========================================================================
     def spike_precision(
         self,
-        detected: List[int],
-        expected: List[int],
+        detected_positions: List[int],
+        ground_truth_positions: List[int],
         tolerance: int = 3,
     ) -> float:
         """
-        Compute spike detection precision.
+        Compute precision of spike detection.
 
-        Precision = correctly detected / total detected
+        A detected spike is correct if it's within `tolerance` tokens of a ground truth position.
 
         Args:
-            detected: Positions where retrieval was triggered
-            expected: Positions where retrieval should have triggered
-            tolerance: Positions within tolerance count as correct
+            detected_positions: Token positions where spikes were detected
+            ground_truth_positions: Token positions where context was actually missing
+            tolerance: Window size for matching (default 3 tokens)
 
         Returns:
-            Precision score [0, 1]
+            Precision score between 0 and 1
         """
-        if not detected:
+        if not detected_positions:
+            return 0.0
+        if not ground_truth_positions:
             return 0.0
 
         correct = 0
-        for d in detected:
-            for e in expected:
-                if abs(d - e) <= tolerance:
+        for detected in detected_positions:
+            for truth in ground_truth_positions:
+                if abs(detected - truth) <= tolerance:
                     correct += 1
                     break
 
-        return correct / len(detected)
+        return correct / len(detected_positions)
 
+    # =========================================================================
+    # Metric 8: Spike Recall
+    # =========================================================================
     def spike_recall(
         self,
-        detected: List[int],
-        expected: List[int],
+        detected_positions: List[int],
+        ground_truth_positions: List[int],
         tolerance: int = 3,
     ) -> float:
         """
-        Compute spike detection recall.
-
-        Recall = correctly detected / total expected
+        Compute recall of spike detection.
 
         Args:
-            detected: Positions where retrieval was triggered
-            expected: Positions where retrieval should have triggered
-            tolerance: Positions within tolerance count as correct
+            detected_positions: Token positions where spikes were detected
+            ground_truth_positions: Token positions where context was actually missing
+            tolerance: Window size for matching (default 3 tokens)
 
         Returns:
-            Recall score [0, 1]
+            Recall score between 0 and 1
         """
-        if not expected:
-            return 1.0  # No expected spikes
+        if not ground_truth_positions:
+            return 1.0
+        if not detected_positions:
+            return 0.0
 
-        correct = 0
-        for e in expected:
-            for d in detected:
-                if abs(d - e) <= tolerance:
-                    correct += 1
+        matched = 0
+        for truth in ground_truth_positions:
+            for detected in detected_positions:
+                if abs(detected - truth) <= tolerance:
+                    matched += 1
                     break
 
-        return correct / len(expected)
+        return matched / len(ground_truth_positions)
 
-    # ========================================================================
-    # AGGREGATE METRICS
-    # ========================================================================
-
-    def aggregate_results(
+    # =========================================================================
+    # Full Evaluation
+    # =========================================================================
+    def evaluate(
         self,
-        results: List[EvaluationResult],
-    ) -> Dict[str, Any]:
+        example_id: str,
+        generated_answer: str,
+        ground_truth_answer: str,
+        retrieved_files: List[str],
+        ground_truth_files: List[str],
+        ground_truth_keywords: Optional[List[str]] = None,
+        tokens_used: int = 0,
+        baseline_tokens: int = 0,
+        generation_time: float = 0.0,
+        num_retrievals: int = 0,
+        detected_positions: Optional[List[int]] = None,
+        ground_truth_positions: Optional[List[int]] = None,
+        method: str = "unknown",
+    ) -> EvaluationResult:
+        """
+        Run full evaluation on a single example.
+
+        Args:
+            example_id: Identifier for the example
+            generated_answer: Answer generated by the system
+            ground_truth_answer: Reference answer
+            retrieved_files: Files retrieved by the system
+            ground_truth_files: Files that should have been retrieved
+            ground_truth_keywords: Keywords for correctness/hallucination
+            tokens_used: Context tokens used
+            baseline_tokens: Baseline token count for efficiency
+            generation_time: Time taken to generate
+            num_retrievals: Number of retrieval operations
+            detected_positions: Positions where spikes were detected
+            ground_truth_positions: Positions where context was missing
+            method: Name of the method being evaluated
+
+        Returns:
+            EvaluationResult with all metrics
+        """
+        result = EvaluationResult(example_id=example_id, method=method)
+
+        # Answer quality
+        result.answer_correctness = self.answer_correctness(
+            generated_answer, ground_truth_answer, ground_truth_keywords
+        )
+        result.answer_completeness = self.answer_completeness(
+            generated_answer, ground_truth_answer
+        )
+        result.hallucination_rate = self.hallucination_rate(
+            generated_answer, ground_truth_answer, ground_truth_keywords
+        )
+
+        # Context quality
+        result.context_precision = self.context_precision(
+            retrieved_files, ground_truth_files
+        )
+        result.context_recall = self.context_recall(
+            retrieved_files, ground_truth_files
+        )
+
+        # Efficiency
+        result.token_efficiency = self.token_efficiency(tokens_used, baseline_tokens)
+        result.tokens_used = tokens_used
+        result.baseline_tokens = baseline_tokens
+
+        # Spike detection
+        if detected_positions is not None and ground_truth_positions is not None:
+            result.spike_precision = self.spike_precision(
+                detected_positions, ground_truth_positions
+            )
+            result.spike_recall = self.spike_recall(
+                detected_positions, ground_truth_positions
+            )
+
+        # Metadata
+        result.generation_time = generation_time
+        result.num_retrievals = num_retrievals
+
+        return result
+
+    # =========================================================================
+    # Aggregate Results
+    # =========================================================================
+    def aggregate_results(self, results: List[EvaluationResult]) -> Dict[str, Any]:
         """
         Aggregate results across multiple examples.
 

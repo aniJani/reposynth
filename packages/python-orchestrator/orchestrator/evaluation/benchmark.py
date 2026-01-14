@@ -1,8 +1,7 @@
 """
-Benchmark Dataset Module for Evaluation.
+Benchmark Dataset for CCE Evaluation.
 
-This module provides structured benchmark datasets for evaluating
-adaptive code generation with uncertainty-triggered retrieval.
+Provides structured examples for evaluating context retrieval methods.
 
 Phase 4, Week 8: Benchmark Dataset
 
@@ -13,90 +12,93 @@ Dataset structure:
 - Repository metadata
 """
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
-from enum import Enum
 import json
-import os
+import random
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import List, Dict, Any, Optional, Iterator, Union
 
 
 class Difficulty(Enum):
     """Difficulty levels for benchmark examples."""
-    EASY = "easy"           # Single file, obvious answer
-    MEDIUM = "medium"       # 2-3 files, some inference
-    HARD = "hard"           # Multiple files, complex reasoning
+    EASY = "easy"       # Single file, direct answer
+    MEDIUM = "medium"   # 2-3 files, requires understanding
+    HARD = "hard"       # Cross-file, architectural understanding
 
 
 class Category(Enum):
-    """Categories of code questions."""
-    ARCHITECTURE = "architecture"       # System design, structure
-    API_USAGE = "api_usage"            # How to use APIs/functions
-    IMPLEMENTATION = "implementation"   # How something is implemented
-    DEBUGGING = "debugging"            # Finding/fixing issues
-    CONFIGURATION = "configuration"    # Config, setup, environment
+    """Categories of code understanding questions."""
+    ARCHITECTURE = "architecture"       # System design, patterns
+    API_USAGE = "api_usage"            # How to use APIs
+    IMPLEMENTATION = "implementation"   # How code works
+    DEBUGGING = "debugging"            # Finding/fixing bugs
+    CONFIGURATION = "configuration"    # Setup, config files
     DATA_FLOW = "data_flow"           # How data moves through system
 
 
 @dataclass
 class BenchmarkExample:
     """A single benchmark example for evaluation."""
-    id: str                              # Unique identifier
-    query: str                           # The question being asked
-    repository: str                      # Repository name/identifier
+    id: str
+    query: str
+    difficulty: Difficulty
+    category: Category
+    ground_truth_answer: str
+    ground_truth_files: List[str]
+    ground_truth_keywords: List[str] = field(default_factory=list)
+    ground_truth_missing_positions: List[int] = field(default_factory=list)
+    source_repository: str = ""
 
-    # Ground truth
-    ground_truth_files: List[str]        # Files needed to answer
-    ground_truth_answer: str             # Expected answer content
-    ground_truth_keywords: List[str] = field(default_factory=list)  # Key terms
-
-    # Metadata
-    difficulty: Difficulty = Difficulty.MEDIUM
-    category: Category = Category.IMPLEMENTATION
+    # Optional context for generation
+    initial_context: str = ""
+    system_prompt: Optional[str] = None
     language: str = "python"
 
-    # Optional context
-    initial_context: str = ""            # Any provided context
-    system_prompt: Optional[str] = None
-
     # For analysis
-    expected_retrieval_count: int = 1    # Expected number of retrievals
-    notes: str = ""                      # Additional notes
+    expected_retrieval_count: int = 1
+    notes: str = ""
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for JSON serialization."""
+        """Convert to dictionary for serialization."""
         return {
-            'id': self.id,
-            'query': self.query,
-            'repository': self.repository,
-            'ground_truth_files': self.ground_truth_files,
-            'ground_truth_answer': self.ground_truth_answer,
-            'ground_truth_keywords': self.ground_truth_keywords,
-            'difficulty': self.difficulty.value,
-            'category': self.category.value,
-            'language': self.language,
-            'initial_context': self.initial_context,
-            'system_prompt': self.system_prompt,
-            'expected_retrieval_count': self.expected_retrieval_count,
-            'notes': self.notes,
+            "id": self.id,
+            "query": self.query,
+            "difficulty": self.difficulty.value,
+            "category": self.category.value,
+            "ground_truth_answer": self.ground_truth_answer,
+            "ground_truth_files": self.ground_truth_files,
+            "ground_truth_keywords": self.ground_truth_keywords,
+            "ground_truth_missing_positions": self.ground_truth_missing_positions,
+            "source_repository": self.source_repository,
+            "initial_context": self.initial_context,
+            "system_prompt": self.system_prompt,
+            "language": self.language,
+            "expected_retrieval_count": self.expected_retrieval_count,
+            "notes": self.notes,
+            "metadata": self.metadata,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'BenchmarkExample':
+    def from_dict(cls, data: Dict[str, Any]) -> "BenchmarkExample":
         """Create from dictionary."""
         return cls(
-            id=data['id'],
-            query=data['query'],
-            repository=data['repository'],
-            ground_truth_files=data['ground_truth_files'],
-            ground_truth_answer=data['ground_truth_answer'],
-            ground_truth_keywords=data.get('ground_truth_keywords', []),
-            difficulty=Difficulty(data.get('difficulty', 'medium')),
-            category=Category(data.get('category', 'implementation')),
-            language=data.get('language', 'python'),
-            initial_context=data.get('initial_context', ''),
-            system_prompt=data.get('system_prompt'),
-            expected_retrieval_count=data.get('expected_retrieval_count', 1),
-            notes=data.get('notes', ''),
+            id=data["id"],
+            query=data["query"],
+            difficulty=Difficulty(data.get("difficulty", "medium")),
+            category=Category(data.get("category", "implementation")),
+            ground_truth_answer=data["ground_truth_answer"],
+            ground_truth_files=data["ground_truth_files"],
+            ground_truth_keywords=data.get("ground_truth_keywords", []),
+            ground_truth_missing_positions=data.get("ground_truth_missing_positions", []),
+            source_repository=data.get("source_repository", data.get("repository", "")),
+            initial_context=data.get("initial_context", ""),
+            system_prompt=data.get("system_prompt"),
+            language=data.get("language", "python"),
+            expected_retrieval_count=data.get("expected_retrieval_count", 1),
+            notes=data.get("notes", ""),
+            metadata=data.get("metadata", {}),
         )
 
     def __repr__(self) -> str:
@@ -107,53 +109,46 @@ class BenchmarkExample:
         )
 
 
-@dataclass
 class BenchmarkDataset:
-    """
-    Collection of benchmark examples for evaluation.
+    """Collection of benchmark examples with filtering and splitting."""
 
-    Provides utilities for:
-    - Loading/saving datasets
-    - Filtering by difficulty, category, repository
-    - Splitting into train/test sets
-    - Statistics and summaries
-
-    Example:
-        >>> dataset = BenchmarkDataset.load('benchmark.json')
-        >>> print(f"Total examples: {len(dataset)}")
-        >>> hard_examples = dataset.filter(difficulty=Difficulty.HARD)
-        >>> for example in dataset:
-        ...     result = evaluate(example)
-    """
-    name: str
-    version: str
-    examples: List[BenchmarkExample]
-    description: str = ""
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    def __init__(
+        self,
+        examples: List[BenchmarkExample],
+        name: str = "benchmark",
+        version: str = "1.0.0",
+        description: str = "",
+        metadata: Optional[Dict[str, Any]] = None,
+    ):
+        self.examples = examples
+        self.name = name
+        self.version = version
+        self.description = description
+        self.metadata = metadata or {}
 
     def __len__(self) -> int:
         return len(self.examples)
 
-    def __iter__(self):
-        return iter(self.examples)
-
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> BenchmarkExample:
         return self.examples[idx]
+
+    def __iter__(self) -> Iterator[BenchmarkExample]:
+        return iter(self.examples)
 
     def filter(
         self,
         difficulty: Optional[Difficulty] = None,
         category: Optional[Category] = None,
-        repository: Optional[str] = None,
+        source_repository: Optional[str] = None,
         language: Optional[str] = None,
-    ) -> 'BenchmarkDataset':
+    ) -> "BenchmarkDataset":
         """
         Filter examples by criteria.
 
         Args:
             difficulty: Filter by difficulty level
             category: Filter by category
-            repository: Filter by repository name
+            source_repository: Filter by repository name
             language: Filter by programming language
 
         Returns:
@@ -161,28 +156,30 @@ class BenchmarkDataset:
         """
         filtered = self.examples
 
-        if difficulty:
-            filtered = [e for e in filtered if e.difficulty == difficulty]
-        if category:
-            filtered = [e for e in filtered if e.category == category]
-        if repository:
-            filtered = [e for e in filtered if e.repository == repository]
-        if language:
-            filtered = [e for e in filtered if e.language == language]
+        if difficulty is not None:
+            filtered = [ex for ex in filtered if ex.difficulty == difficulty]
+
+        if category is not None:
+            filtered = [ex for ex in filtered if ex.category == category]
+
+        if source_repository is not None:
+            filtered = [ex for ex in filtered if ex.source_repository == source_repository]
+
+        if language is not None:
+            filtered = [ex for ex in filtered if ex.language == language]
 
         return BenchmarkDataset(
+            examples=filtered,
             name=f"{self.name}_filtered",
             version=self.version,
-            examples=filtered,
-            description=f"Filtered subset of {self.name}",
             metadata=self.metadata,
         )
 
     def split(
         self,
         train_ratio: float = 0.8,
-        seed: int = 42
-    ) -> tuple:
+        seed: int = 42,
+    ) -> tuple["BenchmarkDataset", "BenchmarkDataset"]:
         """
         Split into train and test sets.
 
@@ -193,137 +190,118 @@ class BenchmarkDataset:
         Returns:
             (train_dataset, test_dataset) tuple
         """
-        import random
         random.seed(seed)
+        shuffled = self.examples.copy()
+        random.shuffle(shuffled)
 
-        indices = list(range(len(self.examples)))
-        random.shuffle(indices)
+        split_idx = int(len(shuffled) * train_ratio)
+        train = shuffled[:split_idx]
+        test = shuffled[split_idx:]
 
-        split_idx = int(len(indices) * train_ratio)
-        train_indices = indices[:split_idx]
-        test_indices = indices[split_idx:]
-
-        train_examples = [self.examples[i] for i in train_indices]
-        test_examples = [self.examples[i] for i in test_indices]
-
-        train_ds = BenchmarkDataset(
-            name=f"{self.name}_train",
-            version=self.version,
-            examples=train_examples,
-            metadata=self.metadata,
+        return (
+            BenchmarkDataset(train, f"{self.name}_train", self.version, metadata=self.metadata),
+            BenchmarkDataset(test, f"{self.name}_test", self.version, metadata=self.metadata),
         )
-        test_ds = BenchmarkDataset(
-            name=f"{self.name}_test",
-            version=self.version,
-            examples=test_examples,
-            metadata=self.metadata,
-        )
-
-        return train_ds, test_ds
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get dataset statistics."""
-        stats = {
-            'total_examples': len(self.examples),
-            'by_difficulty': {},
-            'by_category': {},
-            'by_repository': {},
-            'by_language': {},
-            'avg_ground_truth_files': 0,
-            'avg_answer_length': 0,
-        }
-
-        for diff in Difficulty:
-            count = sum(1 for e in self.examples if e.difficulty == diff)
-            stats['by_difficulty'][diff.value] = count
-
-        for cat in Category:
-            count = sum(1 for e in self.examples if e.category == cat)
-            stats['by_category'][cat.value] = count
-
-        repos = {}
-        languages = {}
+        by_difficulty = {}
+        by_category = {}
+        by_language = {}
+        by_repository = {}
         total_files = 0
         total_answer_len = 0
 
-        for e in self.examples:
-            repos[e.repository] = repos.get(e.repository, 0) + 1
-            languages[e.language] = languages.get(e.language, 0) + 1
-            total_files += len(e.ground_truth_files)
-            total_answer_len += len(e.ground_truth_answer)
+        for ex in self.examples:
+            # Count by difficulty
+            diff_key = ex.difficulty.value
+            by_difficulty[diff_key] = by_difficulty.get(diff_key, 0) + 1
 
-        stats['by_repository'] = repos
-        stats['by_language'] = languages
+            # Count by category
+            cat_key = ex.category.value
+            by_category[cat_key] = by_category.get(cat_key, 0) + 1
 
-        if self.examples:
-            stats['avg_ground_truth_files'] = total_files / len(self.examples)
-            stats['avg_answer_length'] = total_answer_len / len(self.examples)
+            # Count by language
+            by_language[ex.language] = by_language.get(ex.language, 0) + 1
 
-        return stats
+            # Count by repository
+            if ex.source_repository:
+                by_repository[ex.source_repository] = by_repository.get(ex.source_repository, 0) + 1
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for JSON serialization."""
+            # Count files and answer length
+            total_files += len(ex.ground_truth_files)
+            total_answer_len += len(ex.ground_truth_answer)
+
         return {
-            'name': self.name,
-            'version': self.version,
-            'description': self.description,
-            'metadata': self.metadata,
-            'examples': [e.to_dict() for e in self.examples],
+            "total_examples": len(self.examples),
+            "by_difficulty": by_difficulty,
+            "by_category": by_category,
+            "by_language": by_language,
+            "by_repository": by_repository,
+            "avg_ground_truth_files": total_files / len(self.examples) if self.examples else 0,
+            "avg_answer_length": total_answer_len / len(self.examples) if self.examples else 0,
         }
 
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'BenchmarkDataset':
-        """Create from dictionary."""
-        examples = [BenchmarkExample.from_dict(e) for e in data.get('examples', [])]
-        return cls(
-            name=data['name'],
-            version=data['version'],
-            examples=examples,
-            description=data.get('description', ''),
-            metadata=data.get('metadata', {}),
-        )
+    def validate(self) -> List[str]:
+        """Validate dataset integrity. Returns list of errors."""
+        errors = []
+        seen_ids = set()
 
-    def save(self, path: str):
-        """Save dataset to JSON file."""
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(self.to_dict(), f, indent=2, ensure_ascii=False)
+        for ex in self.examples:
+            # Check for duplicate IDs
+            if ex.id in seen_ids:
+                errors.append(f"Duplicate ID: {ex.id}")
+            seen_ids.add(ex.id)
 
-    @classmethod
-    def load(cls, path: str) -> 'BenchmarkDataset':
-        """Load dataset from JSON file."""
-        with open(path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        return cls.from_dict(data)
+            # Check for empty fields
+            if not ex.query.strip():
+                errors.append(f"{ex.id}: Empty query")
+            if not ex.ground_truth_answer.strip():
+                errors.append(f"{ex.id}: Empty ground truth answer")
+            if not ex.ground_truth_files:
+                errors.append(f"{ex.id}: No ground truth files")
+
+        return errors
 
     def add_example(self, example: BenchmarkExample):
         """Add an example to the dataset."""
         self.examples.append(example)
 
-    def validate(self) -> List[str]:
-        """
-        Validate dataset integrity.
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return {
+            "name": self.name,
+            "version": self.version,
+            "description": self.description,
+            "metadata": self.metadata,
+            "examples": [ex.to_dict() for ex in self.examples],
+        }
 
-        Returns:
-            List of validation errors (empty if valid)
-        """
-        errors = []
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "BenchmarkDataset":
+        """Create from dictionary."""
+        examples = [BenchmarkExample.from_dict(ex) for ex in data.get("examples", [])]
+        return cls(
+            examples=examples,
+            name=data.get("name", "benchmark"),
+            version=data.get("version", "1.0.0"),
+            description=data.get("description", ""),
+            metadata=data.get("metadata", {}),
+        )
 
-        ids = set()
-        for i, example in enumerate(self.examples):
-            # Check for duplicate IDs
-            if example.id in ids:
-                errors.append(f"Duplicate ID: {example.id}")
-            ids.add(example.id)
+    def save(self, path: Union[str, Path]) -> None:
+        """Save dataset to JSON file."""
+        path = Path(path) if isinstance(path, str) else path
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.to_dict(), f, indent=2, ensure_ascii=False)
 
-            # Check required fields
-            if not example.query:
-                errors.append(f"Example {example.id}: empty query")
-            if not example.ground_truth_files:
-                errors.append(f"Example {example.id}: no ground truth files")
-            if not example.ground_truth_answer:
-                errors.append(f"Example {example.id}: no ground truth answer")
-
-        return errors
+    @classmethod
+    def load(cls, path: Union[str, Path]) -> "BenchmarkDataset":
+        """Load dataset from JSON file."""
+        path = Path(path) if isinstance(path, str) else path
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        return cls.from_dict(data)
 
 
 # ============================================================================
@@ -331,108 +309,106 @@ class BenchmarkDataset:
 # ============================================================================
 
 def create_benchmark(
+    examples: Optional[List[Dict[str, Any]]] = None,
     name: str = "reposynth_benchmark",
     version: str = "1.0.0",
     description: str = "",
 ) -> BenchmarkDataset:
     """
-    Create an empty benchmark dataset.
+    Create a benchmark dataset.
 
     Args:
+        examples: Optional list of example dictionaries to parse
         name: Dataset name
         version: Version string
         description: Dataset description
 
     Returns:
-        Empty BenchmarkDataset ready for examples
+        BenchmarkDataset instance
     """
+    if examples:
+        parsed = [BenchmarkExample.from_dict(ex) for ex in examples]
+    else:
+        parsed = []
+
     return BenchmarkDataset(
+        examples=parsed,
         name=name,
         version=version,
-        examples=[],
         description=description,
         metadata={
-            'created_by': 'RepoSynth',
-            'target_size': 100,
+            "created_by": "RepoSynth",
+            "target_size": 100,
         },
     )
 
 
-def load_benchmark(path: str) -> BenchmarkDataset:
+def load_benchmark(path: Union[str, Path]) -> BenchmarkDataset:
     """Load a benchmark dataset from file."""
     return BenchmarkDataset.load(path)
 
 
 def create_sample_benchmark() -> BenchmarkDataset:
-    """
-    Create a sample benchmark with a few examples for testing.
-
-    Returns:
-        BenchmarkDataset with sample examples
-    """
+    """Create a sample benchmark with a few examples for testing."""
     examples = [
         BenchmarkExample(
             id="sample_001",
             query="How does user authentication work in this Flask app?",
-            repository="sample-flask-app",
-            ground_truth_files=["src/auth/jwt.py", "src/api/routes.py"],
-            ground_truth_answer="""
-User authentication uses JWT tokens:
-1. User logs in via /login endpoint
-2. Server creates JWT token with create_token()
-3. Token is returned to client
-4. Client includes token in Authorization header
-5. Server verifies token with verify_token()
-""",
-            ground_truth_keywords=["JWT", "token", "login", "verify", "Authorization"],
             difficulty=Difficulty.MEDIUM,
             category=Category.ARCHITECTURE,
+            ground_truth_answer=(
+                "User authentication uses JWT tokens. The user logs in via /login endpoint. "
+                "The server creates a JWT token with create_token() function. "
+                "The token is verified using verify_token() on protected routes."
+            ),
+            ground_truth_files=["src/auth/jwt.py", "src/api/routes.py"],
+            ground_truth_keywords=["JWT", "token", "login", "create_token", "verify_token", "Authorization"],
+            ground_truth_missing_positions=[15, 32, 48],
+            source_repository="sample_flask_app",
             language="python",
             expected_retrieval_count=2,
         ),
         BenchmarkExample(
             id="sample_002",
             query="What database models are defined in the application?",
-            repository="sample-flask-app",
-            ground_truth_files=["src/db/models.py"],
-            ground_truth_answer="""
-The User model is defined with SQLAlchemy:
-- id: Integer primary key
-- username: Unique string
-- password_hash: String for hashed password
-""",
-            ground_truth_keywords=["User", "SQLAlchemy", "model", "Column", "Integer", "String"],
             difficulty=Difficulty.EASY,
             category=Category.IMPLEMENTATION,
+            ground_truth_answer=(
+                "The application defines a User model with id, username, and password_hash columns. "
+                "It uses SQLAlchemy for ORM."
+            ),
+            ground_truth_files=["src/db/models.py"],
+            ground_truth_keywords=["User", "model", "SQLAlchemy", "Column", "Integer", "String"],
+            ground_truth_missing_positions=[8, 22],
+            source_repository="sample_flask_app",
             language="python",
             expected_retrieval_count=1,
         ),
         BenchmarkExample(
             id="sample_003",
             query="How is the application configured and what environment variables are used?",
-            repository="sample-flask-app",
-            ground_truth_files=["src/config.py"],
-            ground_truth_answer="""
-Configuration is handled by the Config class:
-- SECRET_KEY: From SECRET_KEY env var, defaults to 'dev-key'
-- DATABASE_URL: From DATABASE_URL env var, defaults to 'sqlite:///app.db'
-- DEBUG: From DEBUG env var, defaults to False
-""",
-            ground_truth_keywords=["Config", "SECRET_KEY", "DATABASE_URL", "environ", "DEBUG"],
             difficulty=Difficulty.EASY,
             category=Category.CONFIGURATION,
+            ground_truth_answer=(
+                "Configuration is managed through a Config class that reads from environment variables. "
+                "It uses SECRET_KEY and DATABASE_URL environment variables."
+            ),
+            ground_truth_files=["src/config.py"],
+            ground_truth_keywords=["Config", "SECRET_KEY", "DATABASE_URL", "environ", "DEBUG"],
+            ground_truth_missing_positions=[5, 15],
+            source_repository="sample_flask_app",
             language="python",
             expected_retrieval_count=1,
         ),
     ]
 
     return BenchmarkDataset(
+        examples=examples,
         name="sample_benchmark",
         version="0.1.0",
-        examples=examples,
         description="Sample benchmark for testing evaluation framework",
         metadata={
-            'is_sample': True,
-            'target_size': 3,
+            "is_sample": True,
+            "target_size": 3,
         },
     )

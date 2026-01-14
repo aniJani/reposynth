@@ -1,11 +1,12 @@
 """
-Evaluation Module for Adaptive Code Generation Research.
+Evaluation Framework for RepoSynth CCE Research.
 
-This package provides:
-- BenchmarkDataset: Structured dataset for evaluation
-- EvaluationMetrics: 8 metrics for comprehensive evaluation
-- BaselineRunner: Run baselines for comparison
+This module provides:
+- BenchmarkDataset: Structured evaluation examples
+- EvaluationMetrics: 8 metrics for assessment
+- BaselineRunner: Run baseline methods
 - ExperimentRunner: Full experiment orchestration
+- StatisticalAnalysis: Significance testing
 
 Phase 4, Week 8-9: Evaluation Framework
 
@@ -20,59 +21,62 @@ Metrics implemented:
 8. spike_recall - Coverage of uncertainty detection
 """
 
+from .benchmark import (
+    BenchmarkExample,
+    BenchmarkDataset,
+    Difficulty,
+    Category,
+    create_benchmark,
+    create_sample_benchmark,
+)
+
+from .metrics import (
+    EvaluationMetrics,
+    EvaluationResult,
+)
+
+from .runner import (
+    BaselineRunner,
+    ExperimentRunner,
+    BaselineMethod,
+    ExperimentConfig,
+    EvaluationRetriever,
+)
+
+from .stats import (
+    StatisticalAnalysis,
+)
+
+# Import benchmark generator utilities if available
+try:
+    from .benchmark_generator import generate_full_benchmark, get_mock_codebase
+    _HAS_BENCHMARK_GENERATOR = True
+except ImportError:
+    _HAS_BENCHMARK_GENERATOR = False
+
 __all__ = [
-    # Core classes
-    'BenchmarkDataset',
-    'BenchmarkExample',
-    'EvaluationMetrics',
-    'EvaluationResult',
-    # Runners
-    'BaselineRunner',
-    'ExperimentRunner',
-    # Utilities
-    'create_benchmark',
-    'load_benchmark',
-    # Benchmark generator
-    'generate_full_benchmark',
-    'get_mock_codebase',
+    # Benchmark
+    "BenchmarkExample",
+    "BenchmarkDataset",
+    "Difficulty",
+    "Category",
+    "create_benchmark",
+    "create_sample_benchmark",
+    # Metrics
+    "EvaluationMetrics",
+    "EvaluationResult",
+    # Runner
+    "BaselineRunner",
+    "ExperimentRunner",
+    "BaselineMethod",
+    "ExperimentConfig",
+    "EvaluationRetriever",
+    # Stats
+    "StatisticalAnalysis",
 ]
 
+# Add benchmark generator exports if available
+if _HAS_BENCHMARK_GENERATOR:
+    __all__.extend(["generate_full_benchmark", "get_mock_codebase"])
+
 __version__ = '0.1.0'
-
-# Lazy imports
-def __getattr__(name):
-    if name in ['BenchmarkDataset', 'BenchmarkExample', 'create_benchmark', 'load_benchmark']:
-        from .benchmark import BenchmarkDataset, BenchmarkExample, create_benchmark, load_benchmark
-        globals().update({
-            'BenchmarkDataset': BenchmarkDataset,
-            'BenchmarkExample': BenchmarkExample,
-            'create_benchmark': create_benchmark,
-            'load_benchmark': load_benchmark,
-        })
-        return globals()[name]
-
-    if name in ['EvaluationMetrics', 'EvaluationResult']:
-        from .metrics import EvaluationMetrics, EvaluationResult
-        globals().update({
-            'EvaluationMetrics': EvaluationMetrics,
-            'EvaluationResult': EvaluationResult,
-        })
-        return globals()[name]
-
-    if name in ['BaselineRunner', 'ExperimentRunner']:
-        from .runner import BaselineRunner, ExperimentRunner
-        globals().update({
-            'BaselineRunner': BaselineRunner,
-            'ExperimentRunner': ExperimentRunner,
-        })
-        return globals()[name]
-
-    if name in ['generate_full_benchmark', 'get_mock_codebase']:
-        from .benchmark_generator import generate_full_benchmark, get_mock_codebase
-        globals().update({
-            'generate_full_benchmark': generate_full_benchmark,
-            'get_mock_codebase': get_mock_codebase,
-        })
-        return globals()[name]
-
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
