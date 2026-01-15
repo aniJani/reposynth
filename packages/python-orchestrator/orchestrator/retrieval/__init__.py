@@ -17,6 +17,8 @@ __all__ = [
     # Adaptive Retrieval
     'AdaptiveContextRetriever',
     'RetrievalResult',
+    'EmbeddingRetriever',
+    'SimpleRetriever',
 
     # Context Management
     'ContextManager',
@@ -35,11 +37,13 @@ def __getattr__(name):
         })
         return globals()[name]
 
-    if name in ['AdaptiveContextRetriever', 'RetrievalResult']:
-        from .adaptive import AdaptiveContextRetriever, RetrievalResult
+    if name in ['AdaptiveContextRetriever', 'RetrievalResult', 'EmbeddingRetriever', 'SimpleRetriever']:
+        from .adaptive import AdaptiveContextRetriever, RetrievalResult, EmbeddingRetriever, SimpleRetriever
         globals().update({
             'AdaptiveContextRetriever': AdaptiveContextRetriever,
             'RetrievalResult': RetrievalResult,
+            'EmbeddingRetriever': EmbeddingRetriever,
+            'SimpleRetriever': SimpleRetriever,
         })
         return globals()[name]
 

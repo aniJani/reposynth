@@ -799,7 +799,7 @@ def generate_architecture_examples() -> List[BenchmarkExample]:
         BenchmarkExample(
             id="arch_001",
             query="What is the overall structure of the Flask application?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/app.py"],
             ground_truth_answer="""
 The Flask application uses the application factory pattern:
@@ -819,7 +819,7 @@ The Flask application uses the application factory pattern:
         BenchmarkExample(
             id="arch_002",
             query="How does the authentication system work in this application?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/auth/jwt.py", "src/api/routes.py"],
             ground_truth_answer="""
 Authentication uses JWT (JSON Web Tokens):
@@ -839,7 +839,7 @@ Authentication uses JWT (JSON Web Tokens):
         BenchmarkExample(
             id="arch_003",
             query="How is the database layer organized and what models exist?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/db/models.py", "src/db/migrations.py"],
             ground_truth_answer="""
 Database uses Flask-SQLAlchemy with these models:
@@ -860,7 +860,7 @@ Migrations handled by Flask-Migrate with init_migrations(), create_tables(), see
         BenchmarkExample(
             id="arch_004",
             query="How does the application handle caching?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/services/cache.py", "src/config.py"],
             ground_truth_answer="""
 Caching uses Redis via CacheService class:
@@ -879,7 +879,7 @@ Caching uses Redis via CacheService class:
         BenchmarkExample(
             id="arch_005",
             query="What is the complete request lifecycle from client to response?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/app.py", "src/api/middleware.py", "src/api/routes.py", "src/utils/logging.py"],
             ground_truth_answer="""
 Request lifecycle:
@@ -904,7 +904,7 @@ Request lifecycle:
         BenchmarkExample(
             id="arch_006",
             query="How are API routes organized in the application?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/routes.py"],
             ground_truth_answer="""
 API routes are organized using Flask Blueprint:
@@ -922,7 +922,7 @@ API routes are organized using Flask Blueprint:
         BenchmarkExample(
             id="arch_007",
             query="How does the application handle email sending?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/services/email.py", "src/config.py"],
             ground_truth_answer="""
 Email handling uses Flask-Mail:
@@ -945,7 +945,7 @@ def generate_api_usage_examples() -> List[BenchmarkExample]:
         BenchmarkExample(
             id="api_001",
             query="How do I register a new user via the API?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/routes.py"],
             ground_truth_answer="""
 To register a new user:
@@ -962,7 +962,7 @@ Errors: 400 if email already registered
         BenchmarkExample(
             id="api_002",
             query="How do I authenticate and make protected API calls?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/routes.py", "src/auth/jwt.py"],
             ground_truth_answer="""
 Authentication flow:
@@ -981,7 +981,7 @@ Authentication flow:
         BenchmarkExample(
             id="api_003",
             query="How do I use the caching decorator on my functions?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/services/cache.py"],
             ground_truth_answer="""
 Use @cached decorator:
@@ -1003,7 +1003,7 @@ Cache key format: {prefix}:{function_name}:{args}:{kwargs}
         BenchmarkExample(
             id="api_004",
             query="How do I add rate limiting to an endpoint?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/middleware.py"],
             ground_truth_answer="""
 Use @rate_limit decorator:
@@ -1024,7 +1024,7 @@ Returns 429 status with {"error": "Rate limit exceeded"} when exceeded
         BenchmarkExample(
             id="api_005",
             query="How do I validate user input in the application?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/utils/validators.py"],
             ground_truth_answer="""
 Input validation utilities:
@@ -1043,7 +1043,7 @@ Input validation utilities:
         BenchmarkExample(
             id="api_006",
             query="How do I update a user's profile via the API?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/routes.py"],
             ground_truth_answer="""
 To update user profile:
@@ -1065,7 +1065,7 @@ Permissions:
         BenchmarkExample(
             id="api_007",
             query="How do I send emails using the email service?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/services/email.py"],
             ground_truth_answer="""
 Email sending functions:
@@ -1090,7 +1090,7 @@ def generate_implementation_examples() -> List[BenchmarkExample]:
         BenchmarkExample(
             id="impl_001",
             query="How is JWT token creation implemented?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/auth/jwt.py"],
             ground_truth_answer="""
 JWT token creation in create_token():
@@ -1107,7 +1107,7 @@ JWT token creation in create_token():
         BenchmarkExample(
             id="impl_002",
             query="How is password hashing implemented?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/auth/password.py"],
             ground_truth_answer="""
 Password hashing uses bcrypt:
@@ -1128,7 +1128,7 @@ Password hashing uses bcrypt:
         BenchmarkExample(
             id="impl_003",
             query="How are database relationships defined between User and Post?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/db/models.py"],
             ground_truth_answer="""
 User-Post relationship:
@@ -1146,7 +1146,7 @@ User-Post relationship:
         BenchmarkExample(
             id="impl_004",
             query="How is the rate limiting middleware implemented?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/middleware.py"],
             ground_truth_answer="""
 Rate limiting implementation:
@@ -1167,7 +1167,7 @@ Rate limiting implementation:
         BenchmarkExample(
             id="impl_005",
             query="How does the application factory pattern work in this app?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/app.py", "src/config.py"],
             ground_truth_answer="""
 Application factory in create_app():
@@ -1190,7 +1190,7 @@ Config classes inherit from base Config with environment-specific overrides
         BenchmarkExample(
             id="impl_006",
             query="How is email sending made asynchronous?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/services/email.py"],
             ground_truth_answer="""
 Asynchronous email implementation:
@@ -1209,7 +1209,7 @@ Asynchronous email implementation:
         BenchmarkExample(
             id="impl_007",
             query="How is the require_auth decorator implemented?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/auth/jwt.py"],
             ground_truth_answer="""
 require_auth decorator implementation:
@@ -1235,7 +1235,7 @@ def generate_debugging_examples() -> List[BenchmarkExample]:
         BenchmarkExample(
             id="debug_001",
             query="Where should I look to debug authentication failures?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/auth/jwt.py", "src/api/routes.py"],
             ground_truth_answer="""
 Debug authentication in these locations:
@@ -1255,7 +1255,7 @@ Debug authentication in these locations:
         BenchmarkExample(
             id="debug_002",
             query="How can I trace why emails are not being sent?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/services/email.py", "src/config.py"],
             ground_truth_answer="""
 Debug email issues:
@@ -1274,7 +1274,7 @@ Debug email issues:
         BenchmarkExample(
             id="debug_003",
             query="Why might my database queries be slow and how do I debug them?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/db/models.py", "src/config.py"],
             ground_truth_answer="""
 Debug slow database queries:
@@ -1293,7 +1293,7 @@ Debug slow database queries:
         BenchmarkExample(
             id="debug_004",
             query="How do I debug rate limiting issues?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/middleware.py"],
             ground_truth_answer="""
 Debug rate limiting:
@@ -1312,7 +1312,7 @@ Debug rate limiting:
         BenchmarkExample(
             id="debug_005",
             query="How do I debug cache misses?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/services/cache.py"],
             ground_truth_answer="""
 Debug cache issues:
@@ -1331,7 +1331,7 @@ Debug cache issues:
         BenchmarkExample(
             id="debug_006",
             query="Where do I look to debug 403 Forbidden errors?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/auth/jwt.py", "src/api/routes.py"],
             ground_truth_answer="""
 Debug 403 errors:
@@ -1355,7 +1355,7 @@ def generate_configuration_examples() -> List[BenchmarkExample]:
         BenchmarkExample(
             id="config_001",
             query="What environment variables does the application use?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/config.py"],
             ground_truth_answer="""
 Environment variables:
@@ -1374,7 +1374,7 @@ Environment variables:
         BenchmarkExample(
             id="config_002",
             query="How do I configure the application for production?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/config.py"],
             ground_truth_answer="""
 Production configuration (ProductionConfig):
@@ -1394,7 +1394,7 @@ Production configuration (ProductionConfig):
         BenchmarkExample(
             id="config_003",
             query="How do I set up the testing configuration?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/config.py", "tests/test_api.py"],
             ground_truth_answer="""
 Testing configuration (TestingConfig):
@@ -1413,7 +1413,7 @@ Testing configuration (TestingConfig):
         BenchmarkExample(
             id="config_004",
             query="How is logging configured in the application?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/utils/logging.py"],
             ground_truth_answer="""
 Logging configuration in setup_logging():
@@ -1432,7 +1432,7 @@ Logging configuration in setup_logging():
         BenchmarkExample(
             id="config_005",
             query="How do I configure the database connection?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/config.py", "src/db/models.py"],
             ground_truth_answer="""
 Database configuration:
@@ -1451,7 +1451,7 @@ Database configuration:
         BenchmarkExample(
             id="config_006",
             query="How do I configure JWT token settings?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/config.py", "src/auth/jwt.py"],
             ground_truth_answer="""
 JWT configuration:
@@ -1475,7 +1475,7 @@ def generate_data_flow_examples() -> List[BenchmarkExample]:
         BenchmarkExample(
             id="flow_001",
             query="How does data flow during user registration?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/routes.py", "src/auth/password.py", "src/db/models.py", "src/services/email.py"],
             ground_truth_answer="""
 User registration data flow:
@@ -1494,7 +1494,7 @@ User registration data flow:
         BenchmarkExample(
             id="flow_002",
             query="How does data flow during the login process?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/routes.py", "src/auth/jwt.py", "src/auth/password.py"],
             ground_truth_answer="""
 Login data flow:
@@ -1513,7 +1513,7 @@ Login data flow:
         BenchmarkExample(
             id="flow_003",
             query="How does authentication flow through protected endpoints?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/auth/jwt.py", "src/api/routes.py"],
             ground_truth_answer="""
 Protected endpoint authentication flow:
@@ -1533,7 +1533,7 @@ Protected endpoint authentication flow:
         BenchmarkExample(
             id="flow_004",
             query="How does cached data flow through the application?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/services/cache.py"],
             ground_truth_answer="""
 Cached data flow:
@@ -1553,7 +1553,7 @@ Cached data flow:
         BenchmarkExample(
             id="flow_005",
             query="How does request data flow through middleware?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/middleware.py", "src/utils/logging.py"],
             ground_truth_answer="""
 Middleware request flow:
@@ -1572,7 +1572,7 @@ Middleware request flow:
         BenchmarkExample(
             id="flow_006",
             query="How does error handling flow in the application?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/app.py", "src/auth/jwt.py"],
             ground_truth_answer="""
 Error handling flow:
@@ -1597,7 +1597,7 @@ def generate_hard_examples() -> List[BenchmarkExample]:
         BenchmarkExample(
             id="hard_001",
             query="How would I implement a password reset feature using the existing codebase?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/auth/password.py", "src/services/email.py", "src/api/routes.py", "src/db/models.py"],
             ground_truth_answer="""
 Password reset implementation using existing code:
@@ -1620,7 +1620,7 @@ Password reset implementation using existing code:
         BenchmarkExample(
             id="hard_002",
             query="Explain the complete security architecture of this application.",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/auth/jwt.py", "src/auth/password.py", "src/api/middleware.py", "src/utils/validators.py", "src/config.py"],
             ground_truth_answer="""
 Security architecture:
@@ -1641,7 +1641,7 @@ Security architecture:
         BenchmarkExample(
             id="hard_003",
             query="How would I add a new Post CRUD API using the existing patterns?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/routes.py", "src/db/models.py", "src/auth/jwt.py"],
             ground_truth_answer="""
 Post CRUD implementation following existing patterns:
@@ -1665,7 +1665,7 @@ Post CRUD implementation following existing patterns:
         BenchmarkExample(
             id="hard_004",
             query="How do all the components work together when a user creates a post?",
-            repository="flask-app",
+            source_repository="flask-app",
             ground_truth_files=["src/api/routes.py", "src/auth/jwt.py", "src/db/models.py", "src/api/middleware.py", "src/utils/logging.py"],
             ground_truth_answer="""
 Post creation flow:

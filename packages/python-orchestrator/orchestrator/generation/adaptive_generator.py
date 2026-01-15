@@ -306,6 +306,7 @@ class AdaptiveGenerator:
                         context=generated_so_far,
                         position=i,
                         uncertainty_value=result.value,
+                        original_query=query,  # Use original query for retrieval!
                     )
                     if retrieval_event:
                         retrieval_events.append(retrieval_event)
@@ -420,15 +421,19 @@ class AdaptiveGenerator:
         context: str,
         position: int,
         uncertainty_value: float,
+        original_query: str = "",
     ) -> Optional[RetrievalEvent]:
         """Handle a retrieval event."""
-        # Attempt retrieval
+        # Attempt retrieval using ORIGINAL QUERY (not inferred topic)
+        # CCE determines WHEN to retrieve, but WHAT to retrieve should
+        # be based on the original user query for best results
         retrieval_result = self.retriever.retrieve_on_uncertainty(
             logits=logits,
             context=context,
             position=position,
             uncertainty_value=uncertainty_value,
             should_retrieve=True,
+            original_query=original_query,  # Pass original query!
         )
 
         # Create event record

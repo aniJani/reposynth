@@ -106,6 +106,117 @@ class SimpleRetriever:
         return results[:top_k]
 
 
+class EmbeddingRetriever:
+    """
+    Semantic retrieval using SentenceTransformer embeddings.
+
+    This provides the same quality retrieval as the embedding baseline,
+    enabling fair comparison between CCE and other methods.
+    """
+
+    def __init__(
+        self,
+        documents: Optional[Dict[str, str]] = None,
+        model_name: str = 'all-MiniLM-L6-v2',
+    ):
+        """
+        Initialize embedding retriever.
+
+        Args:
+            documents: Dict mapping file paths to content
+            model_name: SentenceTransformer model name
+        """
+        self.documents = documents or {}
+        self.model_name = model_name
+        self._model = None
+        self._doc_embeddings = None
+        self._doc_paths = None
+        self._retrieved_sources: set = set()  # Track retrieved sources for dedup
+
+    @property
+    def model(self):
+        """Lazy load embedding model."""
+        if self._model is None:
+            try:
+                from sentence_transformers import SentenceTransformer
+                self._model = SentenceTransformer(self.model_name)
+            except ImportError:
+                raise ImportError("sentence-transformers required: pip install sentence-transformers")
+        return self._model
+
+    def _ensure_embeddings(self):
+        """Compute document embeddings if not cached."""
+        if self._doc_embeddings is None:
+            self._doc_paths = list(self.documents.keys())
+            doc_texts = list(self.documents.values())
+            self._doc_embeddings = self.model.encode(doc_texts)
+
+    def add_document(self, source: str, content: str):
+        """Add a document and invalidate cache."""
+        self.documents[source] = content
+        self._doc_embeddings = None  # Invalidate cache
+
+    def reset(self):
+        """Reset retrieved sources tracking for new generation."""
+        self._retrieved_sources = set()
+
+    def retrieve(
+        self,
+        query: str,
+        top_k: int = 3,
+        deduplicate: bool = True,
+        **kwargs
+    ) -> List[Dict[str, Any]]:
+        """
+        Semantic retrieval using embeddings.
+
+        Args:
+            query: Search query
+            top_k: Number of results to return
+            deduplicate: If True, skip previously retrieved sources
+
+        Returns:
+            List of dicts with source, content, score
+        """
+        if not self.documents:
+            return []
+
+        self._ensure_embeddings()
+
+        # Encode query
+        query_emb = self.model.encode([query])[0]
+
+        # Compute cosine similarities
+        similarities = []
+        for i, path in enumerate(self._doc_paths):
+            # Skip if already retrieved (deduplication)
+            if deduplicate and path in self._retrieved_sources:
+                continue
+
+            doc_emb = self._doc_embeddings[i]
+            # Cosine similarity
+            sim = np.dot(query_emb, doc_emb) / (
+                np.linalg.norm(query_emb) * np.linalg.norm(doc_emb) + 1e-8
+            )
+            similarities.append((sim, path))
+
+        # Sort by similarity
+        similarities.sort(reverse=True, key=lambda x: x[0])
+
+        # Build results
+        results = []
+        for sim, path in similarities[:top_k]:
+            results.append({
+                'source': path,
+                'content': self.documents[path],
+                'score': float(sim),
+            })
+            # Track as retrieved
+            self._retrieved_sources.add(path)
+
+        return results
+
+
 class AdaptiveContextRetriever:
     """
     Retrieves context when uncertainty is detected during generation.
@@ -170,6 +281,9 @@ class AdaptiveContextRetriever:
         self.retrieval_count = 0
         self.retrieval_history = []
         self.topic_inferrer.reset()
+        # Reset base retriever's deduplication if it supports it
+        if hasattr(self.base_retriever, 'reset'):
+            self.base_retriever.reset()
 
     def retrieve_on_uncertainty(
         self,
@@ -178,9 +292,13 @@ class AdaptiveContextRetriever:
         position: int,
         uncertainty_value: Optional[float] = None,
         should_retrieve: bool = True,
+        original_query: str = "",
     ) -> Optional[RetrievalResult]:
         """
         Retrieve context when uncertainty is detected.
+
+        CCE determines WHEN to retrieve (uncertainty detection).
+        WHAT to retrieve is based on the original query for best results.
 
         Args:
             logits: Model output logits
@@ -188,6 +306,7 @@ class AdaptiveContextRetriever:
             position: Token position
             uncertainty_value: Uncertainty score (for logging)
             should_retrieve: Whether retrieval is recommended
+            original_query: Original user query (used for retrieval!)
 
         Returns:
             RetrievalResult if successful, None if budget exhausted or no relevant results
@@ -200,7 +319,7 @@ class AdaptiveContextRetriever:
         if not should_retrieve:
             return None
 
-        # Infer topic
+        # Infer topic (still useful for logging/analysis, but not used for retrieval)
         topic = self.topic_inferrer.infer_topic(
             logits=logits,
             context=context,
@@ -212,11 +331,37 @@ class AdaptiveContextRetriever:
         if topic.confidence < self.min_confidence:
             return None
 
-        # Retrieve using base retriever
-        raw_results = self.base_retriever.retrieve(
-            query=topic.query,
-            top_k=self.top_k,
-        )
+        # STRATEGY: Use matched files from topic inference if available
+        # This matches the model's confused tokens against file paths
+        # Fallback to original query if no matches
+        raw_results = []
+        retrieval_query = original_query if original_query else topic.query  # Define early for metadata
+        used_file_matching = False
+
+        # Priority 1: Use matched files from topic inference (most targeted)
+        if topic.matched_files:
+            for file_path in topic.matched_files[:self.top_k]:
+                if hasattr(self.base_retriever, 'documents') and file_path in self.base_retriever.documents:
+                    # Check deduplication
+                    if hasattr(self.base_retriever, '_retrieved_sources'):
+                        if file_path in self.base_retriever._retrieved_sources:
+                            continue  # Skip already retrieved
+                        self.base_retriever._retrieved_sources.add(file_path)
+
+                    raw_results.append({
+                        'source': file_path,
+                        'content': self.base_retriever.documents[file_path],
+                        'score': topic.file_match_scores.get(file_path, 1.0),
+                    })
+                    used_file_matching = True
+
+        # Priority 2: Fallback to embedding search with original query
+        if not raw_results:
+            retrieval_query = original_query if original_query else topic.query
+            raw_results = self.base_retriever.retrieve(
+                query=retrieval_query,
+                top_k=self.top_k,
+            )
 
         if not raw_results:
             return None
@@ -244,7 +389,10 @@ class AdaptiveContextRetriever:
             metadata={
                 'position': position,
                 'uncertainty_value': uncertainty_value,
-                'query': topic.query,
+                'query_used': retrieval_query,
+                'inferred_topic': topic.query,
+                'used_file_matching': used_file_matching,  # True if matched via file paths
+                'matched_files': topic.matched_files[:3] if topic.matched_files else [],
             }
         )
 

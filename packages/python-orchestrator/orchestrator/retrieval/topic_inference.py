@@ -27,11 +27,15 @@ class TopicResult:
     inferred_type: str                   # 'api', 'library', 'function', 'variable', 'unknown'
     context_snippet: str                 # Relevant context used for inference
 
+    # File path matching (new!)
+    matched_files: List[str] = field(default_factory=list)  # Files matching confused tokens
+    file_match_scores: Dict[str, float] = field(default_factory=dict)  # Scores for each file
+
     # Optional metadata
     metadata: Dict = field(default_factory=dict)
 
     def __repr__(self) -> str:
-        return f"TopicResult(query='{self.query}', type={self.inferred_type}, conf={self.confidence:.2f})"
+        return f"TopicResult(query='{self.query}', type={self.inferred_type}, conf={self.confidence:.2f}, matched={self.matched_files[:2]})"
 
 
 class TopicInferrer:
@@ -46,15 +50,18 @@ class TopicInferrer:
     2. Context extraction: Parse recent context for identifiers
     3. Symbol extraction: Identify specific identifiers being referenced
     4. Pattern matching: Detect common uncertainty patterns (imports, APIs, etc.)
+    5. File path matching: Match confused tokens against available file paths
 
     Example:
         >>> inferrer = TopicInferrer(tokenizer)
+        >>> inferrer.set_available_files(["src/auth/jwt.py", "src/api/routes.py"])
         >>> result = inferrer.infer_topic(
         ...     logits=model_output.logits,
         ...     context="In our Flask app, the database we use is",
         ...     position=42
         ... )
         >>> print(result.query)  # "Flask database SQLAlchemy PostgreSQL"
+        >>> print(result.matched_files)  # ["src/db/models.py"]
     """
 
     # Common code patterns that indicate what type of context is needed
@@ -94,6 +101,7 @@ class TopicInferrer:
         context_window: int = 300,
         min_token_length: int = 2,
         code_filter_threshold: float = 0.3,
+        available_files: Optional[List[str]] = None,
     ):
         """
         Initialize topic inferrer.
@@ -104,6 +112,7 @@ class TopicInferrer:
             context_window: Characters of context to analyze
             min_token_length: Minimum length for token to be considered
             code_filter_threshold: Threshold for filtering non-code tokens
+            available_files: List of file paths in the codebase (for matching)
         """
         self.tokenizer = tokenizer
         self.top_k = top_k
@@ -111,9 +120,123 @@ class TopicInferrer:
         self.min_token_length = min_token_length
         self.code_filter_threshold = code_filter_threshold
 
+        # File path matching
+        self.available_files: List[str] = available_files or []
+        self._file_tokens: Dict[str, Set[str]] = {}  # Cached tokens for each file
+        if available_files:
+            self._preprocess_file_paths(available_files)
+
         # Cache for recent inferences
         self.last_result: Optional[TopicResult] = None
         self.history: List[TopicResult] = []
+
+    def set_available_files(self, file_paths: List[str]):
+        """
+        Set the available file paths for matching.
+
+        This enables the inferrer to match confused tokens against
+        actual file names in the project, improving retrieval accuracy.
+
+        Args:
+            file_paths: List of file paths (e.g., ["src/auth/jwt.py", "src/api/routes.py"])
+        """
+        self.available_files = file_paths
+        self._preprocess_file_paths(file_paths)
+
+    def _preprocess_file_paths(self, file_paths: List[str]):
+        """Extract searchable tokens from each file path."""
+        self._file_tokens = {}
+        for path in file_paths:
+            tokens = self._extract_path_tokens(path)
+            self._file_tokens[path] = tokens
+
+    def _extract_path_tokens(self, path: str) -> Set[str]:
+        """Extract searchable tokens from a file path."""
+        tokens = set()
+
+        # Split path into components
+        parts = re.split(r'[/\\]', path)
+
+        for part in parts:
+            # Remove extension
+            name = re.sub(r'\.[^.]+$', '', part)
+
+            # Add the full name
+            tokens.add(name.lower())
+
+            # Split on underscores and add parts
+            for subpart in name.split('_'):
+                if len(subpart) >= 2:
+                    tokens.add(subpart.lower())
+
+            # Split camelCase and add parts
+            camel_parts = re.findall(r'[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|$)', name)
+            for cp in camel_parts:
+                if len(cp) >= 2:
+                    tokens.add(cp.lower())
+
+        return tokens
+
+    def _match_files(
+        self,
+        code_tokens: List[str],
+        identifiers: List[str],
+        top_k: int = 3
+    ) -> Tuple[List[str], Dict[str, float]]:
+        """
+        Match confused tokens against available file paths.
+
+        Args:
+            code_tokens: Tokens from model's uncertain predictions
+            identifiers: Identifiers extracted from context
+            top_k: Number of top matches to return
+
+        Returns:
+            Tuple of (matched_files, score_dict)
+        """
+        if not self.available_files:
+            return [], {}
+
+        # Combine tokens and identifiers for matching
+        search_terms = set()
+        for token in code_tokens[:10]:
+            search_terms.add(token.lower().strip())
+        for ident in identifiers[:10]:
+            # Split identifiers on dots (e.g., "auth.jwt" -> "auth", "jwt")
+            for part in ident.split('.'):
+                if len(part) >= 2:
+                    search_terms.add(part.lower())
+
+        # Score each file
+        scores: Dict[str, float] = {}
+        for path, path_tokens in self._file_tokens.items():
+            score = 0.0
+            matched_terms = search_terms & path_tokens
+
+            if matched_terms:
+                # Base score: number of matching tokens
+                score = len(matched_terms)
+
+                # Bonus for exact file name match
+                file_name = re.split(r'[/\\]', path)[-1]
+                file_name_no_ext = re.sub(r'\.[^.]+$', '', file_name).lower()
+                if file_name_no_ext in search_terms:
+                    score += 2.0
+
+                # Bonus for directory match
+                dir_parts = re.split(r'[/\\]', path)[:-1]
+                for dir_part in dir_parts:
+                    if dir_part.lower() in search_terms:
+                        score += 0.5
+
+            if score > 0:
+                scores[path] = score
+
+        # Sort by score and return top-k
+        sorted_files = sorted(scores.items(), key=lambda x: -x[1])
+        matched = [f for f, s in sorted_files[:top_k]]
+
+        return matched, scores
 
     def infer_topic(
         self,
@@ -153,10 +276,17 @@ class TopicInferrer:
         # 6. Build search query
         query = self._build_query(code_tokens, identifiers, framework, uncertainty_type)
 
-        # 7. Calculate confidence
+        # 7. Match against available file paths (NEW!)
+        matched_files, file_scores = self._match_files(code_tokens, identifiers)
+
+        # 8. Calculate confidence
         confidence = self._calculate_confidence(
             code_tokens, identifiers, framework, uncertainty_value
         )
+
+        # Boost confidence if we have file matches
+        if matched_files:
+            confidence = min(1.0, confidence + 0.1)
 
         result = TopicResult(
             query=query,
@@ -165,10 +295,13 @@ class TopicInferrer:
             extracted_identifiers=identifiers,
             inferred_type=uncertainty_type,
             context_snippet=recent_context[-100:],
+            matched_files=matched_files,
+            file_match_scores=file_scores,
             metadata={
                 'position': position,
                 'framework': framework,
                 'uncertainty_value': uncertainty_value,
+                'search_terms': list(set(t.lower() for t in code_tokens[:5] + identifiers[:5])),
             }
         )
 
