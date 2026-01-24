@@ -1,0 +1,139 @@
+{
+  "name": "multi_hop_ablation_benchmark",
+  "version": "1.0",
+  "description": "Benchmark for multi-hop retrieval-reasoning ablation study",
+  "examples": [
+    {
+      "id": "single_hop_001",
+      "query": "How does the TokenManager generate authentication tokens?",
+      "ground_truth_answer": "TokenManager generates tokens by creating a payload with user info (sub, username, email, roles), timestamps (iat, exp), and a unique jti. It serializes the payload to JSON, creates an HMAC-SHA256 signature using the secret key, then base64 encodes the payload and combines it with the signature.",
+      "ground_truth_files": ["auth_service.py"],
+      "ground_truth_keywords": ["TokenManager", "generate_token", "signature", "payload", "sha256"],
+      "difficulty": "EASY",
+      "category": "API_USAGE",
+      "hop_count": 1,
+      "reasoning_type": "direct_lookup"
+    },
+    {
+      "id": "single_hop_002",
+      "query": "What eviction strategy does the InMemoryCache use?",
+      "ground_truth_answer": "InMemoryCache uses LRU (Least Recently Used) eviction. When at capacity, it evicts the entry with the oldest last_accessed timestamp by finding the minimum last_accessed time across all entries and removing that entry.",
+      "ground_truth_files": ["cache_service.py"],
+      "ground_truth_keywords": ["InMemoryCache", "LRU", "_evict_lru", "last_accessed", "max_size"],
+      "difficulty": "EASY",
+      "category": "IMPLEMENTATION",
+      "hop_count": 1,
+      "reasoning_type": "direct_lookup"
+    },
+    {
+      "id": "multi_hop_001",
+      "query": "How does the auth_middleware validate requests and what happens if a token is expired?",
+      "ground_truth_answer": "auth_middleware extracts the Bearer token from the Authorization header, then calls auth_service.token_manager.validate_token(). The validate_token method checks if the token is in cache first, then decodes and verifies the signature. If the token's exp timestamp is in the past, validate_token returns None, causing auth_middleware to return a 401 'Invalid or expired token' error response.",
+      "ground_truth_files": ["api_router.py", "auth_service.py"],
+      "ground_truth_keywords": ["auth_middleware", "validate_token", "exp", "Bearer", "401"],
+      "difficulty": "MEDIUM",
+      "category": "DATA_FLOW",
+      "hop_count": 2,
+      "reasoning_type": "cross_file_trace"
+    },
+    {
+      "id": "multi_hop_002",
+      "query": "If I create a TieredCache with InMemoryCache as L1, how does a cache miss in L1 get promoted after being found in L2?",
+      "ground_truth_answer": "When TieredCache.get() is called, it first checks L1 (InMemoryCache). On L1 miss, it checks L2. If found in L2, it records an 'l2_hit' stat, then calls self.l1.set(key, value) to promote the value to the L1 InMemoryCache. The InMemoryCache.set() creates a CacheEntry with created_at timestamp and the configured TTL, then stores it in _cache dict.",
+      "ground_truth_files": ["cache_service.py"],
+      "ground_truth_keywords": ["TieredCache", "get", "l1", "l2", "promote", "InMemoryCache", "set"],
+      "difficulty": "MEDIUM",
+      "category": "DATA_FLOW",
+      "hop_count": 2,
+      "reasoning_type": "method_chain"
+    },
+    {
+      "id": "multi_hop_003",
+      "query": "When a user logs in through AuthService, trace the complete flow from login() to how the session is stored and what limits are enforced.",
+      "ground_truth_answer": "AuthService.login() calls token_manager.generate_token() to create a JWT-like token, then session_manager.create_session(). SessionManager.create_session() first checks if user has existing sessions against max_sessions_per_user (default 5). If at limit, it calls invalidate_session() on the oldest session. Then creates a new Session with session_id (from secrets.token_hex(32)), stores in _sessions dict, and appends session_id to _user_sessions[user_id] list.",
+      "ground_truth_files": ["auth_service.py"],
+      "ground_truth_keywords": ["login", "generate_token", "create_session", "max_sessions_per_user", "_sessions", "_user_sessions"],
+      "difficulty": "HARD",
+      "category": "DATA_FLOW",
+      "hop_count": 3,
+      "reasoning_type": "deep_trace"
+    },
+    {
+      "id": "multi_hop_004",
+      "query": "How would you implement a route that requires authentication and caches its response? Explain which components interact.",
+      "ground_truth_answer": "Use Router with auth_middleware from api_router.py for authentication, which validates the Bearer token via TokenManager. For caching, use CacheService.cached() decorator from cache_service.py which generates a cache key from function name and args, checks InMemoryCache/TieredCache for existing value, and stores the result with TTL if not found. The route handler receives the authenticated request with X-User-ID header set by auth_middleware.",
+      "ground_truth_files": ["api_router.py", "auth_service.py", "cache_service.py"],
+      "ground_truth_keywords": ["auth_middleware", "cached", "Router", "TokenManager", "CacheService"],
+      "difficulty": "HARD",
+      "category": "ARCHITECTURE",
+      "hop_count": 3,
+      "reasoning_type": "cross_file_composition"
+    },
+    {
+      "id": "multi_hop_005",
+      "query": "Explain how EventBus and EventStore could be used together to implement event sourcing with the Repository pattern.",
+      "ground_truth_answer": "EventBus handles real-time pub/sub - publish events with bus.publish(Event(...)) and handlers react via @bus.subscribe('event_type'). EventStore persists events to streams with append(stream_id, event) and supports replaying via get_stream(). To integrate with Repository: on repository.insert(), create an EntityCreated event, append to EventStore for persistence, then publish to EventBus for real-time handlers. Use EventStore.project() with a registered reducer to rebuild aggregate state from events.",
+      "ground_truth_files": ["event_system.py", "database_service.py"],
+      "ground_truth_keywords": ["EventBus", "EventStore", "Repository", "append", "publish", "project"],
+      "difficulty": "HARD",
+      "category": "ARCHITECTURE",
+      "hop_count": 3,
+      "reasoning_type": "cross_file_composition"
+    },
+    {
+      "id": "multi_hop_006",
+      "query": "If a database query through Repository fails mid-transaction, trace what happens to the connection and how the ConnectionPool recovers.",
+      "ground_truth_answer": "Repository uses DatabaseService which gets connections from ConnectionPool. In a transaction (db.transaction() context manager), the connection is stored in _transaction_conn.conn. If an exception occurs, the context manager catches it, calls conn.rollback() to undo changes, then in finally block deletes _transaction_conn.conn and calls pool.return_connection(conn). ConnectionPool.return_connection() puts the connection back in the queue (or closes it if queue is full), making it available for future queries.",
+      "ground_truth_files": ["database_service.py"],
+      "ground_truth_keywords": ["transaction", "rollback", "ConnectionPool", "return_connection", "_transaction_conn"],
+      "difficulty": "HARD",
+      "category": "DATA_FLOW",
+      "hop_count": 3,
+      "reasoning_type": "exception_trace"
+    },
+    {
+      "id": "reasoning_001",
+      "query": "Compare the rate limiting approaches: rate_limit_middleware vs using CacheService. What are the trade-offs?",
+      "ground_truth_answer": "rate_limit_middleware uses a defaultdict to track request timestamps per IP, cleaned on each request - it's simple but in-memory only and lost on restart. CacheService could persist rate limit data via TieredCache (L1 memory + L2 file), surviving restarts. However, rate_limit_middleware is lighter (no serialization) and has built-in cleanup. CacheService approach would need explicit TTL management and adds serialization overhead but offers persistence and potential distribution via custom backend.",
+      "ground_truth_files": ["api_router.py", "cache_service.py"],
+      "ground_truth_keywords": ["rate_limit_middleware", "CacheService", "TieredCache", "window_seconds", "TTL"],
+      "difficulty": "HARD",
+      "category": "ARCHITECTURE",
+      "hop_count": 2,
+      "reasoning_type": "comparison"
+    },
+    {
+      "id": "reasoning_002",
+      "query": "What would happen if two concurrent requests try to create sessions for the same user who is at max_sessions_per_user limit?",
+      "ground_truth_answer": "SessionManager doesn't have locking around session creation. Both requests would check len(existing_sessions) >= max_sessions_per_user, both would find it true and try to invalidate existing_sessions[0] (the same oldest session). One would succeed, one might fail or cause inconsistent state. Then both would create new sessions, potentially exceeding max_sessions_per_user. To fix this, create_session should use a lock or atomic check-and-create operation.",
+      "ground_truth_files": ["auth_service.py"],
+      "ground_truth_keywords": ["create_session", "max_sessions_per_user", "concurrent", "race condition", "lock"],
+      "difficulty": "HARD",
+      "category": "DEBUGGING",
+      "hop_count": 1,
+      "reasoning_type": "bug_analysis"
+    },
+    {
+      "id": "integration_001",
+      "query": "Design a request flow: user authenticates, makes a query that hits cached data, and the cache miss triggers a database lookup.",
+      "ground_truth_answer": "1) Request hits Router -> auth_middleware validates Bearer token via TokenManager.validate_token(). 2) Route handler uses @cache.cached() decorator which checks InMemoryCache. 3) On cache miss, handler queries DatabaseService.query() or Repository.find_by_id(). 4) DatabaseService gets connection from ConnectionPool, executes query, returns QueryResult. 5) Result is cached via CacheService.set() with TTL. 6) Response returned through Router as Response.json().",
+      "ground_truth_files": ["api_router.py", "auth_service.py", "cache_service.py", "database_service.py"],
+      "ground_truth_keywords": ["Router", "auth_middleware", "cached", "Repository", "ConnectionPool", "QueryResult"],
+      "difficulty": "HARD",
+      "category": "ARCHITECTURE",
+      "hop_count": 4,
+      "reasoning_type": "full_integration"
+    },
+    {
+      "id": "implementation_001",
+      "query": "How do I add a new route that handles user creation with validation?",
+      "ground_truth_answer": "Use Router.post() decorator: @router.post('/users'). The handler receives Request object, call request.get_json() to parse body. Validate required fields exist in payload. Use Repository.insert() or DatabaseService.execute() for INSERT. Return Response.json({'id': new_id, ...}, status_code=201) on success, or Response.error('validation message', 400) on failure.",
+      "ground_truth_files": ["api_router.py", "database_service.py"],
+      "ground_truth_keywords": ["Router", "post", "get_json", "Repository", "insert", "Response.json"],
+      "difficulty": "MEDIUM",
+      "category": "IMPLEMENTATION",
+      "hop_count": 2,
+      "reasoning_type": "how_to"
+    }
+  ]
+}
