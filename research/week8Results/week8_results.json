@@ -1,65 +1,74 @@
 {
-  "version": "v4_file_list_approach",
+  "version": "v8_probe_method",
   "config": {
+    "uncertainty_method": "probe",
+    "uncertainty_threshold": 0.06,
+    "probe_layers": [
+      16,
+      24,
+      31
+    ],
     "max_retrievals": 5,
-    "cooldown_tokens": 5,
-    "uncertainty_threshold": 3.0,
+    "cooldown_tokens": 15,
     "initial_context": "file_list",
     "file_list_tokens": 152,
     "retriever": "EmbeddingRetriever",
-    "file_path_matching": true,
-    "deduplication": true
+    "file_matching_method": "hybrid_query_token_filtering",
+    "vector_similarity_threshold": 0.35,
+    "embedder": "all-MiniLM-L6-v2",
+    "deduplication": true,
+    "week3_accuracy": "93.5%"
   },
   "comparison_table": [
     {
+      "Method": "cce_adaptive",
+      "Correctness": 0.08850585341792215,
+      "Completeness": 0.1353885435753248,
+      "Hallucination": 0.0,
+      "Context P": 0.17575757575757575,
+      "Context R": 0.5,
+      "Efficiency": 0.8740648857402268,
+      "Composite": 0.42980183459293725
+    },
+    {
       "Method": "embedding",
-      "Correctness": 0.5657207825117642,
-      "Completeness": 0.6280531560381254,
-      "Hallucination": 0.5790934555640438,
-      "Context P": 0.3611111111111111,
-      "Context R": 0.7569444444444445,
-      "Efficiency": 0.7936770291180193,
-      "Composite": 0.5745730485861492
+      "Correctness": 0.2591430220640067,
+      "Completeness": 0.27028887515718286,
+      "Hallucination": 0.819047619047619,
+      "Context P": 0.36363636363636365,
+      "Context R": 0.7954545454545454,
+      "Efficiency": 0.7901507691914218,
+      "Composite": 0.4106319679005908
     },
     {
       "Method": "bm25",
-      "Correctness": 0.5423944443133143,
-      "Completeness": 0.6132499997814497,
-      "Hallucination": 0.6372685185185185,
-      "Context P": 0.3611111111111111,
-      "Context R": 0.638888888888889,
-      "Efficiency": 0.7393444928963285,
-      "Composite": 0.5389917159740181
+      "Correctness": 0.2071478678692471,
+      "Completeness": 0.2422161434184421,
+      "Hallucination": 0.8955627705627706,
+      "Context P": 0.3333333333333333,
+      "Context R": 0.6363636363636364,
+      "Efficiency": 0.7388074016291768,
+      "Composite": 0.3554425571176018
     },
     {
       "Method": "no_context",
-      "Correctness": 0.3572825411293241,
-      "Completeness": 0.4862116426229477,
-      "Hallucination": 0.5918091168091167,
+      "Correctness": 0.1959925570542162,
+      "Completeness": 0.2539269890297543,
+      "Hallucination": 0.8284271284271284,
       "Context P": 0.0,
       "Context R": 0.0,
-      "Efficiency": 0.9985347212453698,
-      "Composite": 0.4231879584034796
-    },
-    {
-      "Method": "cce_adaptive",
-      "Correctness": 0.28942858691430756,
-      "Completeness": 0.41386245967199403,
-      "Hallucination": 0.5499999999999999,
-      "Context P": 0.14742063492063492,
-      "Context R": 0.4791666666666667,
-      "Efficiency": 0.7615229521264126,
-      "Composite": 0.40624176748031987
+      "Efficiency": 0.9985293929589893,
+      "Composite": 0.3125289969457458
     },
     {
       "Method": "full_context",
-      "Correctness": 0.04411407947126362,
-      "Completeness": 0.0642642065261801,
-      "Hallucination": 0.9880952380952381,
-      "Context P": 0.12499999999999999,
+      "Correctness": 0.048831004739710776,
+      "Completeness": 0.07128399779850786,
+      "Hallucination": 0.987012987012987,
+      "Context P": 0.11688311688311687,
       "Context R": 1.0,
       "Efficiency": 0.0,
-      "Composite": 0.07656606556818706
+      "Composite": 0.07585850381285685
     }
   ],
   "category_results": [
@@ -69,47 +78,47 @@
       "bm25": 0.5639486790522804,
       "embedding": 0.7109689245368793,
       "full_context": 0.04791666666666666,
-      "cce_adaptive": 0.39447314934262234
+      "cce_adaptive": 0.5472601688061288
     },
     {
       "Category": "api_usage",
       "no_context": 0.44815752902243966,
-      "bm25": 0.5339447627031956,
-      "embedding": 0.5997425399455619,
+      "bm25": 0.4328396720254574,
+      "embedding": 0.47175313886453285,
       "full_context": 0.04791666666666666,
-      "cce_adaptive": 0.3940629979810032
+      "cce_adaptive": 0.4590913939024636
     },
     {
       "Category": "implementation",
-      "no_context": 0.4541320838971458,
-      "bm25": 0.6097026890706607,
-      "embedding": 0.6290327668004987,
-      "full_context": 0.08874403438752607,
-      "cce_adaptive": 0.4939886081466059
+      "no_context": 0.250068690615107,
+      "bm25": 0.3153647409002145,
+      "embedding": 0.3456368852150767,
+      "full_context": 0.0819692762125106,
+      "cce_adaptive": 0.45875661025293574
     },
     {
       "Category": "debugging",
-      "no_context": 0.34537331359176665,
-      "bm25": 0.3831165717613848,
-      "embedding": 0.41802898382461073,
-      "full_context": 0.0989733587950468,
-      "cce_adaptive": 0.48132725521673153
+      "no_context": 0.2346358031937364,
+      "bm25": 0.23788276264717273,
+      "embedding": 0.2885287822033848,
+      "full_context": 0.0998781394213438,
+      "cce_adaptive": 0.38256643939387847
     },
     {
       "Category": "configuration",
-      "no_context": 0.4410437256940844,
-      "bm25": 0.5360177932549904,
-      "embedding": 0.6066539502258727,
-      "full_context": 0.06295698800434668,
-      "cce_adaptive": 0.28068435598311003
+      "no_context": 0.23248852343347098,
+      "bm25": 0.25101936994685636,
+      "embedding": 0.3138105378414818,
+      "full_context": 0.06819655591001113,
+      "cce_adaptive": 0.34455036613831463
     },
     {
       "Category": "data_flow",
-      "no_context": 0.4105912259987711,
-      "bm25": 0.6072198000015965,
-      "embedding": 0.48301112618347203,
-      "full_context": 0.11288867888886944,
-      "cce_adaptive": 0.39291423821184635
+      "no_context": 0.22745812944035557,
+      "bm25": 0.3077576791496567,
+      "embedding": 0.25555510958378747,
+      "full_context": 0.1426889321870274,
+      "cce_adaptive": 0.34337022353486657
     }
   ],
   "hallucination_tests": [
@@ -183,34 +192,24 @@
   "cce_debug": [
     {
       "example_id": "arch_001",
-      "total_retrievals": 5,
+      "total_retrievals": 3,
       "context_sources": [
         "initial",
         "query",
         "src/app.py",
         "src/utils/logging.py",
-        "src/auth/password.py",
-        "src/db/migrations.py",
-        "src/config.py"
+        "src/db/migrations.py"
       ],
-      "total_context_tokens": 2238,
-      "response_length": 579,
-      "matched_files": [
-        "src/auth/password.py",
-        "src/db/models.py",
-        "src/auth/jwt.py"
-      ],
+      "total_context_tokens": 1369,
+      "response_length": 569,
+      "matched_files": [],
       "search_terms": [
-        "create",
-        "flask",
-        "generate",
-        "encode",
-        "get_jwt_claims",
-        "authentic",
-        "jwt_required",
-        "get",
-        "src",
-        "flask_jwt_extended"
+        "py",
+        "fl",
+        "running",
+        "python",
+        "export",
+        "uv"
       ]
     },
     {
@@ -220,291 +219,166 @@
         "initial",
         "query",
         "src/auth/password.py",
-        "src/services/email.py",
-        "src/config.py"
+        "src/api/routes.py",
+        "tests/test_api.py"
       ],
-      "total_context_tokens": 1455,
-      "response_length": 573,
-      "matched_files": [
-        "src/auth/password.py",
-        "src/config.py",
-        "src/services/cache.py"
-      ],
+      "total_context_tokens": 1579,
+      "response_length": 627,
+      "matched_files": [],
       "search_terms": [
-        "authentication",
-        "json",
-        "fl",
-        "hs256",
-        "api",
-        "application",
-        "config",
-        "password",
-        "algorithm",
-        "decode_jwt"
+        "str",
+        "token",
+        "...",
+        "</s>",
+        "verify_reset_token"
       ]
     },
     {
       "example_id": "api_001",
-      "total_retrievals": 4,
+      "total_retrievals": 3,
       "context_sources": [
         "initial",
         "query",
         "src/api/routes.py",
         "src/api/middleware.py",
-        "src/app.py",
-        "src/db/models.py"
+        "src/app.py"
       ],
-      "total_context_tokens": 2786,
-      "response_length": 180,
-      "matched_files": [
-        "src/api/routes.py",
-        "src/db/models.py",
-        "src/auth/password.py"
-      ],
+      "total_context_tokens": 1845,
+      "response_length": 6,
+      "matched_files": [],
       "search_terms": [
-        "tests",
-        "src.db.models",
-        "validate",
+        "blue",
         "api",
-        "unittest.mock",
-        "unittest",
-        "valid",
-        "email"
+        "._",
+        "_.",
+        "error",
+        "</s>"
       ]
     },
     {
       "example_id": "api_002",
-      "total_retrievals": 5,
+      "total_retrievals": 1,
       "context_sources": [
         "initial",
         "query",
-        "src/auth/jwt.py",
-        "src/auth/password.py",
-        "src/services/email.py",
-        "src/app.py",
-        "tests/test_api.py"
-      ],
-      "total_context_tokens": 2201,
-      "response_length": 576,
-      "matched_files": [
-        "tests/test_auth.py",
-        "tests/test_api.py",
         "src/auth/jwt.py"
       ],
+      "total_context_tokens": 730,
+      "response_length": 1,
+      "matched_files": [],
       "search_terms": [
-        "protected",
-        "blueprint",
-        "token",
-        "auth",
-        "api.route",
-        "users",
-        "require_role",
-        "flask_jwt_extended",
-        "login",
-        "rator"
+        "you",
+        "please",
+        "don",
+        "</s>",
+        "also"
       ]
     },
     {
       "example_id": "impl_001",
-      "total_retrievals": 3,
+      "total_retrievals": 1,
       "context_sources": [
         "initial",
         "query",
-        "src/auth/jwt.py",
-        "src/config.py",
-        "src/api/middleware.py"
+        "src/auth/jwt.py"
       ],
-      "total_context_tokens": 1836,
-      "response_length": 588,
-      "matched_files": [
-        "src/auth/jwt.py",
-        "src/auth/password.py",
-        "tests/test_auth.py"
-      ],
+      "total_context_tokens": 727,
+      "response_length": 1,
+      "matched_files": [],
       "search_terms": [
-        "create",
-        "require_user",
-        "role",
-        "authentic",
-        "user",
-        "require_admin",
-        "get",
-        "decorator",
-        "login",
-        "require"
+        "you",
+        "use",
+        "</s>",
+        "please",
+        "also"
       ]
     },
     {
       "example_id": "impl_002",
-      "total_retrievals": 5,
+      "total_retrievals": 1,
       "context_sources": [
         "initial",
         "query",
         "src/auth/password.py"
       ],
       "total_context_tokens": 379,
-      "response_length": 744,
-      "matched_files": [
-        "src/auth/password.py"
-      ],
-      "search_terms": [
-        "kind",
-        "secure",
-        "token",
-        "the",
-        "hash_reset_token",
-        "libraries",
-        "password",
-        "library",
-        "data",
-        "type"
-      ]
-    },
-    {
-      "example_id": "debug_001",
-      "total_retrievals": 3,
-      "context_sources": [
-        "initial",
-        "query",
-        "tests/test_auth.py",
-        "src/app.py",
-        "src/api/routes.py"
-      ],
-      "total_context_tokens": 1698,
-      "response_length": 282,
-      "matched_files": [
-        "src/auth/jwt.py",
-        "src/auth/password.py",
-        "tests/test_auth.py"
-      ],
-      "search_terms": [
-        "create",
-        "hash",
-        "self",
-        "pytest.raises",
-        "test_",
-        "auth",
-        "valueerror",
-        "verify",
-        "testauth",
-        "require"
-      ]
-    },
-    {
-      "example_id": "debug_002",
-      "total_retrievals": 2,
-      "context_sources": [
-        "initial",
-        "query",
-        "src/services/email.py",
-        "src/app.py"
-      ],
-      "total_context_tokens": 1014,
-      "response_length": 201,
-      "matched_files": [
-        "src/services/email.py",
-        "src/app.py"
-      ],
-      "search_terms": [
-        "app",
-        "import",
-        "</s>",
-        "class",
-        "def"
-      ]
-    },
-    {
-      "example_id": "config_001",
-      "total_retrievals": 5,
-      "context_sources": [
-        "initial",
-        "query",
-        "src/app.py",
-        "src/services/cache.py",
-        "src/auth/password.py",
-        "src/utils/validators.py",
-        "tests/test_api.py"
-      ],
-      "total_context_tokens": 2345,
-      "response_length": 474,
-      "matched_files": [
-        "src/config.py",
-        "src/services/email.py",
-        "src/app.py"
-      ],
-      "search_terms": [
-        "self",
-        "flask",
-        "self.app",
-        "mail",
-        "sm",
-        "server",
-        "sender",
-        "email",
-        "host"
-      ]
-    },
-    {
-      "example_id": "config_002",
-      "total_retrievals": 2,
-      "context_sources": [
-        "initial",
-        "query",
-        "src/app.py"
-      ],
-      "total_context_tokens": 589,
-      "response_length": 155,
-      "matched_files": [
-        "src/app.py"
-      ],
-      "search_terms": [
-        "app",
-        "application",
-        "import",
-        "def",
-        "running",
-        "gunicorn"
-      ]
-    },
-    {
-      "example_id": "flow_001",
-      "total_retrievals": 1,
-      "context_sources": [
-        "initial",
-        "query",
-        "src/api/routes.py"
-      ],
-      "total_context_tokens": 956,
-      "response_length": 540,
+      "response_length": 1,
       "matched_files": [],
       "search_terms": [
         "you",
-        "please",
         "</s>",
-        "use",
+        "don",
+        "please",
         "also"
       ]
     },
     {
-      "example_id": "flow_002",
-      "total_retrievals": 2,
+      "example_id": "debug_001",
+      "total_retrievals": 1,
       "context_sources": [
         "initial",
         "query",
-        "src/api/middleware.py",
-        "tests/test_api.py"
+        "tests/test_auth.py"
       ],
-      "total_context_tokens": 1023,
-      "response_length": 186,
+      "total_context_tokens": 476,
+      "response_length": 1,
       "matched_files": [],
       "search_terms": [
-        "json",
-        "re",
-        "en",
-        "check",
-        "valid",
-        "json_required"
+        "you",
+        "use",
+        "</s>",
+        "please",
+        "also"
       ]
+    },
+    {
+      "example_id": "debug_002",
+      "total_retrievals": 1,
+      "context_sources": [
+        "initial",
+        "query",
+        "src/services/email.py"
+      ],
+      "total_context_tokens": 587,
+      "response_length": 1,
+      "matched_files": [],
+      "search_terms": [
+        "you",
+        "</s>",
+        "don",
+        "please",
+        "also"
+      ]
+    },
+    {
+      "example_id": "config_001",
+      "total_retrievals": 0,
+      "context_sources": [
+        "initial",
+        "query"
+      ],
+      "total_context_tokens": 161,
+      "response_length": 0
+    },
+    {
+      "example_id": "config_002",
+      "total_retrievals": 0,
+      "context_sources": [
+        "initial",
+        "query"
+      ],
+      "total_context_tokens": 162,
+      "response_length": 0
+    },
+    {
+      "example_id": "flow_001",
+      "total_retrievals": 0,
+      "context_sources": [
+        "initial",
+        "query"
+      ],
+      "total_context_tokens": 161,
+      "response_length": 0
     }
   ]
 }

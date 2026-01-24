@@ -174,12 +174,17 @@ class AdaptiveGenerator:
         """Initialize uncertainty monitor."""
         if self.config.use_probe:
             from ..entropy.monitor import create_probe_monitor
+            # Week 3 probe method requires model and tokenizer for lookahead
             self.monitor = create_probe_monitor(
+                model=self.model,
+                tokenizer=self.tokenizer,
                 probe_model=self.config.probe_model,
                 probe_scaler=self.config.probe_scaler,
                 probe_layers=self.config.probe_layers,
                 threshold=self.config.probe_threshold,
                 strategy=self.config.measurement_strategy,
+                max_retrievals=self.config.max_retrievals,
+                cooldown_tokens=self.config.cooldown_tokens,
             )
         else:
             self.monitor = create_monitor(
@@ -286,8 +291,10 @@ class AdaptiveGenerator:
                 break
 
             # Monitor uncertainty
+            # For probe method, pass full_prompt for lookahead analysis
+            # For other methods, just pass logits and token
             if self.config.use_probe:
-                result = self.monitor.step(logits, generated_so_far, hidden_states=hidden_states)
+                result = self.monitor.step(logits, generated_so_far, full_prompt=full_prompt)
             else:
                 result = self.monitor.step(logits, generated_so_far)
 
@@ -358,10 +365,14 @@ class AdaptiveGenerator:
 
     def _forward(self, prompt: str):
         """
-        Get model output (logits and optionally hidden states).
+        Get model output logits for next token prediction.
+
+        Note: For probe method, hidden states are extracted in the monitor
+        during lookahead analysis, not here. This saves memory by not
+        storing hidden states for the main forward pass.
 
         Returns:
-            (logits, hidden_states) tuple
+            (logits, None) tuple - hidden_states no longer returned
         """
         if self.model is None:
             return None, None
@@ -373,23 +384,18 @@ class AdaptiveGenerator:
             inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
 
             with torch.no_grad():
-                outputs = self.model(
-                    **inputs,
-                    output_hidden_states=self.config.use_probe
-                )
+                # Don't request hidden_states here - saves memory
+                # Probe method does its own forward passes with hidden_states
+                outputs = self.model(**inputs)
 
             logits = outputs.logits[0, -1, :].cpu().numpy()
 
-            hidden_states = None
-            if self.config.use_probe and hasattr(outputs, 'hidden_states'):
-                # Extract and concatenate specified layers
-                states = []
-                for layer_idx in self.config.probe_layers:
-                    layer_state = outputs.hidden_states[layer_idx + 1][:, -1, :]
-                    states.append(layer_state.cpu().numpy()[0])
-                hidden_states = np.concatenate(states).astype(np.float32)
+            # Clean up to save memory
+            del outputs, inputs
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
-            return logits, hidden_states
+            return logits, None
 
         except Exception as e:
             print(f"Forward pass error: {e}")

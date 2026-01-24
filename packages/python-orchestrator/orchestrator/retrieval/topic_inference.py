@@ -102,6 +102,8 @@ class TopicInferrer:
         min_token_length: int = 2,
         code_filter_threshold: float = 0.3,
         available_files: Optional[List[str]] = None,
+        embedder=None,
+        vector_similarity_threshold: float = 0.5,
     ):
         """
         Initialize topic inferrer.
@@ -113,6 +115,8 @@ class TopicInferrer:
             min_token_length: Minimum length for token to be considered
             code_filter_threshold: Threshold for filtering non-code tokens
             available_files: List of file paths in the codebase (for matching)
+            embedder: SentenceTransformer model for vector-based file matching
+            vector_similarity_threshold: Minimum cosine similarity for vector matching
         """
         self.tokenizer = tokenizer
         self.top_k = top_k
@@ -122,9 +126,16 @@ class TopicInferrer:
 
         # File path matching
         self.available_files: List[str] = available_files or []
-        self._file_tokens: Dict[str, Set[str]] = {}  # Cached tokens for each file
+        self._file_tokens: Dict[str, Set[str]] = {}  # Cached tokens for each file (string matching)
+        self._file_embeddings: Optional[np.ndarray] = None  # Cached embeddings for vector matching
+        self._file_path_texts: List[str] = []  # Human-readable file path texts for embedding
         if available_files:
             self._preprocess_file_paths(available_files)
+
+        # Vector-based matching
+        self.embedder = embedder
+        self.vector_similarity_threshold = vector_similarity_threshold
+        self._use_vector_matching = embedder is not None
 
         # Cache for recent inferences
         self.last_result: Optional[TopicResult] = None
@@ -141,14 +152,57 @@ class TopicInferrer:
             file_paths: List of file paths (e.g., ["src/auth/jwt.py", "src/api/routes.py"])
         """
         self.available_files = file_paths
+        self._file_embeddings = None  # Invalidate cache
         self._preprocess_file_paths(file_paths)
+
+    def set_embedder(self, embedder):
+        """
+        Set the embedder for vector-based file matching.
+
+        Args:
+            embedder: SentenceTransformer model or compatible encoder
+        """
+        self.embedder = embedder
+        self._use_vector_matching = embedder is not None
+        self._file_embeddings = None  # Invalidate cache
 
     def _preprocess_file_paths(self, file_paths: List[str]):
         """Extract searchable tokens from each file path."""
         self._file_tokens = {}
+        self._file_path_texts = []
+
         for path in file_paths:
             tokens = self._extract_path_tokens(path)
             self._file_tokens[path] = tokens
+            # Create human-readable text for embedding (e.g., "src auth jwt" from "src/auth/jwt.py")
+            readable_text = self._path_to_readable_text(path)
+            self._file_path_texts.append(readable_text)
+
+        # Invalidate embeddings cache
+        self._file_embeddings = None
+
+    def _path_to_readable_text(self, path: str) -> str:
+        """Convert file path to human-readable text for embedding."""
+        # Split path into components
+        parts = re.split(r'[/\\]', path)
+        words = []
+
+        for part in parts:
+            # Remove extension
+            name = re.sub(r'\.[^.]+$', '', part)
+
+            # Split on underscores
+            for subpart in name.split('_'):
+                if len(subpart) >= 2:
+                    words.append(subpart.lower())
+
+            # Split camelCase
+            camel_parts = re.findall(r'[A-Z]?[a-z]+|[A-Z]+(?=[A-Z]|$)', name)
+            for cp in camel_parts:
+                if len(cp) >= 2 and cp.lower() not in words:
+                    words.append(cp.lower())
+
+        return ' '.join(words)
 
     def _extract_path_tokens(self, path: str) -> Set[str]:
         """Extract searchable tokens from a file path."""
@@ -181,15 +235,25 @@ class TopicInferrer:
         self,
         code_tokens: List[str],
         identifiers: List[str],
-        top_k: int = 3
+        top_k: int = 3,
+        original_query: str = "",
     ) -> Tuple[List[str], Dict[str, float]]:
         """
         Match confused tokens against available file paths.
 
+        Uses vector similarity when embedder is available, falls back to
+        string matching otherwise. Vector matching handles semantic similarity
+        (e.g., "auth" matches "authenticate.py").
+
+        IMPORTANT: Only uses code_tokens that are RELEVANT to the original query.
+        This filters out tangential mentions (e.g., model mentions "auth" while
+        answering a question about "app structure" - "auth" is noise).
+
         Args:
-            code_tokens: Tokens from model's uncertain predictions
-            identifiers: Identifiers extracted from context
+            code_tokens: Tokens from model's uncertain predictions (CCE)
+            identifiers: Identifiers extracted from context (NOT used for vector matching)
             top_k: Number of top matches to return
+            original_query: The user's original query (for relevance filtering)
 
         Returns:
             Tuple of (matched_files, score_dict)
@@ -197,17 +261,196 @@ class TopicInferrer:
         if not self.available_files:
             return [], {}
 
-        # Combine tokens and identifiers for matching
-        search_terms = set()
+        # ONLY use code tokens from CCE - these are what the model is confused about
+        # Filter aggressively to keep only meaningful code tokens
+        search_terms = []
         for token in code_tokens[:10]:
-            search_terms.add(token.lower().strip())
-        for ident in identifiers[:10]:
-            # Split identifiers on dots (e.g., "auth.jwt" -> "auth", "jwt")
-            for part in ident.split('.'):
-                if len(part) >= 2:
-                    search_terms.add(part.lower())
+            clean = token.lower().strip()
+            # Skip short tokens, special tokens, and common noise
+            if len(clean) >= 3 and self._is_meaningful_token(clean):
+                search_terms.append(clean)
 
-        # Score each file
+        if not search_terms:
+            return [], {}
+
+        # CRITICAL: Filter tokens by relevance to original query
+        # Only use confused tokens that are semantically related to the question
+        if original_query and self._use_vector_matching and self.embedder is not None:
+            search_terms = self._filter_tokens_by_query_relevance(
+                search_terms, original_query, threshold=0.25
+            )
+            if not search_terms:
+                return [], {}
+
+        # Use vector matching if embedder is available
+        if self._use_vector_matching and self.embedder is not None:
+            return self._match_files_vector(search_terms, top_k)
+        else:
+            # For string matching, also include identifiers as fallback
+            string_terms = set(search_terms)
+            for ident in identifiers[:5]:
+                for part in ident.split('.'):
+                    if len(part) >= 3:
+                        string_terms.add(part.lower())
+            return self._match_files_string(string_terms, top_k)
+
+    def _filter_tokens_by_query_relevance(
+        self,
+        tokens: List[str],
+        query: str,
+        threshold: float = 0.25,
+    ) -> List[str]:
+        """
+        Filter confused tokens to only those relevant to the original query.
+
+        This prevents retrieving files based on tangential mentions.
+        Example:
+            Query: "What is the app structure?"
+            Tokens: ["auth", "jwt", "blueprint", "factory"]
+            After filtering: ["blueprint", "factory"] (relevant to structure)
+            Filtered out: ["auth", "jwt"] (not relevant to structure question)
+
+        Args:
+            tokens: Confused tokens from CCE
+            query: Original user query
+            threshold: Minimum similarity to keep token (0.25 = loosely related)
+
+        Returns:
+            Filtered list of tokens relevant to the query
+        """
+        if not tokens or not query:
+            return tokens
+
+        # Embed the query
+        query_embedding = self.embedder.encode([query])[0]
+        query_norm = np.linalg.norm(query_embedding) + 1e-8
+
+        # Embed all tokens at once (batch)
+        token_embeddings = self.embedder.encode(tokens)
+
+        # Keep tokens that are similar to the query
+        relevant_tokens = []
+        for i, token in enumerate(tokens):
+            token_emb = token_embeddings[i]
+            token_norm = np.linalg.norm(token_emb) + 1e-8
+
+            # Cosine similarity
+            similarity = np.dot(query_embedding, token_emb) / (query_norm * token_norm)
+
+            if similarity >= threshold:
+                relevant_tokens.append(token)
+
+        return relevant_tokens
+
+    def _is_meaningful_token(self, token: str) -> bool:
+        """Check if a token is meaningful for file matching (not noise)."""
+        # Skip special tokens
+        if token.startswith('<') or token.startswith('</') or token.endswith('>'):
+            return False
+
+        # Skip common Python/code noise
+        noise_tokens = {
+            'self', 'def', 'class', 'import', 'from', 'return', 'none',
+            'true', 'false', 'null', 'undefined', 'function', 'const',
+            'let', 'var', 'async', 'await', 'if', 'else', 'for', 'while',
+            'try', 'except', 'with', 'lambda', 'yield', 'raise', 'pass',
+            'break', 'continue', 'global', 'nonlocal', 'assert', 'del',
+            'print', 'input', 'open', 'close', 'read', 'write', 'len',
+            'str', 'int', 'float', 'bool', 'list', 'dict', 'set', 'tuple',
+            'type', 'isinstance', 'hasattr', 'getattr', 'setattr',
+        }
+        if token in noise_tokens:
+            return False
+
+        # Skip common English words that aren't code-related
+        english_noise = {
+            'the', 'this', 'that', 'what', 'which', 'where', 'when', 'how',
+            'why', 'who', 'also', 'just', 'only', 'more', 'most', 'some',
+            'any', 'all', 'each', 'every', 'both', 'few', 'many', 'much',
+            'other', 'another', 'such', 'same', 'different', 'new', 'old',
+            'first', 'last', 'next', 'previous', 'current', 'following',
+            'use', 'used', 'using', 'make', 'made', 'making', 'get', 'got',
+            'getting', 'set', 'setting', 'can', 'could', 'would', 'should',
+            'will', 'shall', 'may', 'might', 'must', 'need', 'want', 'like',
+            'know', 'think', 'see', 'look', 'find', 'give', 'take', 'come',
+            'going', 'have', 'has', 'had', 'having', 'been', 'being', 'was',
+            'were', 'are', 'does', 'did', 'doing', 'done', 'please', 'thank',
+            'thanks', 'hello', 'yes', 'not', 'and', 'but', 'then', 'now',
+            'here', 'there', 'very', 'really', 'actually', 'basically',
+        }
+        if token in english_noise:
+            return False
+
+        return True
+
+    def _match_files_vector(
+        self,
+        search_terms: List[str],
+        top_k: int = 3
+    ) -> Tuple[List[str], Dict[str, float]]:
+        """
+        Match files using vector similarity (semantic matching).
+
+        Matches EACH token individually against file paths, then takes
+        the maximum similarity. This prevents signal dilution from
+        combining multiple tokens into one query.
+
+        This handles cases like:
+        - "auth" matching "authenticate.py"
+        - "jwt" matching "token_handler.py"
+        - "config" matching "settings.py"
+        """
+        # Ensure file embeddings are computed
+        if self._file_embeddings is None:
+            self._file_embeddings = self.embedder.encode(self._file_path_texts)
+
+        # Embed each search term individually (batch for efficiency)
+        term_embeddings = self.embedder.encode(search_terms)
+
+        # Score each file by MAX similarity to any search term
+        scores: Dict[str, float] = {}
+        best_matches: Dict[str, str] = {}  # Track which term matched best
+
+        for i, path in enumerate(self.available_files):
+            file_emb = self._file_embeddings[i]
+            file_norm = np.linalg.norm(file_emb) + 1e-8
+
+            max_sim = 0.0
+            best_term = ""
+
+            # Check similarity with EACH term individually
+            for j, term in enumerate(search_terms):
+                term_emb = term_embeddings[j]
+                term_norm = np.linalg.norm(term_emb) + 1e-8
+
+                # Cosine similarity
+                sim = np.dot(term_emb, file_emb) / (term_norm * file_norm)
+
+                if sim > max_sim:
+                    max_sim = sim
+                    best_term = term
+
+            # Only include if above threshold
+            if max_sim >= self.vector_similarity_threshold:
+                scores[path] = float(max_sim)
+                best_matches[path] = best_term
+
+        # Sort by score and return top-k
+        sorted_files = sorted(scores.items(), key=lambda x: -x[1])
+        matched = [f for f, s in sorted_files[:top_k]]
+
+        return matched, scores
+
+    def _match_files_string(
+        self,
+        search_terms: Set[str],
+        top_k: int = 3
+    ) -> Tuple[List[str], Dict[str, float]]:
+        """
+        Match files using string/token matching (exact matching fallback).
+
+        Original implementation - used when no embedder is available.
+        """
         scores: Dict[str, float] = {}
         for path, path_tokens in self._file_tokens.items():
             score = 0.0
@@ -244,6 +487,7 @@ class TopicInferrer:
         context: str,
         position: int,
         uncertainty_value: Optional[float] = None,
+        original_query: str = "",
     ) -> TopicResult:
         """
         Infer the topic of uncertainty from logits and context.
@@ -253,6 +497,7 @@ class TopicInferrer:
             context: Generated text up to this point
             position: Token position in generation
             uncertainty_value: Optional uncertainty score for confidence weighting
+            original_query: Original user query (for filtering relevant tokens)
 
         Returns:
             TopicResult with search query and metadata
@@ -276,8 +521,11 @@ class TopicInferrer:
         # 6. Build search query
         query = self._build_query(code_tokens, identifiers, framework, uncertainty_type)
 
-        # 7. Match against available file paths (NEW!)
-        matched_files, file_scores = self._match_files(code_tokens, identifiers)
+        # 7. Match against available file paths
+        # Pass original_query to filter confused tokens by relevance
+        matched_files, file_scores = self._match_files(
+            code_tokens, identifiers, original_query=original_query
+        )
 
         # 8. Calculate confidence
         confidence = self._calculate_confidence(

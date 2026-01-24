@@ -10,13 +10,14 @@ Supports multiple uncertainty methods:
 - normalized_entropy: Entropy normalized to [0, 1]
 - prob_differential: 1 - max(P) (UnCert-CoT style)
 - cce: Contrastive Code Entropy (our method)
-- probe: Learned probe on hidden states (Week 3 best)
+- probe: Learned probe with lookahead (Week 3 best - 93.5% accuracy)
 
 Week 4: Uncertainty Monitoring System
+Week 3 Fix: Proper lookahead-based probe implementation
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Literal, Any, Callable
+from typing import Dict, List, Optional, Literal, Any, Callable, Tuple
 from enum import Enum
 import numpy as np
 
@@ -26,7 +27,7 @@ from .measurement import (
     SemanticBoundaryStrategy,
     create_strategy,
 )
-from .calculator import EntropyCalculator
+from .calculator import EntropyCalculator, softmax
 
 
 class UncertaintyMethod(Enum):
@@ -96,6 +97,7 @@ class UncertaintyMonitor:
         method: str = "cce",
         threshold: float = 0.3,
         tokenizer = None,
+        model = None,
         measurement_strategy: str = "semantic_boundary",
         max_retrievals: int = 3,
         cooldown_tokens: int = 0,
@@ -104,6 +106,7 @@ class UncertaintyMonitor:
         probe_model = None,
         probe_scaler = None,
         probe_layers: List[int] = None,
+        probe_top_k: int = 5,  # Reduced from 10 for memory efficiency
     ):
         """
         Initialize uncertainty monitor.
@@ -112,7 +115,8 @@ class UncertaintyMonitor:
             method: Uncertainty method ('raw_entropy', 'normalized_entropy',
                    'prob_differential', 'cce', 'probe')
             threshold: Threshold for triggering retrieval
-            tokenizer: HuggingFace tokenizer (required for CCE)
+            tokenizer: HuggingFace tokenizer (required for CCE and probe)
+            model: HuggingFace model (required for probe method lookahead)
             measurement_strategy: When to measure ('every_token', 'semantic_boundary',
                                  'line_start', 'every_n')
             max_retrievals: Maximum number of retrievals per generation
@@ -122,10 +126,12 @@ class UncertaintyMonitor:
             probe_model: Trained probe model (for 'probe' method)
             probe_scaler: Feature scaler for probe
             probe_layers: Hidden state layers for probe
+            probe_top_k: Number of top candidates to evaluate (default 5 for memory)
         """
         self.method = UncertaintyMethod(method)
         self.threshold = threshold
         self.tokenizer = tokenizer
+        self.model = model
         self.max_retrievals = max_retrievals
         self.cooldown_tokens = cooldown_tokens
 
@@ -154,6 +160,16 @@ class UncertaintyMonitor:
         self.probe_model = probe_model
         self.probe_scaler = probe_scaler
         self.probe_layers = probe_layers or [16, 24, 31]
+        self.probe_top_k = probe_top_k
+
+        # Validate probe setup
+        if self.method == UncertaintyMethod.PROBE:
+            if self.probe_model is None:
+                raise ValueError("probe_model required for probe method")
+            if self.tokenizer is None:
+                raise ValueError("tokenizer required for probe method")
+            if self.model is None:
+                raise ValueError("model required for probe method (for lookahead)")
 
         # Initialize state
         self.state = MonitorState()
@@ -170,6 +186,7 @@ class UncertaintyMonitor:
         logits: np.ndarray,
         token: str,
         hidden_states: Optional[np.ndarray] = None,
+        full_prompt: Optional[str] = None,
     ) -> Optional[UncertaintyResult]:
         """
         Process one generation step.
@@ -177,8 +194,8 @@ class UncertaintyMonitor:
         Args:
             logits: Logits from model output [vocab_size]
             token: The token generated at this position
-            hidden_states: Hidden states (required for probe method)
-                          Shape: [n_layers, hidden_dim] or concatenated [total_dim]
+            hidden_states: Hidden states (for legacy probe method, no longer used)
+            full_prompt: Full prompt text for probe lookahead (required for probe method)
 
         Returns:
             UncertaintyResult if measurement was taken, None otherwise
@@ -205,6 +222,7 @@ class UncertaintyMonitor:
             logits=logits,
             token=token,
             hidden_states=hidden_states,
+            full_prompt=full_prompt,
         )
 
         # Store result
@@ -244,6 +262,7 @@ class UncertaintyMonitor:
         logits: np.ndarray,
         token: str,
         hidden_states: Optional[np.ndarray] = None,
+        full_prompt: Optional[str] = None,
     ) -> UncertaintyResult:
         """Compute uncertainty using the configured method."""
 
@@ -273,12 +292,14 @@ class UncertaintyMonitor:
         elif self.method == UncertaintyMethod.PROBE:
             if self.probe_model is None:
                 raise RuntimeError("Probe model not set")
-            if hidden_states is None:
-                raise ValueError("Hidden states required for probe method")
+            if full_prompt is None:
+                raise ValueError("full_prompt required for probe method")
 
-            # Use probe to classify
-            value, should_retrieve = self._apply_probe(hidden_states)
-            details = {'probe_score': value}
+            # Use Week 3 probe with lookahead
+            value, should_retrieve, details = self._apply_probe_lookahead(
+                logits=logits,
+                prompt=full_prompt,
+            )
 
         else:
             raise ValueError(f"Unknown method: {self.method}")
@@ -293,12 +314,133 @@ class UncertaintyMonitor:
             details=details,
         )
 
+    def _apply_probe_lookahead(
+        self,
+        logits: np.ndarray,
+        prompt: str,
+    ) -> Tuple[float, bool, Dict]:
+        """
+        Apply Week 3 probe with 2-token lookahead.
+
+        This is the correct implementation matching Week3_Improved_Methods.ipynb:
+        1. Get top-k candidate tokens from logits
+        2. For each candidate, build 2-token lookahead sequence
+        3. Extract hidden states from layers [16, 24, 31]
+        4. Classify each sequence as CODE or LANGUAGE
+        5. Sum probability mass on CODE-classified candidates
+        6. Trigger retrieval if code_votes > threshold (0.06)
+
+        Memory optimized: uses top_k=5 instead of 10, clears cache after each forward.
+
+        Returns:
+            (code_votes, should_retrieve, details) tuple
+        """
+        import torch
+
+        # Get top-k candidate tokens
+        probs = softmax(logits)
+        top_indices = np.argsort(probs)[-self.probe_top_k:][::-1]
+
+        code_votes = 0.0
+        lang_votes = 0.0
+        candidates = []
+
+        try:
+            for idx in top_indices:
+                token = self.tokenizer.decode([idx])
+                prob = float(probs[idx])
+
+                # Skip empty/special tokens
+                if not token.strip() or token in ['</s>', '<|endoftext|>', '<pad>']:
+                    continue
+
+                # Build 2-token lookahead: prompt + candidate + next_greedy
+                sequence = prompt + token
+
+                # Get next greedy token (lookahead step 2)
+                try:
+                    inputs = self.tokenizer(sequence, return_tensors="pt")
+                    inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+
+                    with torch.no_grad():
+                        outputs = self.model(**inputs, output_hidden_states=True)
+                        next_logits = outputs.logits[0, -1, :].cpu().numpy()
+
+                    next_token_id = int(np.argmax(next_logits))
+                    next_token = self.tokenizer.decode([next_token_id])
+                    sequence = sequence + next_token
+
+                    # Extract hidden states for the FULL 2-token lookahead sequence
+                    inputs2 = self.tokenizer(sequence, return_tensors="pt")
+                    inputs2 = {k: v.to(self.model.device) for k, v in inputs2.items()}
+
+                    with torch.no_grad():
+                        outputs2 = self.model(**inputs2, output_hidden_states=True)
+
+                    # Extract and concatenate hidden states from specified layers
+                    states = []
+                    for layer_idx in self.probe_layers:
+                        # hidden_states[0] is embedding, hidden_states[1] is layer 0, etc.
+                        layer_state = outputs2.hidden_states[layer_idx + 1][:, -1, :]
+                        states.append(layer_state.cpu().numpy()[0])
+
+                    hidden_concat = np.concatenate(states).astype(np.float32)
+
+                    # Scale and classify
+                    features = hidden_concat.reshape(1, -1)
+                    if self.probe_scaler is not None:
+                        features = self.probe_scaler.transform(features)
+
+                    token_type = self.probe_model.predict(features)[0]
+                    type_proba = self.probe_model.predict_proba(features)[0]
+                    code_prob = type_proba[1] if len(type_proba) > 1 else type_proba[0]
+
+                    # Accumulate votes
+                    if token_type == 1:  # CODE
+                        code_votes += prob
+                    else:  # LANGUAGE
+                        lang_votes += prob
+
+                    candidates.append({
+                        'token': token,
+                        'prob': prob,
+                        'type': 'CODE' if token_type == 1 else 'LANGUAGE',
+                        'code_prob': float(code_prob),
+                    })
+
+                    # Clear GPU cache to prevent memory buildup
+                    del outputs, outputs2, inputs, inputs2
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+
+                except Exception as e:
+                    # Skip this candidate on error (e.g., OOM)
+                    continue
+
+        except Exception as e:
+            # If all fails, default to no retrieval
+            return 0.0, False, {'error': str(e)}
+
+        # Trigger retrieval if code_votes > threshold
+        should_retrieve = code_votes > self.threshold
+
+        details = {
+            'code_votes': code_votes,
+            'lang_votes': lang_votes,
+            'num_candidates': len(candidates),
+            'candidates': candidates[:3],  # Only store top 3 for debugging
+        }
+
+        return float(code_votes), should_retrieve, details
+
     def _apply_probe(
         self,
         hidden_states: np.ndarray
     ) -> tuple:
         """
-        Apply the trained probe to hidden states.
+        Legacy probe method (deprecated - use _apply_probe_lookahead instead).
+
+        Kept for backward compatibility with non-lookahead usage.
 
         Returns:
             (score, should_retrieve) tuple
@@ -451,21 +593,38 @@ def create_monitor(
 
 
 def create_probe_monitor(
+    model,
+    tokenizer,
     probe_model,
     probe_scaler,
     probe_layers: List[int] = None,
     threshold: float = 0.06,
-    strategy: str = "semantic_boundary",
+    strategy: str = "every_token",
+    max_retrievals: int = 5,
+    cooldown_tokens: int = 15,
+    probe_top_k: int = 5,
 ) -> UncertaintyMonitor:
     """
-    Create a monitor using the Week 3 learned probe.
+    Create a monitor using the Week 3 learned probe with lookahead.
+
+    This implements the correct Week 3 algorithm:
+    1. For each top-k candidate token, build 2-token lookahead
+    2. Extract hidden states from layers [16, 24, 31]
+    3. Classify as CODE or LANGUAGE using trained probe
+    4. Sum probability mass on CODE-classified candidates
+    5. Trigger retrieval if code_votes > threshold (0.06)
 
     Args:
+        model: HuggingFace model (required for lookahead forward passes)
+        tokenizer: HuggingFace tokenizer
         probe_model: Trained LogisticRegression or similar
         probe_scaler: StandardScaler for features
-        probe_layers: Hidden state layers to use
-        threshold: Classification threshold (default from Week 3: 0.06)
-        strategy: Measurement strategy
+        probe_layers: Hidden state layers to use (default: [16, 24, 31])
+        threshold: Code votes threshold (default from Week 3: 0.06)
+        strategy: Measurement strategy (default: every_token)
+        max_retrievals: Maximum retrievals per generation
+        cooldown_tokens: Minimum tokens between retrievals
+        probe_top_k: Number of candidates to evaluate (default: 5 for memory)
 
     Returns:
         UncertaintyMonitor configured for probe-based detection
@@ -473,8 +632,13 @@ def create_probe_monitor(
     return UncertaintyMonitor(
         method="probe",
         threshold=threshold,
+        tokenizer=tokenizer,
+        model=model,
         measurement_strategy=strategy,
+        max_retrievals=max_retrievals,
+        cooldown_tokens=cooldown_tokens,
         probe_model=probe_model,
         probe_scaler=probe_scaler,
         probe_layers=probe_layers or [16, 24, 31],
+        probe_top_k=probe_top_k,
     )

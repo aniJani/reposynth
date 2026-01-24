@@ -319,12 +319,14 @@ class AdaptiveContextRetriever:
         if not should_retrieve:
             return None
 
-        # Infer topic (still useful for logging/analysis, but not used for retrieval)
+        # Infer topic with original_query for relevance filtering
+        # This ensures confused tokens are filtered to only those relevant to the question
         topic = self.topic_inferrer.infer_topic(
             logits=logits,
             context=context,
             position=position,
             uncertainty_value=uncertainty_value,
+            original_query=original_query,  # Pass query for token filtering!
         )
 
         # Check confidence threshold
@@ -476,6 +478,7 @@ class MultiSourceRetriever(AdaptiveContextRetriever):
         uncertainty_value: Optional[float] = None,
         should_retrieve: bool = True,
         preferred_source: Optional[str] = None,
+        original_query: str = "",
     ) -> Optional[RetrievalResult]:
         """
         Retrieve from multiple sources based on priority.
@@ -487,6 +490,7 @@ class MultiSourceRetriever(AdaptiveContextRetriever):
             uncertainty_value: Uncertainty score
             should_retrieve: Whether retrieval is recommended
             preferred_source: Optional source to try first
+            original_query: Original user query (for token filtering)
 
         Returns:
             RetrievalResult from best matching source
@@ -497,12 +501,13 @@ class MultiSourceRetriever(AdaptiveContextRetriever):
         if not should_retrieve:
             return None
 
-        # Infer topic
+        # Infer topic with original_query for relevance filtering
         topic = self.topic_inferrer.infer_topic(
             logits=logits,
             context=context,
             position=position,
             uncertainty_value=uncertainty_value,
+            original_query=original_query,
         )
 
         if topic.confidence < self.min_confidence:
