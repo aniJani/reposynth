@@ -379,6 +379,7 @@ class AdaptiveGenerator:
 
         try:
             import torch
+            import gc
 
             inputs = self.tokenizer(prompt, return_tensors="pt")
             inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
@@ -395,7 +396,21 @@ class AdaptiveGenerator:
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
 
-            return logits, None
+            # Memory cleanup - prevent GPU OOM during long generations
+            del outputs
+            del inputs
+
+            # Increment forward counter and periodically clear cache
+            if not hasattr(self, '_forward_count'):
+                self._forward_count = 0
+            self._forward_count += 1
+
+            if self._forward_count % 50 == 0:
+                gc.collect()
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+
+            return logits, hidden_states
 
         except Exception as e:
             print(f"Forward pass error: {e}")
@@ -521,6 +536,69 @@ def create_adaptive_generator(
         Configured AdaptiveGenerator
     """
     config = GenerationConfig(**kwargs)
+    return AdaptiveGenerator(
+        model=model,
+        tokenizer=tokenizer,
+        retriever=retriever,
+        config=config,
+    )
+
+
+def create_reposynth_generator(
+    model,
+    tokenizer,
+    pack_dir: str,
+    uncertainty_method: str = "cce",
+    **kwargs
+) -> AdaptiveGenerator:
+    """
+    Create an AdaptiveGenerator configured for RepoSynth.
+
+    This factory function combines the AdaptiveGenerator with
+    RepoSynth's pack artifacts for uncertainty-triggered retrieval.
+
+    Args:
+        model: Language model (e.g., from transformers)
+        tokenizer: Tokenizer for the model
+        pack_dir: Path to RepoSynth pack directory containing:
+                  - name_registry.json
+                  - vectors.faiss
+                  - source_spans.json (recommended)
+        uncertainty_method: Method for uncertainty detection
+                           ('cce', 'raw_entropy', 'normalized_entropy', 'probe')
+        **kwargs: Additional GenerationConfig options:
+                  - max_tokens: Max tokens to generate (default 512)
+                  - max_retrievals: Max retrieval attempts (default 5)
+                  - uncertainty_threshold: Threshold for retrieval (default 2.5)
+                  - cooldown_tokens: Min tokens between retrievals (default 10)
+                  - context_budget: Max context tokens (default 4096)
+
+    Returns:
+        Configured AdaptiveGenerator with RepoSynth retrieval
+
+    Example:
+        >>> generator = create_reposynth_generator(
+        ...     model=model,
+        ...     tokenizer=tokenizer,
+        ...     pack_dir="./output/my-repo/pack",
+        ...     uncertainty_method="cce",
+        ...     uncertainty_threshold=3.0,
+        ...     max_retrievals=5,
+        ... )
+        >>> result = generator.generate("How does auth work?")
+        >>> print(f"Retrievals: {result.total_retrievals}")
+    """
+    from ..retrieval.reposynth_retriever import RepoSynthRetriever
+
+    # Create RepoSynth retriever from pack
+    retriever = RepoSynthRetriever(pack_dir)
+
+    # Build config with CCE defaults
+    config = GenerationConfig(
+        uncertainty_method=uncertainty_method,
+        **kwargs
+    )
+
     return AdaptiveGenerator(
         model=model,
         tokenizer=tokenizer,

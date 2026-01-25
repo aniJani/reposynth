@@ -795,6 +795,10 @@ class Pipeline:
         config = config or {}
 
         # 1. Collect public APIs to embed
+        # NOTE: We embed the FULL function/class body (truncated to ~1500 chars)
+        # for better semantic matching. Previously only embedded signatures.
+        MAX_SNIPPET_CHARS = 1500  # ~375 tokens, well within model limits
+
         public_apis = {}
         for fqn, data in self.name_registry.items():
             if data.get("is_public", False):
@@ -803,10 +807,16 @@ class Pipeline:
                     with open(file_path, "rb") as f:
                         source_code = f.read()
 
-                    # Create a snippet for embedding (e.g., function signature)
-                    snippet = source_code[data["start_byte"] : data["end_byte"]].decode('utf-8').split(
-                        "\n"
-                    )[0]
+                    # Extract FULL symbol body (not just first line)
+                    full_body = source_code[data["start_byte"] : data["end_byte"]].decode('utf-8')
+
+                    # Truncate to reasonable size for embedding model
+                    # Keep beginning (signature + docstring + key logic)
+                    if len(full_body) > MAX_SNIPPET_CHARS:
+                        snippet = full_body[:MAX_SNIPPET_CHARS] + "..."
+                    else:
+                        snippet = full_body
+
                     public_apis[fqn] = snippet
                 except Exception:
                     continue  # Skip if file can't be read

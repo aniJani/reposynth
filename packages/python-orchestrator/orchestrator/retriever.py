@@ -18,19 +18,24 @@ def retrieve_relevant_symbols(query: str, name_registry: Dict[str, Any], max_ite
 
     for symbol_fqn, symbol_data in name_registry.items():
         file_path = symbol_data.get('file_path', '')
-        symbol_name = symbol_data.get('name', '').lower()
-        
+        # Extract name from fqn if not present
+        symbol_name = symbol_data.get('name', symbol_fqn.split('.')[-1]).lower()
+
         score = 0
-        
+
         # Check for matches
         for word in query_words:
             if word in file_path.lower(): score += 3  # File name match is high value
             if word in symbol_name: score += 2        # Function name match
-            
+            if word in symbol_fqn.lower(): score += 2  # FQN match
+
         if score > 0:
             # We want to return files, so we deduplicate by file path
             if file_path not in seen_files:
-                matches.append((score, symbol_data))
+                data = symbol_data.copy()  # Copy to avoid mutating registry
+                data['fqn'] = symbol_fqn  # Include the fully qualified name
+                data['name'] = symbol_fqn.split('.')[-1]  # Extract simple name
+                matches.append((score, data))
                 seen_files.add(file_path)
 
     # Sort by score descending
@@ -80,7 +85,9 @@ def semantic_search(query: str, pack_dir: Path, max_items: int = 5):
             if str(idx) in id_map:
                 fqn = id_map[str(idx)]
                 if fqn in registry:
-                    data = registry[fqn]
+                    data = registry[fqn].copy()  # Copy to avoid mutating registry
+                    data['fqn'] = fqn  # Include the fully qualified name
+                    data['name'] = fqn.split('.')[-1]  # Extract simple name
                     fpath = data.get('file_path')
                     if fpath and fpath not in seen:
                         results.append(data)

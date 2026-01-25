@@ -14,6 +14,10 @@ from typing import Dict, List, Tuple, Optional, Literal
 import numpy as np
 
 
+# Class-level cache for vocabulary classifications (expensive to compute)
+_VOCAB_CLASSIFICATION_CACHE: Dict[str, Dict] = {}
+
+
 class CCEComputer:
     """
     Complete CCE computation pipeline.
@@ -180,6 +184,9 @@ class CCEComputer:
         """
         Classify all tokens in the vocabulary.
 
+        Uses class-level caching to avoid re-classifying 150K+ tokens
+        on every CCE computation.
+
         Args:
             vocab_size: Size of vocabulary
 
@@ -190,6 +197,20 @@ class CCEComputer:
             - 'other': array of indices for other tokens
             - 'token_to_class': mapping from token_id to class
         """
+        global _VOCAB_CLASSIFICATION_CACHE
+
+        # Build cache key from tokenizer and classifier config
+        tokenizer_id = getattr(self.tokenizer, 'name_or_path', str(id(self.tokenizer)))
+        classifier_type = type(self.classifier).__name__
+        cache_key = f"{tokenizer_id}_{classifier_type}_{vocab_size}"
+
+        # Return cached result if available
+        if cache_key in _VOCAB_CLASSIFICATION_CACHE:
+            return _VOCAB_CLASSIFICATION_CACHE[cache_key]
+
+        # Compute classification (expensive - only done once per tokenizer)
+        print(f"Classifying {vocab_size} tokens (will be cached)...")
+
         code_indices = []
         language_indices = []
         other_indices = []
@@ -212,12 +233,18 @@ class CCEComputer:
             else:
                 other_indices.append(token_id)
 
-        return {
+        result = {
             'code': np.array(code_indices),
             'language': np.array(language_indices),
             'other': np.array(other_indices),
             'token_to_class': token_to_class,
         }
+
+        # Cache result
+        _VOCAB_CLASSIFICATION_CACHE[cache_key] = result
+        print(f"Vocabulary cached: {len(code_indices)} code, {len(language_indices)} language, {len(other_indices)} other")
+
+        return result
 
     def get_classifier_stats(self) -> Dict[str, int]:
         """Get diagnostic statistics from the classifier."""
