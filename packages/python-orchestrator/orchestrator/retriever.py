@@ -131,19 +131,13 @@ def get_fallback_files(name_registry: Dict[str, Any], max_items: int = 5) -> Lis
 
 # --- 4. The Main Hybrid Search Function ---
 def hybrid_search(query: str, pack_dir: Path, max_items: int = 5, registry: Optional[Dict[str, Any]] = None):
-    """
-    Hybrid search with SEMANTIC-FIRST priority.
-
-    Order:
-    1. Semantic search (FAISS) - primary, understands meaning
-    2. Keyword search - fallback/boost for exact matches
-    3. Important files fallback - panic mode if nothing found
-    """
     print(f"DEBUG: Searching for '{query}'", file=sys.stderr)
-
+    
     # Load Registry if not provided
     if registry is None:
         try:
+            # If pack_dir is a file (e.g. pack.json), we can't load registry from it as a directory
+            # This handles the case where caller didn't pass registry but passed a file path
             if pack_dir.is_file() and pack_dir.suffix == '.json':
                 with open(pack_dir, 'r') as f:
                     data = json.load(f)
@@ -153,40 +147,31 @@ def hybrid_search(query: str, pack_dir: Path, max_items: int = 5, registry: Opti
                     registry = json.load(f)
         except Exception as e:
             print(f"DEBUG: Failed to load registry: {e}", file=sys.stderr)
-            return []
+            return [] # Cannot search without registry
 
-    results = []
-    seen_paths = set()
-
-    # 1. SEMANTIC SEARCH FIRST (primary - understands meaning)
+    # 1. Try Keyword Search
+    results = retrieve_relevant_symbols(query, registry, max_items)
+    print(f"DEBUG: Keywords found {len(results)}", file=sys.stderr)
+    
+    # 2. Try Semantic Search (Add to results if valid)
+    # Only possible if pack_dir is a directory containing vectors
     if pack_dir and pack_dir.is_dir():
         try:
-            semantic = semantic_search(query, pack_dir, max_items * 2)  # Get extra for merging
+            semantic = semantic_search(query, pack_dir, max_items)
             print(f"DEBUG: Semantic found {len(semantic)}", file=sys.stderr)
-
+            
+            # Merge semantic results (deduplicated)
+            seen_paths = set(r['file_path'] for r in results)
             for item in semantic:
-                fpath = item.get('file_path')
-                if fpath and fpath not in seen_paths:
+                if item['file_path'] not in seen_paths:
                     results.append(item)
-                    seen_paths.add(fpath)
+                    seen_paths.add(item['file_path'])
         except Exception as e:
-            print(f"DEBUG: Semantic search failed: {e}", file=sys.stderr)
+            print(f"DEBUG: Semantic failed {e}", file=sys.stderr)
     else:
         print("DEBUG: Skipping semantic search (pack_dir is not a directory)", file=sys.stderr)
 
-    # 2. KEYWORD SEARCH (fallback/boost - for exact matches)
-    # Only use if semantic found nothing, or to boost with exact matches
-    if len(results) < max_items:
-        keyword_results = retrieve_relevant_symbols(query, registry, max_items)
-        print(f"DEBUG: Keyword found {len(keyword_results)}", file=sys.stderr)
-
-        for item in keyword_results:
-            fpath = item.get('file_path')
-            if fpath and fpath not in seen_paths:
-                results.append(item)
-                seen_paths.add(fpath)
-
-    # 3. FALLBACK: If still nothing, return important files
+    # 3. PANIC MODE: If still 0 results, force fallback
     if len(results) == 0:
         print("DEBUG: No results found. Using fallback.", file=sys.stderr)
         results = get_fallback_files(registry, max_items)

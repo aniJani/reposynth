@@ -217,22 +217,21 @@ Query: "How does validation work?"
          │
          ▼
 ┌─────────────────────────────────────────┐
-│     SEMANTIC-FIRST HYBRID SEARCH         │
+│         HYBRID SEARCH                    │
 ├─────────────────────────────────────────┤
-│ 1. Semantic Search (FAISS) - PRIMARY     │
+│ 1. Keyword Search                        │
+│    - Scans file paths for "validation"  │
+│    - Scans symbol names (functions)      │
+│    - Fast, exact matching                │
+│                                          │
+│ 2. Semantic Search (FAISS)               │
 │    - Embeds query with sentence-transformer│
 │    - Finds similar code by meaning       │
 │    - Catches synonyms/related concepts   │
-│    - Best for natural language queries   │
 │                                          │
-│ 2. Keyword Search - FALLBACK/BOOST       │
-│    - Only if semantic found < max_items  │
-│    - Scans file paths and symbol names   │
-│    - Catches exact matches semantic missed│
-│                                          │
-│ 3. Important Files - PANIC FALLBACK      │
-│    - Only if both found nothing          │
-│    - Returns index, main, schema, etc.   │
+│ 3. Merge & Deduplicate                   │
+│    - Combines results from both          │
+│    - Removes duplicate files             │
 │                                          │
 │ 4. Enrich with Full Source               │
 │    - Loads complete file content         │
