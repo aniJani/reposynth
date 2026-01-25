@@ -20,6 +20,9 @@ __all__ = [
     'EmbeddingRetriever',
     'SimpleRetriever',
 
+    # RepoSynth Integration
+    'RepoSynthRetriever',
+
     # Context Management
     'ContextManager',
     'ContextSegment',
@@ -54,5 +57,10 @@ def __getattr__(name):
             'ContextSegment': ContextSegment,
         })
         return globals()[name]
+
+    if name == 'RepoSynthRetriever':
+        from .reposynth_retriever import RepoSynthRetriever
+        globals()['RepoSynthRetriever'] = RepoSynthRetriever
+        return RepoSynthRetriever
 
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
