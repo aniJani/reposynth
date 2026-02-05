@@ -1,0 +1,218 @@
+{
+  "experiment": "Week13_CCE_Error_Correlation",
+  "num_questions": 20,
+  "cce_stats": {
+    "mean": 0.6439829840559842,
+    "std": 0.8363588935686822
+  },
+  "error_rates": {
+    "no_retrieval": 0.95,
+    "with_retrieval": 0.7
+  },
+  "correlation": {
+    "pearson_r": 0.4526620174493351,
+    "p_value": 0.045059456023112635
+  },
+  "per_question": [
+    {
+      "question_id": "fact_001",
+      "mean_cce": 0.34888659983407705,
+      "max_cce": 1.9750285148620605,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.33333333333333337,
+      "num_tokens": 15
+    },
+    {
+      "question_id": "fact_002",
+      "mean_cce": 0.7920556942643452,
+      "max_cce": 2.961000442504883,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.4285714285714286,
+      "num_tokens": 25
+    },
+    {
+      "question_id": "fact_003",
+      "mean_cce": 0.8160615293439575,
+      "max_cce": 5.848755836486816,
+      "num_spikes": 5,
+      "spike_ratio": 0.03333333333333333,
+      "has_error": true,
+      "error_score": 0.5,
+      "num_tokens": 150
+    },
+    {
+      "question_id": "fact_004",
+      "mean_cce": 0.9707923222335753,
+      "max_cce": 2.9224658012390137,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.6666666666666667,
+      "num_tokens": 54
+    },
+    {
+      "question_id": "fact_005",
+      "mean_cce": 0.6762841986844705,
+      "max_cce": 2.462062358856201,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.5,
+      "num_tokens": 32
+    },
+    {
+      "question_id": "fact_006",
+      "mean_cce": 0.24103509051714997,
+      "max_cce": 1.4868505001068115,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.33333333333333337,
+      "num_tokens": 17
+    },
+    {
+      "question_id": "fact_007",
+      "mean_cce": 0.9603681138035688,
+      "max_cce": 3.5456552505493164,
+      "num_spikes": 1,
+      "spike_ratio": 0.0136986301369863,
+      "has_error": true,
+      "error_score": 1.0,
+      "num_tokens": 73
+    },
+    {
+      "question_id": "fact_008",
+      "mean_cce": 0.8103655335576068,
+      "max_cce": 2.5729074478149414,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.5,
+      "num_tokens": 55
+    },
+    {
+      "question_id": "fact_009",
+      "mean_cce": 0.49724093825646076,
+      "max_cce": 3.4098527431488037,
+      "num_spikes": 3,
+      "spike_ratio": 0.02,
+      "has_error": true,
+      "error_score": 0.5,
+      "num_tokens": 150
+    },
+    {
+      "question_id": "fact_010",
+      "mean_cce": 0.3878657508454004,
+      "max_cce": 2.5307393074035645,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": false,
+      "error_score": 0.0,
+      "num_tokens": 150
+    },
+    {
+      "question_id": "fact_011",
+      "mean_cce": 0.510511973062421,
+      "max_cce": 2.306417465209961,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.33333333333333337,
+      "num_tokens": 16
+    },
+    {
+      "question_id": "fact_012",
+      "mean_cce": 0.5870009485447049,
+      "max_cce": 2.4388978481292725,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.5,
+      "num_tokens": 18
+    },
+    {
+      "question_id": "fact_013",
+      "mean_cce": 0.9671067891021476,
+      "max_cce": 4.10906982421875,
+      "num_spikes": 2,
+      "spike_ratio": 0.019230769230769232,
+      "has_error": true,
+      "error_score": 0.2,
+      "num_tokens": 104
+    },
+    {
+      "question_id": "fact_014",
+      "mean_cce": 1.1327423990353136,
+      "max_cce": 5.288265228271484,
+      "num_spikes": 3,
+      "spike_ratio": 0.04477611940298507,
+      "has_error": true,
+      "error_score": 0.5333333333333334,
+      "num_tokens": 67
+    },
+    {
+      "question_id": "fact_015",
+      "mean_cce": 0.5468741252610562,
+      "max_cce": 2.903109312057495,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.6666666666666667,
+      "num_tokens": 150
+    },
+    {
+      "question_id": "fact_016",
+      "mean_cce": 0.39105081818343024,
+      "max_cce": 1.2583367824554443,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.5,
+      "num_tokens": 16
+    },
+    {
+      "question_id": "fact_017",
+      "mean_cce": 0.42135226700629574,
+      "max_cce": 1.5964488983154297,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.5,
+      "num_tokens": 20
+    },
+    {
+      "question_id": "fact_018",
+      "mean_cce": 0.8260641931572424,
+      "max_cce": 4.296968460083008,
+      "num_spikes": 2,
+      "spike_ratio": 0.014388489208633094,
+      "has_error": true,
+      "error_score": 0.75,
+      "num_tokens": 139
+    },
+    {
+      "question_id": "fact_019",
+      "mean_cce": 0.36038759398199544,
+      "max_cce": 3.3416476249694824,
+      "num_spikes": 1,
+      "spike_ratio": 0.006666666666666667,
+      "has_error": true,
+      "error_score": 0.33333333333333337,
+      "num_tokens": 150
+    },
+    {
+      "question_id": "fact_020",
+      "mean_cce": 0.43310757725356175,
+      "max_cce": 2.340930938720703,
+      "num_spikes": 0,
+      "spike_ratio": 0.0,
+      "has_error": true,
+      "error_score": 0.5,
+      "num_tokens": 150
+    }
+  ]
+}

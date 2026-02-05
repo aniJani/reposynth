@@ -1,0 +1,670 @@
+[
+  {
+    "confused_tokens": [
+      "TokenManager",
+      "generate_token",
+      "signature",
+      "payload",
+      "sha256"
+    ],
+    "confused_probs": [
+      0.286,
+      0.236,
+      0.212,
+      0.169,
+      0.098
+    ],
+    "original_query": "How does the TokenManager generate authentication tokens?",
+    "generated_context": "TokenManager generates tokens by creating a payload with user info (sub, username, email, roles), ti...",
+    "relevant_files": [
+      "auth_service.py"
+    ],
+    "sample_id": "single_hop_001",
+    "spike_position": 25,
+    "uncertainty_value": 2.62
+  },
+  {
+    "confused_tokens": [
+      "InMemoryCache",
+      "LRU",
+      "_evict_lru",
+      "last_accessed",
+      "max_size"
+    ],
+    "confused_probs": [
+      0.293,
+      0.247,
+      0.208,
+      0.134,
+      0.118
+    ],
+    "original_query": "What eviction strategy does the InMemoryCache use?",
+    "generated_context": "InMemoryCache uses LRU (Least Recently Used) eviction...",
+    "relevant_files": [
+      "cache_service.py"
+    ],
+    "sample_id": "single_hop_002",
+    "spike_position": 23,
+    "uncertainty_value": 2.36
+  },
+  {
+    "confused_tokens": [
+      "auth_middleware",
+      "validate_token",
+      "exp",
+      "Bearer",
+      "401"
+    ],
+    "confused_probs": [
+      0.3,
+      0.253,
+      0.207,
+      0.133,
+      0.105
+    ],
+    "original_query": "How does the auth_middleware validate requests and what happens if a token is expired?",
+    "generated_context": "auth_middleware extracts the Bearer token from the Authorization header, then calls auth_service...",
+    "relevant_files": [
+      "api_router.py",
+      "auth_service.py"
+    ],
+    "sample_id": "multi_hop_001",
+    "spike_position": 18,
+    "uncertainty_value": 3.0
+  },
+  {
+    "confused_tokens": [
+      "TieredCache",
+      "get",
+      "l1",
+      "l2",
+      "promote"
+    ],
+    "confused_probs": [
+      0.312,
+      0.236,
+      0.206,
+      0.155,
+      0.091
+    ],
+    "original_query": "If I create a TieredCache with InMemoryCache as L1, how does a cache miss in L1 get promoted after being found in L2?",
+    "generated_context": "When TieredCache...",
+    "relevant_files": [
+      "cache_service.py"
+    ],
+    "sample_id": "multi_hop_002",
+    "spike_position": 17,
+    "uncertainty_value": 3.12
+  },
+  {
+    "confused_tokens": [
+      "login",
+      "generate_token",
+      "create_session",
+      "max_sessions_per_user",
+      "_sessions"
+    ],
+    "confused_probs": [
+      0.289,
+      0.243,
+      0.204,
+      0.148,
+      0.116
+    ],
+    "original_query": "When a user logs in through AuthService, trace the complete flow from login() to how the session is stored and what limits are enforced.",
+    "generated_context": "AuthService...",
+    "relevant_files": [
+      "auth_service.py"
+    ],
+    "sample_id": "multi_hop_003",
+    "spike_position": 13,
+    "uncertainty_value": 3.48
+  },
+  {
+    "confused_tokens": [
+      "auth_middleware",
+      "cached",
+      "Router",
+      "TokenManager",
+      "CacheService"
+    ],
+    "confused_probs": [
+      0.3,
+      0.235,
+      0.217,
+      0.136,
+      0.112
+    ],
+    "original_query": "How would you implement a route that requires authentication and caches its response? Explain which components interact.",
+    "generated_context": "Use Router with auth_middleware from api_router...",
+    "relevant_files": [
+      "api_router.py",
+      "auth_service.py",
+      "cache_service.py"
+    ],
+    "sample_id": "multi_hop_004",
+    "spike_position": 24,
+    "uncertainty_value": 3.56
+  },
+  {
+    "confused_tokens": [
+      "EventBus",
+      "EventStore",
+      "Repository",
+      "append",
+      "publish"
+    ],
+    "confused_probs": [
+      0.289,
+      0.255,
+      0.192,
+      0.162,
+      0.101
+    ],
+    "original_query": "Explain how EventBus and EventStore could be used together to implement event sourcing with the Repository pattern.",
+    "generated_context": "EventBus handles real-time pub/sub - publish events with bus...",
+    "relevant_files": [
+      "event_system.py",
+      "database_service.py"
+    ],
+    "sample_id": "multi_hop_005",
+    "spike_position": 9,
+    "uncertainty_value": 3.78
+  },
+  {
+    "confused_tokens": [
+      "transaction",
+      "rollback",
+      "ConnectionPool",
+      "return_connection",
+      "_transaction_conn"
+    ],
+    "confused_probs": [
+      0.315,
+      0.24,
+      0.2,
+      0.149,
+      0.097
+    ],
+    "original_query": "If a database query through Repository fails mid-transaction, trace what happens to the connection and how the ConnectionPool recovers.",
+    "generated_context": "Repository uses DatabaseService which gets connections from ConnectionPool...",
+    "relevant_files": [
+      "database_service.py"
+    ],
+    "sample_id": "multi_hop_006",
+    "spike_position": 19,
+    "uncertainty_value": 3.58
+  },
+  {
+    "confused_tokens": [
+      "rate_limit_middleware",
+      "CacheService",
+      "TieredCache",
+      "window_seconds",
+      "TTL"
+    ],
+    "confused_probs": [
+      0.317,
+      0.242,
+      0.218,
+      0.138,
+      0.085
+    ],
+    "original_query": "Compare the rate limiting approaches: rate_limit_middleware vs using CacheService. What are the trade-offs?",
+    "generated_context": "rate_limit_middleware uses a defaultdict to track request timestamps per IP, cleaned on each request...",
+    "relevant_files": [
+      "api_router.py",
+      "cache_service.py"
+    ],
+    "sample_id": "reasoning_001",
+    "spike_position": 25,
+    "uncertainty_value": 3.2
+  },
+  {
+    "confused_tokens": [
+      "create_session",
+      "max_sessions_per_user",
+      "concurrent",
+      "race condition",
+      "lock"
+    ],
+    "confused_probs": [
+      0.309,
+      0.269,
+      0.195,
+      0.14,
+      0.088
+    ],
+    "original_query": "What would happen if two concurrent requests try to create sessions for the same user who is at max_sessions_per_user limit?",
+    "generated_context": "SessionManager doesn't have locking around session creation...",
+    "relevant_files": [
+      "auth_service.py"
+    ],
+    "sample_id": "reasoning_002",
+    "spike_position": 17,
+    "uncertainty_value": 3.41
+  },
+  {
+    "confused_tokens": [
+      "Router",
+      "auth_middleware",
+      "cached",
+      "Repository",
+      "ConnectionPool"
+    ],
+    "confused_probs": [
+      0.294,
+      0.257,
+      0.215,
+      0.145,
+      0.088
+    ],
+    "original_query": "Design a request flow: user authenticates, makes a query that hits cached data, and the cache miss triggers a database lookup.",
+    "generated_context": "1) Request hits Router -> auth_middleware validates Bearer token via TokenManager...",
+    "relevant_files": [
+      "api_router.py",
+      "auth_service.py",
+      "cache_service.py",
+      "database_service.py"
+    ],
+    "sample_id": "integration_001",
+    "spike_position": 23,
+    "uncertainty_value": 3.21
+  },
+  {
+    "confused_tokens": [
+      "Router",
+      "post",
+      "get_json",
+      "Repository",
+      "insert"
+    ],
+    "confused_probs": [
+      0.286,
+      0.245,
+      0.203,
+      0.161,
+      0.104
+    ],
+    "original_query": "How do I add a new route that handles user creation with validation?",
+    "generated_context": "Use Router...",
+    "relevant_files": [
+      "api_router.py",
+      "database_service.py"
+    ],
+    "sample_id": "implementation_001",
+    "spike_position": 10,
+    "uncertainty_value": 3.13
+  },
+  {
+    "confused_tokens": [
+      "route",
+      "decorator",
+      "URL",
+      "Werkzeug",
+      "request"
+    ],
+    "confused_probs": [
+      0.286,
+      0.265,
+      0.189,
+      0.154,
+      0.106
+    ],
+    "original_query": "How does Flask handle URL routing and decorators?",
+    "generated_context": "Flask uses the @app...",
+    "relevant_files": [
+      "src/flask/app.py",
+      "src/flask/scaffold.py"
+    ],
+    "sample_id": "flask_001",
+    "spike_position": 12,
+    "uncertainty_value": 2.85
+  },
+  {
+    "confused_tokens": [
+      "context",
+      "LocalStack",
+      "LocalProxy",
+      "request",
+      "g"
+    ],
+    "confused_probs": [
+      0.308,
+      0.237,
+      0.213,
+      0.147,
+      0.095
+    ],
+    "original_query": "How does Flask's request context work?",
+    "generated_context": "Flask uses a context local stack to manage request and application contexts...",
+    "relevant_files": [
+      "src/flask/ctx.py",
+      "src/flask/globals.py",
+      "src/flask/app.py"
+    ],
+    "sample_id": "flask_002",
+    "spike_position": 8,
+    "uncertainty_value": 3.2
+  },
+  {
+    "confused_tokens": [
+      "Blueprint",
+      "register_blueprint",
+      "url_prefix",
+      "module"
+    ],
+    "confused_probs": [
+      0.324,
+      0.289,
+      0.206,
+      0.181
+    ],
+    "original_query": "What are Flask Blueprints and how do they work?",
+    "generated_context": "Blueprints are a way to organize a Flask application into modules...",
+    "relevant_files": [
+      "src/flask/blueprints.py",
+      "src/flask/scaffold.py"
+    ],
+    "sample_id": "flask_003",
+    "spike_position": 15,
+    "uncertainty_value": 2.92
+  },
+  {
+    "confused_tokens": [
+      "config",
+      "DEBUG",
+      "SECRET_KEY",
+      "from_pyfile",
+      "from_envvar"
+    ],
+    "confused_probs": [
+      0.3,
+      0.251,
+      0.196,
+      0.171,
+      0.081
+    ],
+    "original_query": "How do I configure a Flask application?",
+    "generated_context": "Flask configuration is done through the app...",
+    "relevant_files": [
+      "src/flask/config.py"
+    ],
+    "sample_id": "flask_004",
+    "spike_position": 10,
+    "uncertainty_value": 2.47
+  },
+  {
+    "confused_tokens": [
+      "errorhandler",
+      "abort",
+      "404",
+      "500",
+      "exception"
+    ],
+    "confused_probs": [
+      0.296,
+      0.247,
+      0.198,
+      0.14,
+      0.119
+    ],
+    "original_query": "How do I handle errors in Flask?",
+    "generated_context": "Flask provides the @app...",
+    "relevant_files": [
+      "src/flask/app.py",
+      "src/flask/helpers.py"
+    ],
+    "sample_id": "flask_005",
+    "spike_position": 8,
+    "uncertainty_value": 2.76
+  },
+  {
+    "confused_tokens": [
+      "path",
+      "parameter",
+      "item_id",
+      "get",
+      "validation"
+    ],
+    "confused_probs": [
+      0.313,
+      0.246,
+      0.203,
+      0.138,
+      0.1
+    ],
+    "original_query": "How do path parameters work in FastAPI?",
+    "generated_context": "FastAPI extracts path parameters from the URL path...",
+    "relevant_files": [
+      "fastapi/routing.py",
+      "fastapi/params.py"
+    ],
+    "sample_id": "fastapi_001",
+    "spike_position": 10,
+    "uncertainty_value": 2.57
+  },
+  {
+    "confused_tokens": [
+      "Depends",
+      "dependency",
+      "injection",
+      "yield",
+      "callable"
+    ],
+    "confused_probs": [
+      0.314,
+      0.244,
+      0.184,
+      0.144,
+      0.115
+    ],
+    "original_query": "How does FastAPI's dependency injection system work?",
+    "generated_context": "FastAPI uses the Depends() function for dependency injection...",
+    "relevant_files": [
+      "fastapi/dependencies/utils.py",
+      "fastapi/params.py",
+      "fastapi/routing.py"
+    ],
+    "sample_id": "fastapi_002",
+    "spike_position": 12,
+    "uncertainty_value": 3.53
+  },
+  {
+    "confused_tokens": [
+      "BaseModel",
+      "Pydantic",
+      "JSON",
+      "body",
+      "validation"
+    ],
+    "confused_probs": [
+      0.303,
+      0.245,
+      0.21,
+      0.152,
+      0.09
+    ],
+    "original_query": "How do I handle request bodies in FastAPI?",
+    "generated_context": "FastAPI uses Pydantic models to define request body schemas...",
+    "relevant_files": [
+      "fastapi/routing.py",
+      "fastapi/params.py"
+    ],
+    "sample_id": "fastapi_003",
+    "spike_position": 15,
+    "uncertainty_value": 3.08
+  },
+  {
+    "confused_tokens": [
+      "BackgroundTasks",
+      "add_task",
+      "async",
+      "response"
+    ],
+    "confused_probs": [
+      0.341,
+      0.276,
+      0.212,
+      0.171
+    ],
+    "original_query": "How do I run background tasks in FastAPI?",
+    "generated_context": "FastAPI provides BackgroundTasks for running code after returning a response...",
+    "relevant_files": [
+      "fastapi/background.py",
+      "fastapi/routing.py"
+    ],
+    "sample_id": "fastapi_004",
+    "spike_position": 12,
+    "uncertainty_value": 2.86
+  },
+  {
+    "confused_tokens": [
+      "response_model",
+      "schema",
+      "filter",
+      "exclude",
+      "Pydantic"
+    ],
+    "confused_probs": [
+      0.299,
+      0.258,
+      0.213,
+      0.139,
+      0.091
+    ],
+    "original_query": "How do I define response models in FastAPI?",
+    "generated_context": "Use the response_model parameter in route decorators to define the response schema...",
+    "relevant_files": [
+      "fastapi/routing.py"
+    ],
+    "sample_id": "fastapi_005",
+    "spike_position": 8,
+    "uncertainty_value": 2.3
+  },
+  {
+    "confused_tokens": [
+      "get",
+      "post",
+      "Response",
+      "status_code",
+      "json"
+    ],
+    "confused_probs": [
+      0.307,
+      0.254,
+      0.209,
+      0.143,
+      0.088
+    ],
+    "original_query": "How do I make HTTP GET and POST requests with the requests library?",
+    "generated_context": "Use requests...",
+    "relevant_files": [
+      "requests/api.py",
+      "requests/models.py"
+    ],
+    "sample_id": "requests_001",
+    "spike_position": 10,
+    "uncertainty_value": 2.67
+  },
+  {
+    "confused_tokens": [
+      "Session",
+      "cookies",
+      "persist",
+      "pooling",
+      "headers"
+    ],
+    "confused_probs": [
+      0.304,
+      0.267,
+      0.205,
+      0.138,
+      0.086
+    ],
+    "original_query": "How do sessions work in the requests library?",
+    "generated_context": "Sessions persist parameters across requests using requests...",
+    "relevant_files": [
+      "requests/sessions.py",
+      "requests/cookies.py"
+    ],
+    "sample_id": "requests_002",
+    "spike_position": 12,
+    "uncertainty_value": 2.87
+  },
+  {
+    "confused_tokens": [
+      "auth",
+      "Basic",
+      "Bearer",
+      "AuthBase",
+      "HTTPDigestAuth"
+    ],
+    "confused_probs": [
+      0.285,
+      0.248,
+      0.201,
+      0.168,
+      0.099
+    ],
+    "original_query": "How do I handle authentication with requests?",
+    "generated_context": "Pass auth=(username, password) for HTTP Basic Auth...",
+    "relevant_files": [
+      "requests/auth.py",
+      "requests/models.py"
+    ],
+    "sample_id": "requests_003",
+    "spike_position": 10,
+    "uncertainty_value": 3.08
+  },
+  {
+    "confused_tokens": [
+      "timeout",
+      "Retry",
+      "HTTPAdapter",
+      "mount",
+      "urllib3"
+    ],
+    "confused_probs": [
+      0.302,
+      0.25,
+      0.192,
+      0.162,
+      0.094
+    ],
+    "original_query": "How do I configure timeouts and retries in requests?",
+    "generated_context": "Set timeout in seconds: requests...",
+    "relevant_files": [
+      "requests/adapters.py",
+      "requests/sessions.py"
+    ],
+    "sample_id": "requests_004",
+    "spike_position": 12,
+    "uncertainty_value": 2.94
+  },
+  {
+    "confused_tokens": [
+      "files",
+      "upload",
+      "multipart",
+      "post",
+      "binary"
+    ],
+    "confused_probs": [
+      0.304,
+      0.246,
+      0.192,
+      0.148,
+      0.111
+    ],
+    "original_query": "How do I upload files using requests?",
+    "generated_context": "Use the files parameter with a dict: requests...",
+    "relevant_files": [
+      "requests/models.py",
+      "requests/api.py"
+    ],
+    "sample_id": "requests_005",
+    "spike_position": 10,
+    "uncertainty_value": 2.35
+  }
+]

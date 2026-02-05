@@ -54,6 +54,18 @@ class GenerationConfig:
     probe_layers: List[int] = field(default_factory=lambda: [16, 24, 31])
     probe_threshold: float = 0.06
 
+    # Learned Query Pooler settings (Week 10)
+    use_learned_query: bool = False
+    learned_query_config: Dict[str, Any] = field(default_factory=lambda: {
+        'embed_dim': 384,
+        'num_query_vectors': 4,
+        'num_heads': 4,
+        'scoring_method': 'bilinear',
+        'score_threshold': 0.3,
+    })
+    learned_query_model_path: Optional[str] = None
+    learned_query_fallback: bool = True  # Fallback to heuristic if low confidence
+
     def __post_init__(self):
         if self.use_probe and self.probe_model is None:
             raise ValueError("probe_model required when use_probe=True")
@@ -198,9 +210,19 @@ class AdaptiveGenerator:
 
     def _init_retriever(self, base_retriever):
         """Initialize adaptive retriever."""
-        self.topic_inferrer = TopicInferrer(
-            tokenizer=self.tokenizer,
-        )
+        # Choose topic inferrer based on config
+        if self.config.use_learned_query:
+            from ..retrieval.learned_inferrer import LearnedTopicInferrer
+            self.topic_inferrer = LearnedTopicInferrer(
+                tokenizer=self.tokenizer,
+                model_path=self.config.learned_query_model_path,
+                use_fallback=self.config.learned_query_fallback,
+                **self.config.learned_query_config,
+            )
+        else:
+            self.topic_inferrer = TopicInferrer(
+                tokenizer=self.tokenizer,
+            )
 
         self.retriever = AdaptiveContextRetriever(
             base_retriever=base_retriever,

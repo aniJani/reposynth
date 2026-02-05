@@ -1,0 +1,161 @@
+{
+  "experiment": "Week15_V5_CodeGnosis_Triggered",
+  "model": "codellama/CodeLlama-7b-Instruct-hf",
+  "num_tasks": 10,
+  "accuracy": {
+    "no_retrieval": 0.0,
+    "codegnosis_triggered": 0.8,
+    "always_retrieval": 0.8
+  },
+  "error_prediction": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "efficiency": {
+    "retrieval_count": 10,
+    "total_tasks": 10
+  },
+  "results": [
+    {
+      "task_id": 1,
+      "question": "What are ALL the parameters of httpx.Timeout.__init__()? List each parameter name.",
+      "ground_truth": "timeout, connect, read, write, pool",
+      "answer_initial": "The `httpx.Timeout` class has the following parameters in its `__init__` method:\n\n1. `connect`: The maximum time to wait when establishing a connection.\n2. `read`: The maximum time to wait for a server to send data.\n3. `write`: The maximum time to wait to send data to the server.\n4. `pool`: The maximum time to wait for a connection to be released back to the pool.\n5. `total`: The maximum total time to wait for a request to complete.\n6. `connect_timeout`: The maximum time to wait when establishing a connection.\n7. `read_timeout`: The maximum time to wait for a server to send data.\n8. `write_timeout`: The maximum time to wait to send data to the server.\n9. `pool_timeout`: The maximum time to wait for a connection to be released back to the pool.\n10. `total_timeout`: The maximum total time to wait for a request to complete.\n\nNote that some of these parameters may not be used depending on the specific use case and the configuration of the `httpx.Timeout` object.",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "Based on the source code, the parameters of httpx.Timeout.__init__() are:\n\n* timeout: TimeoutTypes | UnsetType\n* connect: None | float | UnsetType\n* read: None | float | UnsetType\n* write: None | float | UnsetType\n* pool: None | float | UnsetType",
+      "correct_final": true,
+      "answer_always_ret": "Based on the source code, the parameters of httpx.Timeout.__init__() are:\n\n* timeout: TimeoutTypes | UnsetType\n* connect: None | float | UnsetType\n* read: None | float | UnsetType\n* write: None | float | UnsetType\n* pool: None | float | UnsetType",
+      "correct_always_ret": true
+    },
+    {
+      "task_id": 2,
+      "question": "What is the default timeout value in httpx? Give the exact number in seconds.",
+      "ground_truth": "5.0 seconds",
+      "answer_initial": "The default timeout value in httpx is 30 seconds.",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "The default timeout value in httpx is 5 seconds. This is specified in the `Timeout` class in the source code, where the `Timeout(5.0, connect=10.0)` constructor is used to set the default timeout values for the `connect` and `read` parameters. The `connect` parameter has a default value of 10 seconds, while the `read` parameter has a default value of 5 seconds.",
+      "correct_final": true,
+      "answer_always_ret": "The default timeout value in httpx is 5 seconds. This is specified in the `Timeout` class in the source code, where the `Timeout(5.0, connect=10.0)` constructor is used to set the default timeout values for the `connect` and `read` parameters. The `connect` parameter has a default value of 10 seconds, while the `read` parameter has a default value of 5 seconds.",
+      "correct_always_ret": true
+    },
+    {
+      "task_id": 3,
+      "question": "What are the parameters of httpx.Limits.__init__()? List each parameter name.",
+      "ground_truth": "max_connections, max_keepalive_connections, keepalive_expiry",
+      "answer_initial": "The parameters of `httpx.Limits.__init__()` are:\n\n1. `max_connections`: The maximum number of concurrent connections to a single host.\n2. `max_keepalive_connections`: The maximum number of connections that can be kept alive in the connection pool.\n3. `max_keepalive_timeout`: The maximum amount of time a connection can be kept alive in the connection pool.\n4. `max_retries`: The maximum number of retries to attempt when a request fails.\n5. `max_redirects`: The maximum number of redirects to follow.\n6. `max_redirect_connections`: The maximum number of connections to follow a redirect.\n7. `max_retries_delay`: The maximum amount of time to wait between retries.\n8. `max_retries_backoff`: The maximum amount of time to wait between retries, as a backoff factor.\n9. `max_retries_raise`: Whether to raise an exception if the maximum number of retries is exceeded.\n10. `max_stream_resets`: The maximum number of stream resets to allow before raising an exception.\n11. `max_stream_resets_delay`: The maximum amount of time to wait between stream resets.\n12. `max_stream_resets_backoff`: The",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "The parameters of httpx.Limits.__init__() are:\n\n* max_connections\n* max_keepalive_connections\n* keepalive_expiry",
+      "correct_final": true,
+      "answer_always_ret": "The parameters of httpx.Limits.__init__() are:\n\n* max_connections\n* max_keepalive_connections\n* keepalive_expiry",
+      "correct_always_ret": true
+    },
+    {
+      "task_id": 4,
+      "question": "What is the default value for max_connections in httpx.Limits?",
+      "ground_truth": "None",
+      "answer_initial": "The default value for max_connections in httpx.Limits is 100.",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "Based on the source code, the default value for `max_connections` in `httpx.Limits` is `None`.",
+      "correct_final": true,
+      "answer_always_ret": "Based on the source code, the default value for `max_connections` in `httpx.Limits` is `None`.",
+      "correct_always_ret": true
+    },
+    {
+      "task_id": 5,
+      "question": "What is the parent class of ConnectError in httpx._exceptions?",
+      "ground_truth": "NetworkError",
+      "answer_initial": "The parent class of ConnectError in httpx._exceptions is `Exception`.",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "The parent class of ConnectError in httpx._exceptions is NetworkError.",
+      "correct_final": false,
+      "answer_always_ret": "The parent class of ConnectError in httpx._exceptions is NetworkError.",
+      "correct_always_ret": false
+    },
+    {
+      "task_id": 6,
+      "question": "What exception does httpx raise when the URL scheme is not http or https?",
+      "ground_truth": "UnsupportedProtocol",
+      "answer_initial": "The `httpx` library in Python raises a `ValueError` exception when the URL scheme is not `http` or `https`.",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "Based on the source code, httpx raises an UnsupportedProtocol exception when the URL scheme is not http or https.",
+      "correct_final": true,
+      "answer_always_ret": "Based on the source code, httpx raises an UnsupportedProtocol exception when the URL scheme is not http or https.",
+      "correct_always_ret": true
+    },
+    {
+      "task_id": 7,
+      "question": "List ALL authentication classes defined in httpx._auth module.",
+      "ground_truth": "Auth, BasicAuth, DigestAuth, FunctionAuth, NetRCAuth",
+      "answer_initial": "The `httpx._auth` module defines the following authentication classes:\n\n1. `BasicAuth`: Represents a basic authentication scheme, where the username and password are sent in plain text.\n2. `BearerAuth`: Represents a bearer authentication scheme, where the access token is sent in the `Authorization` header.\n3. `DigestAuth`: Represents a digest authentication scheme, where the username and password are sent in plain text, and a digest hash is used to authenticate the request.\n4. `OAuth2Auth`: Represents an OAuth 2.0 authentication scheme, where the access token is sent in the `Authorization` header.\n5. `NTLMAuth`: Represents an NTLM authentication scheme, where the username and password are sent in plain text, and a NTLM hash is used to authenticate the request.\n6. `SPNEGOAuth`: Represents an SPNEGO authentication scheme, where the username and password are sent in plain text, and a SPNEGO hash is used to authenticate the request.\n7. `KerberosAuth`: Represents a Kerberos authentication scheme, where the username and password are sent in plain text, and a Kerberos hash is used to authenticate the request.\n8. `NegotiateAuth`: Represents a Negotiate authentication",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "Based on the source code provided, the following authentication classes are defined in the `httpx._auth` module:\n\n1. `Auth`: A base class for all authentication schemes.\n2. `BasicAuth`: Allows the 'auth' argument to be passed as a (username, password) pair, and uses HTTP Basic authentication.\n3. `DigestAuth`: Uses HTTP Digest authentication.\n4. `FunctionAuth`: Allows the 'auth' argument to be passed as a function that takes a request and returns a response.\n5. `NetRCAuth`: Uses a 'netrc' file to lookup basic auth credentials based on the url host.",
+      "correct_final": true,
+      "answer_always_ret": "Based on the source code provided, the following authentication classes are defined in the `httpx._auth` module:\n\n1. `Auth`: A base class for all authentication schemes.\n2. `BasicAuth`: Allows the 'auth' argument to be passed as a (username, password) pair, and uses HTTP Basic authentication.\n3. `DigestAuth`: Uses HTTP Digest authentication.\n4. `FunctionAuth`: Allows the 'auth' argument to be passed as a function that takes a request and returns a response.\n5. `NetRCAuth`: Uses a 'netrc' file to lookup basic auth credentials based on the url host.",
+      "correct_always_ret": true
+    },
+    {
+      "task_id": 8,
+      "question": "What is the name of the class that represents HTTP status codes in httpx._status_codes?",
+      "ground_truth": "codes (IntEnum)",
+      "answer_initial": "The name of the class that represents HTTP status codes in the `httpx._status_codes` module is `StatusCode`.",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "The name of the class that represents HTTP status codes in httpx._status_codes is \"codes\".",
+      "correct_final": false,
+      "answer_always_ret": "The name of the class that represents HTTP status codes in httpx._status_codes is \"codes\".",
+      "correct_always_ret": false
+    },
+    {
+      "task_id": 9,
+      "question": "What transport base classes are defined in httpx._transports.base?",
+      "ground_truth": "BaseTransport, AsyncBaseTransport",
+      "answer_initial": "The `httpx._transports.base` module defines several transport base classes that can be used to create custom transports for the `httpx` library. These base classes are:\n\n1. `HTTPTransport`: This is the base class for all HTTP transports. It defines the basic methods and properties that all HTTP transports should have, such as `open`, `close`, `send`, and `receive`.\n2. `HTTP1Transport`: This is a subclass of `HTTPTransport` that is used for HTTP/1.x connections. It defines additional methods and properties that are specific to HTTP/1.x, such as `send_request` and `receive_response`.\n3. `HTTP2Transport`: This is a subclass of `HTTPTransport` that is used for HTTP/2 connections. It defines additional methods and properties that are specific to HTTP/2, such as `send_headers` and `receive_headers`.\n4. `WebSocketTransport`: This is a subclass of `HTTPTransport` that is used for WebSocket connections. It defines additional methods and properties that are specific to WebSocket, such as `send_message` and `receive_message`.\n5. `GRPCTransport`: This is a subclass of `HTTPTransport` that is used for gRPC connections. It defines additional methods and properties that are specific to gRPC, such as `send",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "Based on the source code provided, the following transport base classes are defined in httpx._transports.base:\n\n1. `BaseTransport`: This is a synchronous transport base class that provides a basic implementation of the `handle_request` method.\n2. `AsyncBaseTransport`: This is an asynchronous transport base class that provides a basic implementation of the `handle_async_request` method.\n3. `HTTPTransport`: This is a synchronous transport class that inherits from `BaseTransport` and provides additional functionality for handling HTTP requests.\n4. `AsyncHTTPTransport`: This is an asynchronous transport class that inherits from `AsyncBaseTransport` and provides additional functionality for handling HTTP requests.\n\nThese classes are used to define the transport layer for the HTTP client, which is responsible for sending and receiving HTTP requests and responses. The `BaseTransport` and `AsyncBaseTransport` classes provide a basic implementation of the `handle_request` and `handle_async_request` methods, respectively, while the `HTTPTransport` and `AsyncHTTPTransport` classes provide additional functionality for handling HTTP requests and responses.",
+      "correct_final": true,
+      "answer_always_ret": "Based on the source code provided, the following transport base classes are defined in httpx._transports.base:\n\n1. `BaseTransport`: This is a synchronous transport base class that provides a basic implementation of the `handle_request` method.\n2. `AsyncBaseTransport`: This is an asynchronous transport base class that provides a basic implementation of the `handle_async_request` method.\n3. `HTTPTransport`: This is a synchronous transport class that inherits from `BaseTransport` and provides additional functionality for handling HTTP requests.\n4. `AsyncHTTPTransport`: This is an asynchronous transport class that inherits from `AsyncBaseTransport` and provides additional functionality for handling HTTP requests.\n\nThese classes are used to define the transport layer for the HTTP client, which is responsible for sending and receiving HTTP requests and responses. The `BaseTransport` and `AsyncBaseTransport` classes provide a basic implementation of the `handle_request` and `handle_async_request` methods, respectively, while the `HTTPTransport` and `AsyncHTTPTransport` classes provide additional functionality for handling HTTP requests and responses.",
+      "correct_always_ret": true
+    },
+    {
+      "task_id": 10,
+      "question": "What is the value of DEFAULT_MAX_REDIRECTS in httpx?",
+      "ground_truth": "20",
+      "answer_initial": "The value of DEFAULT_MAX_REDIRECTS in httpx is 5.",
+      "correct_initial": false,
+      "predicted_error": "True",
+      "error_probability": 1.0,
+      "used_retrieval": true,
+      "answer_final": "Based on the source code provided, the value of DEFAULT_MAX_REDIRECTS in httpx is 20. This is set in the `httpx/_config.py` file, where it is defined as a constant with the value 20.",
+      "correct_final": true,
+      "answer_always_ret": "Based on the source code provided, the value of DEFAULT_MAX_REDIRECTS in httpx is 20. This is set in the `httpx/_config.py` file, where it is defined as a constant with the value 20.",
+      "correct_always_ret": true
+    }
+  ]
+}

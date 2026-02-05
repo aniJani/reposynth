@@ -1,0 +1,815 @@
+[
+  {
+    "sample_id": "http_035",
+    "confused_tokens": [
+      "keep-alive",
+      "persistent",
+      "session",
+      "pool"
+    ],
+    "confused_probs": [
+      0.431,
+      0.248,
+      0.189,
+      0.132
+    ],
+    "original_query": "How does the HTTP client handle session?",
+    "generated_context": "HTTP session is handled by",
+    "relevant_files": [
+      "requests/api.py"
+    ],
+    "domain": "http",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "api_036",
+    "confused_tokens": [
+      "mount",
+      "register",
+      "router",
+      "prefix"
+    ],
+    "confused_probs": [
+      0.416,
+      0.259,
+      0.166,
+      0.159
+    ],
+    "original_query": "Where do I configure router?",
+    "generated_context": "The router configuration uses",
+    "relevant_files": [
+      "api/endpoints.py",
+      "api_router.py"
+    ],
+    "domain": "api",
+    "difficulty": "easy"
+  },
+  {
+    "sample_id": "auth_097",
+    "confused_tokens": [
+      "sign",
+      "payload",
+      "token",
+      "jwt"
+    ],
+    "confused_probs": [
+      0.451,
+      0.256,
+      0.165,
+      0.128
+    ],
+    "original_query": "How do I use token for user authentication?",
+    "generated_context": "When authenticating users, token is handled by",
+    "relevant_files": [
+      "auth/jwt_handler.py",
+      "auth/token_manager.py"
+    ],
+    "domain": "auth",
+    "difficulty": "easy"
+  },
+  {
+    "sample_id": "auth_094",
+    "confused_tokens": [
+      "scope",
+      "permission",
+      "consent",
+      "oauth",
+      "grant"
+    ],
+    "confused_probs": [
+      0.365,
+      0.231,
+      0.169,
+      0.137,
+      0.098
+    ],
+    "original_query": "Where does OAuth oauth happen?",
+    "generated_context": "OAuth oauth is performed by",
+    "relevant_files": [
+      "auth_service.py"
+    ],
+    "domain": "auth",
+    "difficulty": "hard"
+  },
+  {
+    "sample_id": "http_119",
+    "confused_tokens": [
+      "pool",
+      "persistent",
+      "keep-alive",
+      "connection"
+    ],
+    "confused_probs": [
+      0.434,
+      0.258,
+      0.159,
+      0.149
+    ],
+    "original_query": "Where is session configured for requests?",
+    "generated_context": "For session requests, we use",
+    "relevant_files": [
+      "requests/api.py",
+      "requests/sessions.py"
+    ],
+    "domain": "http",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "database_122",
+    "confused_tokens": [
+      "select",
+      "fetch",
+      "query",
+      "cursor",
+      "execute"
+    ],
+    "confused_probs": [
+      0.381,
+      0.21,
+      0.145,
+      0.141,
+      0.122
+    ],
+    "original_query": "How do I use query with the database?",
+    "generated_context": "For query, the database layer uses",
+    "relevant_files": [
+      "db/queries.py",
+      "db/connection.py"
+    ],
+    "domain": "database",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "auth_164",
+    "confused_tokens": [
+      "refresh",
+      "token",
+      "exchange"
+    ],
+    "confused_probs": [
+      0.481,
+      0.288,
+      0.23
+    ],
+    "original_query": "Where does OAuth oauth happen?",
+    "generated_context": "For OAuth oauth, the system uses",
+    "relevant_files": [
+      "auth/oauth_provider.py"
+    ],
+    "domain": "auth",
+    "difficulty": "hard"
+  },
+  {
+    "sample_id": "flask_028",
+    "confused_tokens": [
+      "local",
+      "stack",
+      "push",
+      "context"
+    ],
+    "confused_probs": [
+      0.431,
+      0.237,
+      0.191,
+      0.141
+    ],
+    "original_query": "Where is context stored in Flask's context?",
+    "generated_context": "Flask context for context uses",
+    "relevant_files": [
+      "src/flask/ctx.py",
+      "src/flask/globals.py"
+    ],
+    "domain": "flask",
+    "difficulty": "hard"
+  },
+  {
+    "sample_id": "events_061",
+    "confused_tokens": [
+      "on",
+      "handler",
+      "listener",
+      "callback"
+    ],
+    "confused_probs": [
+      0.42,
+      0.237,
+      0.2,
+      0.143
+    ],
+    "original_query": "How does the event system handle listener?",
+    "generated_context": "Event handling for listener uses",
+    "relevant_files": [
+      "event_system.py"
+    ],
+    "domain": "events",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "flask_023",
+    "confused_tokens": [
+      "context",
+      "app",
+      "application",
+      "manager"
+    ],
+    "confused_probs": [
+      0.438,
+      0.242,
+      0.172,
+      0.147
+    ],
+    "original_query": "Where is application stored in Flask's context?",
+    "generated_context": "Request context stores application in",
+    "relevant_files": [
+      "src/flask/ctx.py",
+      "src/flask/globals.py"
+    ],
+    "domain": "flask",
+    "difficulty": "hard"
+  },
+  {
+    "sample_id": "database_102",
+    "confused_tokens": [
+      "commit",
+      "rollback",
+      "savepoint"
+    ],
+    "confused_probs": [
+      0.494,
+      0.285,
+      0.221
+    ],
+    "original_query": "How does the database handle transaction?",
+    "generated_context": "Database transaction is managed by",
+    "relevant_files": [
+      "database_service.py",
+      "db/connection.py"
+    ],
+    "domain": "database",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "auth_082",
+    "confused_tokens": [
+      "sign",
+      "generate",
+      "jwt",
+      "token",
+      "payload"
+    ],
+    "confused_probs": [
+      0.39,
+      0.212,
+      0.157,
+      0.115,
+      0.125
+    ],
+    "original_query": "What handles token in the codebase?",
+    "generated_context": "For token, the system",
+    "relevant_files": [
+      "auth/jwt_handler.py"
+    ],
+    "domain": "auth",
+    "difficulty": "easy"
+  },
+  {
+    "sample_id": "cache_079",
+    "confused_tokens": [
+      "ttl",
+      "timeout",
+      "invalidate",
+      "expire"
+    ],
+    "confused_probs": [
+      0.436,
+      0.251,
+      0.184,
+      0.129
+    ],
+    "original_query": "How does caching work for expire?",
+    "generated_context": "The cache for expire is managed by",
+    "relevant_files": [
+      "cache_service.py"
+    ],
+    "domain": "cache",
+    "difficulty": "easy"
+  },
+  {
+    "sample_id": "flask_086",
+    "confused_tokens": [
+      "instance",
+      "wsgi",
+      "app",
+      "factory",
+      "create"
+    ],
+    "confused_probs": [
+      0.39,
+      0.223,
+      0.148,
+      0.145,
+      0.094
+    ],
+    "original_query": "How do I use app in Flask?",
+    "generated_context": "Flask app is managed by",
+    "relevant_files": [
+      "src/flask/ctx.py",
+      "src/flask/app.py"
+    ],
+    "domain": "flask",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "api_099",
+    "confused_tokens": [
+      "later",
+      "delay",
+      "schedule",
+      "cron",
+      "defer"
+    ],
+    "confused_probs": [
+      0.402,
+      0.204,
+      0.176,
+      0.127,
+      0.09
+    ],
+    "original_query": "Where is schedule processed asynchronously?",
+    "generated_context": "Background processing of schedule uses",
+    "relevant_files": [
+      "events/queue.py",
+      "fastapi/background.py"
+    ],
+    "domain": "api",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "database_115",
+    "confused_tokens": [
+      "query",
+      "execute",
+      "cursor",
+      "select",
+      "fetch"
+    ],
+    "confused_probs": [
+      0.389,
+      0.221,
+      0.153,
+      0.115,
+      0.121
+    ],
+    "original_query": "How does the database handle query?",
+    "generated_context": "For query, the database layer uses",
+    "relevant_files": [
+      "database_service.py",
+      "db/queries.py"
+    ],
+    "domain": "database",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "auth_014",
+    "confused_tokens": [
+      "session",
+      "invalidate",
+      "expire",
+      "delete"
+    ],
+    "confused_probs": [
+      0.421,
+      0.251,
+      0.176,
+      0.152
+    ],
+    "original_query": "Where are sessions session?",
+    "generated_context": "For session session, we use",
+    "relevant_files": [
+      "auth/session_store.py"
+    ],
+    "domain": "auth",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "auth_048",
+    "confused_tokens": [
+      "jwt",
+      "token",
+      "generate"
+    ],
+    "confused_probs": [
+      0.526,
+      0.28,
+      0.194
+    ],
+    "original_query": "How do I use token for user authentication?",
+    "generated_context": "For token, the system",
+    "relevant_files": [
+      "auth_service.py"
+    ],
+    "domain": "auth",
+    "difficulty": "easy"
+  },
+  {
+    "sample_id": "database_076",
+    "confused_tokens": [
+      "pool",
+      "close",
+      "connect"
+    ],
+    "confused_probs": [
+      0.484,
+      0.294,
+      0.222
+    ],
+    "original_query": "Where is connection implemented in the DB layer?",
+    "generated_context": "For connection, the database layer uses",
+    "relevant_files": [
+      "db/connection.py"
+    ],
+    "domain": "database",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "cache_064",
+    "confused_tokens": [
+      "ttl",
+      "timeout",
+      "expire",
+      "refresh"
+    ],
+    "confused_probs": [
+      0.433,
+      0.236,
+      0.182,
+      0.15
+    ],
+    "original_query": "Where is expire cached?",
+    "generated_context": "Caching expire uses",
+    "relevant_files": [
+      "cache_service.py",
+      "cache/redis_client.py"
+    ],
+    "domain": "cache",
+    "difficulty": "easy"
+  },
+  {
+    "sample_id": "api_067",
+    "confused_tokens": [
+      "mount",
+      "include",
+      "prefix"
+    ],
+    "confused_probs": [
+      0.487,
+      0.299,
+      0.213
+    ],
+    "original_query": "How does router work in the API layer?",
+    "generated_context": "The router configuration uses",
+    "relevant_files": [
+      "api/endpoints.py"
+    ],
+    "domain": "api",
+    "difficulty": "easy"
+  },
+  {
+    "sample_id": "api_104",
+    "confused_tokens": [
+      "resolve",
+      "provide",
+      "dependency",
+      "inject"
+    ],
+    "confused_probs": [
+      0.434,
+      0.237,
+      0.178,
+      0.151
+    ],
+    "original_query": "Where is depends dependency defined?",
+    "generated_context": "The depends dependency is injected via",
+    "relevant_files": [
+      "fastapi/dependencies/utils.py",
+      "fastapi/params.py"
+    ],
+    "domain": "api",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "cache_167",
+    "confused_tokens": [
+      "get",
+      "key",
+      "set",
+      "value"
+    ],
+    "confused_probs": [
+      0.43,
+      0.242,
+      0.175,
+      0.153
+    ],
+    "original_query": "How do I cache cache?",
+    "generated_context": "Caching cache uses",
+    "relevant_files": [
+      "cache_service.py"
+    ],
+    "domain": "cache",
+    "difficulty": "easy"
+  },
+  {
+    "sample_id": "auth_029",
+    "confused_tokens": [
+      "invalidate",
+      "expire",
+      "session",
+      "delete",
+      "destroy"
+    ],
+    "confused_probs": [
+      0.388,
+      0.22,
+      0.169,
+      0.127,
+      0.095
+    ],
+    "original_query": "Where are sessions session?",
+    "generated_context": "Sessions are session using",
+    "relevant_files": [
+      "requests/sessions.py"
+    ],
+    "domain": "auth",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "api_093",
+    "confused_tokens": [
+      "defer",
+      "cron",
+      "later",
+      "delay"
+    ],
+    "confused_probs": [
+      0.424,
+      0.254,
+      0.161,
+      0.161
+    ],
+    "original_query": "Where is schedule processed asynchronously?",
+    "generated_context": "Async schedule is handled by",
+    "relevant_files": [
+      "fastapi/background.py"
+    ],
+    "domain": "api",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "events_057",
+    "confused_tokens": [
+      "listener",
+      "callback",
+      "handler",
+      "subscribe"
+    ],
+    "confused_probs": [
+      0.445,
+      0.252,
+      0.17,
+      0.133
+    ],
+    "original_query": "How do I implement listener with events?",
+    "generated_context": "Event handling for listener uses",
+    "relevant_files": [
+      "events/dispatcher.py"
+    ],
+    "domain": "events",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "auth_065",
+    "confused_tokens": [
+      "sign",
+      "generate",
+      "jwt"
+    ],
+    "confused_probs": [
+      0.485,
+      0.299,
+      0.216
+    ],
+    "original_query": "How does token work in the authentication system?",
+    "generated_context": "The authentication system uses token to",
+    "relevant_files": [
+      "auth/jwt_handler.py"
+    ],
+    "domain": "auth",
+    "difficulty": "easy"
+  },
+  {
+    "sample_id": "api_105",
+    "confused_tokens": [
+      "queue",
+      "worker",
+      "async",
+      "task"
+    ],
+    "confused_probs": [
+      0.458,
+      0.236,
+      0.169,
+      0.138
+    ],
+    "original_query": "How do background tasks handle background?",
+    "generated_context": "Async background is handled by",
+    "relevant_files": [
+      "events/queue.py",
+      "fastapi/background.py"
+    ],
+    "domain": "api",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "database_009",
+    "confused_tokens": [
+      "fetch",
+      "select",
+      "execute"
+    ],
+    "confused_probs": [
+      0.509,
+      0.302,
+      0.189
+    ],
+    "original_query": "How do I use query with the database?",
+    "generated_context": "Database query is managed by",
+    "relevant_files": [
+      "db/connection.py",
+      "db/queries.py"
+    ],
+    "domain": "database",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "api_155",
+    "confused_tokens": [
+      "background",
+      "worker",
+      "queue",
+      "async",
+      "task"
+    ],
+    "confused_probs": [
+      0.404,
+      0.207,
+      0.151,
+      0.119,
+      0.119
+    ],
+    "original_query": "How do background tasks handle background?",
+    "generated_context": "Background processing of background uses",
+    "relevant_files": [
+      "events/queue.py"
+    ],
+    "domain": "api",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "flask_010",
+    "confused_tokens": [
+      "request",
+      "thread",
+      "current",
+      "global"
+    ],
+    "confused_probs": [
+      0.412,
+      0.254,
+      0.173,
+      0.162
+    ],
+    "original_query": "How does Flask's request context work with request?",
+    "generated_context": "Request context stores request in",
+    "relevant_files": [
+      "src/flask/ctx.py",
+      "src/flask/globals.py"
+    ],
+    "domain": "flask",
+    "difficulty": "hard"
+  },
+  {
+    "sample_id": "events_166",
+    "confused_tokens": [
+      "callback",
+      "on",
+      "handler",
+      "subscribe",
+      "listener"
+    ],
+    "confused_probs": [
+      0.391,
+      0.23,
+      0.149,
+      0.135,
+      0.096
+    ],
+    "original_query": "How do I implement listener with events?",
+    "generated_context": "The listener event is processed by",
+    "relevant_files": [
+      "events/dispatcher.py"
+    ],
+    "domain": "events",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "api_081",
+    "confused_tokens": [
+      "singleton",
+      "create",
+      "lifecycle"
+    ],
+    "confused_probs": [
+      0.515,
+      0.277,
+      0.208
+    ],
+    "original_query": "Where is factory dependency defined?",
+    "generated_context": "The factory dependency is injected via",
+    "relevant_files": [
+      "fastapi/params.py",
+      "fastapi/dependencies/utils.py"
+    ],
+    "domain": "api",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "flask_144",
+    "confused_tokens": [
+      "create",
+      "factory",
+      "instance",
+      "app"
+    ],
+    "confused_probs": [
+      0.425,
+      0.245,
+      0.192,
+      0.138
+    ],
+    "original_query": "Where is app configured in Flask?",
+    "generated_context": "For app, Flask uses",
+    "relevant_files": [
+      "src/flask/app.py",
+      "src/flask/blueprints.py"
+    ],
+    "domain": "flask",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "http_069",
+    "confused_tokens": [
+      "get",
+      "put",
+      "delete",
+      "request"
+    ],
+    "confused_probs": [
+      0.454,
+      0.231,
+      0.177,
+      0.139
+    ],
+    "original_query": "Where is request configured for requests?",
+    "generated_context": "HTTP request is handled by",
+    "relevant_files": [
+      "requests/api.py"
+    ],
+    "domain": "http",
+    "difficulty": "medium"
+  },
+  {
+    "sample_id": "database_176",
+    "confused_tokens": [
+      "query",
+      "execute",
+      "cursor",
+      "select",
+      "fetch"
+    ],
+    "confused_probs": [
+      0.373,
+      0.237,
+      0.164,
+      0.117,
+      0.108
+    ],
+    "original_query": "Where is query implemented in the DB layer?",
+    "generated_context": "Database query is managed by",
+    "relevant_files": [
+      "db/queries.py"
+    ],
+    "domain": "database",
+    "difficulty": "medium"
+  }
+]

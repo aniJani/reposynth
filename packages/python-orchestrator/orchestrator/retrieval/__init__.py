@@ -3,16 +3,24 @@ Retrieval module for Adaptive Context Retrieval.
 
 This package provides:
 - TopicInferrer: Infer WHAT to retrieve from uncertainty signals
+- LearnedTopicInferrer: Learned cross-attention replacement for TopicInferrer
 - AdaptiveContextRetriever: Retrieve context when uncertainty is detected
 - ContextManager: Manage context window budget
 
 Phase 3: Weeks 6-7 of CCE Research Implementation
+Week 10: Learned Query Pooling
 """
 
 __all__ = [
     # Topic Inference
     'TopicInferrer',
     'TopicResult',
+
+    # Learned Query Pooling (Week 10)
+    'LearnedTopicInferrer',
+    'LearnedQueryModule',
+    'LearnedQueryPooler',
+    'QueryPoolerLoss',
 
     # Adaptive Retrieval
     'AdaptiveContextRetriever',
@@ -28,7 +36,7 @@ __all__ = [
     'ContextSegment',
 ]
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 # Lazy imports
 def __getattr__(name):
@@ -37,6 +45,20 @@ def __getattr__(name):
         globals().update({
             'TopicInferrer': TopicInferrer,
             'TopicResult': TopicResult,
+        })
+        return globals()[name]
+
+    if name == 'LearnedTopicInferrer':
+        from .learned_inferrer import LearnedTopicInferrer
+        globals()['LearnedTopicInferrer'] = LearnedTopicInferrer
+        return LearnedTopicInferrer
+
+    if name in ['LearnedQueryModule', 'LearnedQueryPooler', 'QueryPoolerLoss']:
+        from .learned_query import LearnedQueryModule, LearnedQueryPooler, QueryPoolerLoss
+        globals().update({
+            'LearnedQueryModule': LearnedQueryModule,
+            'LearnedQueryPooler': LearnedQueryPooler,
+            'QueryPoolerLoss': QueryPoolerLoss,
         })
         return globals()[name]
 

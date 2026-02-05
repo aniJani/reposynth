@@ -566,6 +566,9 @@ def create_adaptive_retriever(
     base_retriever: Optional[BaseRetriever] = None,
     tokenizer=None,
     max_retrievals: int = 3,
+    use_learned_query: bool = False,
+    learned_query_config: Optional[Dict[str, Any]] = None,
+    learned_query_model_path: Optional[str] = None,
     **kwargs
 ) -> AdaptiveContextRetriever:
     """
@@ -575,12 +578,23 @@ def create_adaptive_retriever(
         base_retriever: Underlying retrieval system
         tokenizer: Tokenizer for topic inference
         max_retrievals: Maximum retrievals per generation
+        use_learned_query: Whether to use learned query pooler (Week 10)
+        learned_query_config: Config for learned query module
+        learned_query_model_path: Path to pretrained weights
         **kwargs: Additional arguments
 
     Returns:
         Configured AdaptiveContextRetriever
     """
-    topic_inferrer = TopicInferrer(tokenizer=tokenizer)
+    if use_learned_query:
+        from .learned_inferrer import LearnedTopicInferrer
+        topic_inferrer = LearnedTopicInferrer(
+            tokenizer=tokenizer,
+            model_path=learned_query_model_path,
+            **(learned_query_config or {}),
+        )
+    else:
+        topic_inferrer = TopicInferrer(tokenizer=tokenizer)
 
     return AdaptiveContextRetriever(
         base_retriever=base_retriever,

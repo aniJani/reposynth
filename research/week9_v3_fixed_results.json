@@ -1,0 +1,214 @@
+{
+  "experiment": "Week9_V3_Fixed",
+  "model": "codellama/CodeLlama-7b-Instruct-hf",
+  "codebase": "httpx",
+  "benchmark_size": 10,
+  "pretrained_weights": true,
+  "content_aware_embeddings": true,
+  "aggregated": {
+    "no_retrieval": {
+      "Correctness": 0.5567107580602169,
+      "Precision": 0.0,
+      "Recall": 0.0,
+      "F1": 0.0,
+      "Composite": 0.47835537903010844
+    },
+    "cce_heuristic": {
+      "Correctness": 0.27186786830425264,
+      "Precision": 0.6583333333333333,
+      "Recall": 0.85,
+      "F1": 0.72,
+      "Composite": 0.5519339341521263
+    },
+    "cce_learned": {
+      "Correctness": 0.3067585065960884,
+      "Precision": 0.14999999999999997,
+      "Recall": 0.2,
+      "F1": 0.17,
+      "Composite": 0.4043792532980442
+    }
+  },
+  "per_example": [
+    {
+      "id": "httpx_001",
+      "query": "How do I make a simple GET request with httpx?",
+      "ground_truth": [
+        "httpx/_api.py",
+        "httpx/_client.py"
+      ],
+      "heuristic_files": [
+        "httpx/_client.py",
+        "httpx/_api.py"
+      ],
+      "heuristic_f1": 1.0,
+      "learned_files": [],
+      "learned_f1": 0
+    },
+    {
+      "id": "httpx_002",
+      "query": "How do I send POST data with httpx?",
+      "ground_truth": [
+        "httpx/_api.py",
+        "httpx/_client.py"
+      ],
+      "heuristic_files": [
+        "httpx/_client.py",
+        "httpx/_api.py"
+      ],
+      "heuristic_f1": 1.0,
+      "learned_files": [
+        "httpx/_api.py",
+        "httpx/_transports/base.py",
+        "httpx/_decoders.py"
+      ],
+      "learned_f1": 0.4
+    },
+    {
+      "id": "httpx_003",
+      "query": "How do I use httpx with async/await?",
+      "ground_truth": [
+        "httpx/_client.py"
+      ],
+      "heuristic_files": [
+        "httpx/_client.py",
+        "httpx/_config.py",
+        "httpx/_api.py"
+      ],
+      "heuristic_f1": 0.5,
+      "learned_files": [
+        "httpx/_api.py"
+      ],
+      "learned_f1": 0
+    },
+    {
+      "id": "httpx_004",
+      "query": "How do I set custom headers in httpx?",
+      "ground_truth": [
+        "httpx/_client.py",
+        "httpx/_models.py"
+      ],
+      "heuristic_files": [
+        "httpx/_models.py",
+        "httpx/_client.py",
+        "httpx/_urls.py"
+      ],
+      "heuristic_f1": 0.8,
+      "learned_files": [
+        "httpx/_models.py",
+        "httpx/_api.py"
+      ],
+      "learned_f1": 0.5
+    },
+    {
+      "id": "httpx_005",
+      "query": "How do I handle timeouts in httpx?",
+      "ground_truth": [
+        "httpx/_config.py",
+        "httpx/_client.py"
+      ],
+      "heuristic_files": [
+        "httpx/_client.py",
+        "httpx/_config.py"
+      ],
+      "heuristic_f1": 1.0,
+      "learned_files": [
+        "httpx/_models.py",
+        "httpx/_api.py"
+      ],
+      "learned_f1": 0
+    },
+    {
+      "id": "httpx_006",
+      "query": "How does httpx handle cookies?",
+      "ground_truth": [
+        "httpx/_client.py",
+        "httpx/_models.py"
+      ],
+      "heuristic_files": [
+        "httpx/_models.py",
+        "httpx/_client.py"
+      ],
+      "heuristic_f1": 1.0,
+      "learned_files": [
+        "httpx/_models.py",
+        "httpx/_api.py",
+        "httpx/_auth.py"
+      ],
+      "learned_f1": 0.4
+    },
+    {
+      "id": "httpx_007",
+      "query": "How do I handle authentication in httpx?",
+      "ground_truth": [
+        "httpx/_auth.py",
+        "httpx/_client.py"
+      ],
+      "heuristic_files": [
+        "httpx/_client.py",
+        "httpx/_config.py"
+      ],
+      "heuristic_f1": 0.5,
+      "learned_files": [
+        "httpx/_models.py",
+        "httpx/_api.py"
+      ],
+      "learned_f1": 0
+    },
+    {
+      "id": "httpx_008",
+      "query": "How does httpx handle redirects?",
+      "ground_truth": [
+        "httpx/_client.py"
+      ],
+      "heuristic_files": [
+        "httpx/_client.py",
+        "httpx/_config.py"
+      ],
+      "heuristic_f1": 0.6666666666666666,
+      "learned_files": [
+        "httpx/_transports/mock.py"
+      ],
+      "learned_f1": 0
+    },
+    {
+      "id": "httpx_009",
+      "query": "How do I upload files with httpx?",
+      "ground_truth": [
+        "httpx/_content.py",
+        "httpx/_client.py"
+      ],
+      "heuristic_files": [
+        "httpx/_client.py",
+        "httpx/_auth.py",
+        "httpx/_config.py"
+      ],
+      "heuristic_f1": 0.4,
+      "learned_files": [
+        "httpx/_models.py",
+        "httpx/_transports/asgi.py"
+      ],
+      "learned_f1": 0
+    },
+    {
+      "id": "httpx_010",
+      "query": "How does httpx handle HTTP/2?",
+      "ground_truth": [
+        "httpx/_transports/default.py",
+        "httpx/_client.py"
+      ],
+      "heuristic_files": [
+        "httpx/_models.py",
+        "httpx/_client.py",
+        "httpx/_urls.py",
+        "httpx/_config.py"
+      ],
+      "heuristic_f1": 0.3333333333333333,
+      "learned_files": [
+        "httpx/_api.py",
+        "httpx/_urlparse.py",
+        "httpx/_transports/default.py"
+      ],
+      "learned_f1": 0.4
+    }
+  ]
+}
