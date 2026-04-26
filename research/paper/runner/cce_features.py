@@ -180,18 +180,32 @@ V6_GENERIC_FEATURES = (
 
 CCE_NEW_FEATURES = _CCE_FEATURE_KEYS
 
+# Semantic entropy features — populated by Phase 1.5 (sampled generations).
+# `semantic_entropy` is the headline; the others are auxiliary aggregates.
+SE_FEATURES = (
+    "semantic_entropy",
+    "semantic_entropy_norm",
+    "n_clusters",
+    "largest_cluster_frac",
+)
+
 
 ALL_FEATURES = V6_GENERIC_FEATURES + CCE_NEW_FEATURES
+ALL_FEATURES_PLUS_SE = ALL_FEATURES + SE_FEATURES
 
 
 # Paper's ablation arms — each is a feature-name subset that defines a
-# classifier variant. Run all six on the same training data and the same
+# classifier variant. Run all on the same training data and the same
 # evaluation set to populate the ablation table.
 ABLATION_ARMS = {
-    "saplma_only":      ("hs_mean_norm", "hs_std_norm", "hs_max_norm"),
-    "flare_only":       ("cce_mean", "cce_max", "cce_std", "cce_spikes"),  # plain entropy, FLARE-style
-    "v6_full":          V6_GENERIC_FEATURES,
-    "cce_only":         CCE_NEW_FEATURES,
-    "v6_plus_cce":      ALL_FEATURES,                                       # the paper's headline
-    "drop_cce":         V6_GENERIC_FEATURES,                                # control = v6_full
+    "saplma_only":            ("hs_mean_norm", "hs_std_norm", "hs_max_norm"),
+    "flare_only":             ("cce_mean", "cce_max", "cce_std", "cce_spikes"),
+    "v6_full":                V6_GENERIC_FEATURES,
+    "cce_only":               CCE_NEW_FEATURES,
+    "v6_plus_cce":            ALL_FEATURES,
+    "drop_cce":               V6_GENERIC_FEATURES,                # control == v6_full
+    # ── new for v3: strong-baseline + combinations ──────────────
+    "semantic_entropy_only":  SE_FEATURES,                        # Farquhar/Kuhn baseline
+    "flare_plus_se":          ("cce_mean", "cce_max", "cce_std", "cce_spikes") + SE_FEATURES,
+    "all_features":           ALL_FEATURES_PLUS_SE,               # everything we have
 }
