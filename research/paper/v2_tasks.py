@@ -197,7 +197,7 @@ FASTAPI = [
         "id": 203, "repo": "fastapi", "difficulty": "easy",
         "question": "How do you declare a path parameter in a FastAPI route?",
         "relevant_file": "fastapi/routing.py",
-        "verify": lambda r: "{" in r and "}" in r and ("item_id" in r.lower() or "/{") in r.lower(),
+        "verify": lambda r: "{" in r and "}" in r and ("item_id" in r.lower() or "/{" in r.lower()),
         "ground_truth": "@app.get('/items/{item_id}')",
     },
     {

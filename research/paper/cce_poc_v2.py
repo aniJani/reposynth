@@ -314,6 +314,14 @@ def run_phase3(arm_results, tasks, initial_correct, model, tokenizer,
         with open(phase3_cache_path) as f:
             cache = json.load(f)
 
+    def safe_verify(t, ans: str) -> bool:
+        try:
+            return bool(t["verify"](ans))
+        except Exception as e:
+            print(f"  [warn] verify error on task {t['id']}: {type(e).__name__}: {e}",
+                  flush=True)
+            return False
+
     def regen_with_retrieval(t) -> bool:
         key = f"task_{t['id']}_retr"
         if key in cache:
@@ -323,7 +331,7 @@ def run_phase3(arm_results, tasks, initial_correct, model, tokenizer,
         ans = generate_simple(model, tokenizer,
                               build_prompt(t["repo"], t["question"], ctx),
                               max_new_tokens=max_new_tokens)
-        ok = bool(t["verify"](ans))
+        ok = safe_verify(t, ans)
         cache[key] = {"answer": ans, "correct": ok}
         with open(phase3_cache_path, "w") as f:
             json.dump(cache, f, indent=2)
@@ -438,7 +446,12 @@ def main() -> int:
             )
             initial_answers.append(ans)
             features_per_task.append(feats)
-            ok = bool(t["verify"](ans))
+            try:
+                ok = bool(t["verify"](ans))
+            except Exception as e:
+                print(f"  [warn] verify error on task {t['id']}: {type(e).__name__}: {e}",
+                      flush=True)
+                ok = False
             initial_correct.append(ok)
             print(f"  task {t['id']:3d} [{t['repo']:8s} {t['difficulty']:4s}] "
                   f"{'OK' if ok else 'WRONG'}  cce={feats.get('real_cce_mean', 0):+.3f}",
