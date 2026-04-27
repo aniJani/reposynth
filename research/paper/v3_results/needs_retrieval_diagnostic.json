@@ -1,0 +1,551 @@
+{
+  "Qwen/Qwen2.5-Coder-7B-Instruct": {
+    "model": "Qwen/Qwen2.5-Coder-7B-Instruct",
+    "n_tasks": 80,
+    "categories": {
+      "helps": 9,
+      "already_knew": 68,
+      "both_fail": 2,
+      "retrieval_hurts": 1
+    },
+    "base_rate": 0.1125,
+    "univariate": {
+      "nli_se": {
+        "name": "NLI-SE",
+        "auc": 0.8818466353677621,
+        "f1_at_best": 0.5714285714285714,
+        "precision_at_best": 0.5,
+        "recall_at_best": 0.6666666666666666,
+        "discriminative_power": 0.8818466353677621
+      },
+      "nli_n_clusters": {
+        "name": "NLI clusters",
+        "auc": 0.8896713615023474,
+        "f1_at_best": 0.5714285714285714,
+        "precision_at_best": 0.5,
+        "recall_at_best": 0.6666666666666666,
+        "discriminative_power": 0.8896713615023474
+      },
+      "semantic_entropy": {
+        "name": "embedding-SE",
+        "auc": 0.5266040688575899,
+        "f1_at_best": 0.20224719101123595,
+        "precision_at_best": 0.1125,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.5266040688575899
+      },
+      "n_clusters": {
+        "name": "emb clusters",
+        "auc": 0.529733959311424,
+        "f1_at_best": 0.20224719101123595,
+        "precision_at_best": 0.1125,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.529733959311424
+      },
+      "cce_max": {
+        "name": "FLARE max-ent",
+        "auc": 0.46635367762128327,
+        "f1_at_best": 0.3333333333333333,
+        "precision_at_best": 0.3333333333333333,
+        "recall_at_best": 0.3333333333333333,
+        "discriminative_power": 0.5336463223787167
+      },
+      "cce_mean": {
+        "name": "FLARE mean-ent",
+        "auc": 0.596244131455399,
+        "f1_at_best": 0.4,
+        "precision_at_best": 0.36363636363636365,
+        "recall_at_best": 0.4444444444444444,
+        "discriminative_power": 0.596244131455399
+      },
+      "cce_spikes": {
+        "name": "FLARE spikes",
+        "auc": 0.3145539906103287,
+        "f1_at_best": 0.20930232558139536,
+        "precision_at_best": 0.11688311688311688,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6854460093896713
+      },
+      "hs_max_norm": {
+        "name": "SAPLMA hs_max",
+        "auc": 0.5086071987480438,
+        "f1_at_best": 0.3333333333333333,
+        "precision_at_best": 0.6666666666666666,
+        "recall_at_best": 0.2222222222222222,
+        "discriminative_power": 0.5086071987480438
+      },
+      "hs_mean_norm": {
+        "name": "SAPLMA hs_mean",
+        "auc": 0.6635367762128326,
+        "f1_at_best": 0.34285714285714286,
+        "precision_at_best": 0.23076923076923078,
+        "recall_at_best": 0.6666666666666666,
+        "discriminative_power": 0.6635367762128326
+      },
+      "real_cce_max": {
+        "name": "CCE max",
+        "auc": 0.2519561815336463,
+        "f1_at_best": 0.21176470588235294,
+        "precision_at_best": 0.11842105263157894,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.7480438184663537
+      },
+      "h_code_max": {
+        "name": "H_code max",
+        "auc": 0.2676056338028169,
+        "f1_at_best": 0.20930232558139536,
+        "precision_at_best": 0.11688311688311688,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.7323943661971831
+      },
+      "h_lang_max": {
+        "name": "H_lang max",
+        "auc": 0.36306729264475746,
+        "f1_at_best": 0.21176470588235294,
+        "precision_at_best": 0.11842105263157894,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6369327073552425
+      },
+      "response_length": {
+        "name": "length (control)",
+        "auc": 0.36071987480438183,
+        "f1_at_best": 0.21428571428571427,
+        "precision_at_best": 0.12,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6392801251956182
+      }
+    },
+    "arms": {
+      "saplma_only": {
+        "auc": 0.5023474178403755,
+        "f1": 0.20512820512820512,
+        "precision": 0.13333333333333333,
+        "recall": 0.4444444444444444,
+        "n_fired": 30,
+        "n_features": 3
+      },
+      "flare_only": {
+        "auc": 0.7198748043818466,
+        "f1": 0.3181818181818182,
+        "precision": 0.2,
+        "recall": 0.7777777777777778,
+        "n_fired": 35,
+        "n_features": 4
+      },
+      "cce_only": {
+        "auc": 0.4820031298904538,
+        "f1": 0.1875,
+        "precision": 0.13043478260869565,
+        "recall": 0.3333333333333333,
+        "n_fired": 23,
+        "n_features": 8
+      },
+      "embedding_se_only": {
+        "auc": 0.15962441314553988,
+        "f1": 0.12903225806451613,
+        "precision": 0.09090909090909091,
+        "recall": 0.2222222222222222,
+        "n_fired": 22,
+        "n_features": 4
+      },
+      "nli_se_only": {
+        "auc": 0.8294209702660407,
+        "f1": 0.4827586206896552,
+        "precision": 0.35,
+        "recall": 0.7777777777777778,
+        "n_fired": 20,
+        "n_features": 4
+      },
+      "flare_plus_emb_se": {
+        "auc": 0.6995305164319249,
+        "f1": 0.26666666666666666,
+        "precision": 0.16666666666666666,
+        "recall": 0.6666666666666666,
+        "n_fired": 36,
+        "n_features": 8
+      },
+      "flare_plus_nli_se": {
+        "auc": 0.8294209702660407,
+        "f1": 0.4827586206896552,
+        "precision": 0.35,
+        "recall": 0.7777777777777778,
+        "n_fired": 20,
+        "n_features": 8
+      },
+      "v6_full": {
+        "auc": 0.6056338028169015,
+        "f1": 0.20512820512820512,
+        "precision": 0.13333333333333333,
+        "recall": 0.4444444444444444,
+        "n_fired": 30,
+        "n_features": 11
+      }
+    }
+  },
+  "deepseek-ai/deepseek-coder-7b-instruct-v1.5": {
+    "model": "deepseek-ai/deepseek-coder-7b-instruct-v1.5",
+    "n_tasks": 80,
+    "categories": {
+      "helps": 12,
+      "already_knew": 57,
+      "both_fail": 4,
+      "retrieval_hurts": 7
+    },
+    "base_rate": 0.15,
+    "univariate": {
+      "nli_se": {
+        "name": "NLI-SE",
+        "auc": 0.7855392156862745,
+        "f1_at_best": 0.45,
+        "precision_at_best": 0.32142857142857145,
+        "recall_at_best": 0.75,
+        "discriminative_power": 0.7855392156862745
+      },
+      "nli_n_clusters": {
+        "name": "NLI clusters",
+        "auc": 0.7867647058823529,
+        "f1_at_best": 0.45,
+        "precision_at_best": 0.32142857142857145,
+        "recall_at_best": 0.75,
+        "discriminative_power": 0.7867647058823529
+      },
+      "semantic_entropy": {
+        "name": "embedding-SE",
+        "auc": 0.7052696078431373,
+        "f1_at_best": 0.47619047619047616,
+        "precision_at_best": 0.5555555555555556,
+        "recall_at_best": 0.4166666666666667,
+        "discriminative_power": 0.7052696078431373
+      },
+      "n_clusters": {
+        "name": "emb clusters",
+        "auc": 0.6936274509803921,
+        "f1_at_best": 0.3888888888888889,
+        "precision_at_best": 0.2916666666666667,
+        "recall_at_best": 0.5833333333333334,
+        "discriminative_power": 0.6936274509803921
+      },
+      "cce_max": {
+        "name": "FLARE max-ent",
+        "auc": 0.6495098039215687,
+        "f1_at_best": 0.35714285714285715,
+        "precision_at_best": 0.3125,
+        "recall_at_best": 0.4166666666666667,
+        "discriminative_power": 0.6495098039215687
+      },
+      "cce_mean": {
+        "name": "FLARE mean-ent",
+        "auc": 0.5502450980392157,
+        "f1_at_best": 0.3055555555555556,
+        "precision_at_best": 0.18333333333333332,
+        "recall_at_best": 0.9166666666666666,
+        "discriminative_power": 0.5502450980392157
+      },
+      "cce_spikes": {
+        "name": "FLARE spikes",
+        "auc": 0.5024509803921569,
+        "f1_at_best": 0.2891566265060241,
+        "precision_at_best": 0.16901408450704225,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.5024509803921569
+      },
+      "hs_max_norm": {
+        "name": "SAPLMA hs_max",
+        "auc": 0.5183823529411765,
+        "f1_at_best": 0.2926829268292683,
+        "precision_at_best": 0.20689655172413793,
+        "recall_at_best": 0.5,
+        "discriminative_power": 0.5183823529411765
+      },
+      "hs_mean_norm": {
+        "name": "SAPLMA hs_mean",
+        "auc": 0.5122549019607844,
+        "f1_at_best": 0.2857142857142857,
+        "precision_at_best": 0.17647058823529413,
+        "recall_at_best": 0.75,
+        "discriminative_power": 0.5122549019607844
+      },
+      "real_cce_max": {
+        "name": "CCE max",
+        "auc": 0.3247549019607843,
+        "f1_at_best": 0.27586206896551724,
+        "precision_at_best": 0.16,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6752450980392157
+      },
+      "h_code_max": {
+        "name": "H_code max",
+        "auc": 0.3590686274509804,
+        "f1_at_best": 0.27906976744186046,
+        "precision_at_best": 0.16216216216216217,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6409313725490196
+      },
+      "h_lang_max": {
+        "name": "H_lang max",
+        "auc": 0.31004901960784315,
+        "f1_at_best": 0.27586206896551724,
+        "precision_at_best": 0.16,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6899509803921569
+      },
+      "response_length": {
+        "name": "length (control)",
+        "auc": 0.3854166666666667,
+        "f1_at_best": 0.2891566265060241,
+        "precision_at_best": 0.16901408450704225,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6145833333333333
+      }
+    },
+    "arms": {
+      "saplma_only": {
+        "auc": 0.0,
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "n_fired": 49,
+        "n_features": 3
+      },
+      "flare_only": {
+        "auc": 0.5477941176470589,
+        "f1": 0.2127659574468085,
+        "precision": 0.14285714285714285,
+        "recall": 0.4166666666666667,
+        "n_fired": 35,
+        "n_features": 4
+      },
+      "cce_only": {
+        "auc": 0.5110294117647058,
+        "f1": 0.2702702702702703,
+        "precision": 0.2,
+        "recall": 0.4166666666666667,
+        "n_fired": 25,
+        "n_features": 8
+      },
+      "embedding_se_only": {
+        "auc": 0.5281862745098039,
+        "f1": 0.3888888888888889,
+        "precision": 0.2916666666666667,
+        "recall": 0.5833333333333334,
+        "n_fired": 24,
+        "n_features": 4
+      },
+      "nli_se_only": {
+        "auc": 0.7095588235294118,
+        "f1": 0.45,
+        "precision": 0.32142857142857145,
+        "recall": 0.75,
+        "n_fired": 28,
+        "n_features": 4
+      },
+      "flare_plus_emb_se": {
+        "auc": 0.6862745098039216,
+        "f1": 0.43243243243243246,
+        "precision": 0.32,
+        "recall": 0.6666666666666666,
+        "n_fired": 25,
+        "n_features": 8
+      },
+      "flare_plus_nli_se": {
+        "auc": 0.767156862745098,
+        "f1": 0.42857142857142855,
+        "precision": 0.3,
+        "recall": 0.75,
+        "n_fired": 30,
+        "n_features": 8
+      },
+      "v6_full": {
+        "auc": 0.48039215686274506,
+        "f1": 0.18181818181818182,
+        "precision": 0.125,
+        "recall": 0.3333333333333333,
+        "n_fired": 32,
+        "n_features": 11
+      }
+    }
+  },
+  "codellama/CodeLlama-7b-Instruct-hf": {
+    "model": "codellama/CodeLlama-7b-Instruct-hf",
+    "n_tasks": 80,
+    "categories": {
+      "helps": 17,
+      "already_knew": 54,
+      "both_fail": 5,
+      "retrieval_hurts": 4
+    },
+    "base_rate": 0.2125,
+    "univariate": {
+      "nli_se": {
+        "name": "NLI-SE",
+        "auc": 0.6185807656395892,
+        "f1_at_best": 0.39285714285714285,
+        "precision_at_best": 0.28205128205128205,
+        "recall_at_best": 0.6470588235294118,
+        "discriminative_power": 0.6185807656395892
+      },
+      "nli_n_clusters": {
+        "name": "NLI clusters",
+        "auc": 0.6167133520074697,
+        "f1_at_best": 0.39215686274509803,
+        "precision_at_best": 0.29411764705882354,
+        "recall_at_best": 0.5882352941176471,
+        "discriminative_power": 0.6167133520074697
+      },
+      "semantic_entropy": {
+        "name": "embedding-SE",
+        "auc": 0.5093370681605975,
+        "f1_at_best": 0.35051546391752575,
+        "precision_at_best": 0.2125,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.5093370681605975
+      },
+      "n_clusters": {
+        "name": "emb clusters",
+        "auc": 0.49719887955182074,
+        "f1_at_best": 0.35051546391752575,
+        "precision_at_best": 0.2125,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.5028011204481793
+      },
+      "cce_max": {
+        "name": "FLARE max-ent",
+        "auc": 0.4533146591970122,
+        "f1_at_best": 0.3695652173913043,
+        "precision_at_best": 0.22666666666666666,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.5466853408029878
+      },
+      "cce_mean": {
+        "name": "FLARE mean-ent",
+        "auc": 0.6199813258636788,
+        "f1_at_best": 0.45161290322580644,
+        "precision_at_best": 0.5,
+        "recall_at_best": 0.4117647058823529,
+        "discriminative_power": 0.6199813258636788
+      },
+      "cce_spikes": {
+        "name": "FLARE spikes",
+        "auc": 0.23109243697478993,
+        "f1_at_best": 0.3541666666666667,
+        "precision_at_best": 0.21518987341772153,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.76890756302521
+      },
+      "hs_max_norm": {
+        "name": "SAPLMA hs_max",
+        "auc": 0.32492997198879553,
+        "f1_at_best": 0.35051546391752575,
+        "precision_at_best": 0.2125,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6750700280112045
+      },
+      "hs_mean_norm": {
+        "name": "SAPLMA hs_mean",
+        "auc": 0.3445378151260504,
+        "f1_at_best": 0.35051546391752575,
+        "precision_at_best": 0.2125,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6554621848739496
+      },
+      "real_cce_max": {
+        "name": "CCE max",
+        "auc": 0.3996265172735761,
+        "f1_at_best": 0.3695652173913043,
+        "precision_at_best": 0.22666666666666666,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.6003734827264239
+      },
+      "h_code_max": {
+        "name": "H_code max",
+        "auc": 0.4267040149393091,
+        "f1_at_best": 0.3541666666666667,
+        "precision_at_best": 0.21518987341772153,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.5732959850606909
+      },
+      "h_lang_max": {
+        "name": "H_lang max",
+        "auc": 0.2315592903828198,
+        "f1_at_best": 0.3541666666666667,
+        "precision_at_best": 0.21518987341772153,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.7684407096171801
+      },
+      "response_length": {
+        "name": "length (control)",
+        "auc": 0.2138188608776844,
+        "f1_at_best": 0.35051546391752575,
+        "precision_at_best": 0.2125,
+        "recall_at_best": 1.0,
+        "discriminative_power": 0.7861811391223156
+      }
+    },
+    "arms": {
+      "saplma_only": {
+        "auc": 0.676937441643324,
+        "f1": 0.3829787234042553,
+        "precision": 0.3,
+        "recall": 0.5294117647058824,
+        "n_fired": 30,
+        "n_features": 3
+      },
+      "flare_only": {
+        "auc": 0.8001867413632119,
+        "f1": 0.5531914893617021,
+        "precision": 0.43333333333333335,
+        "recall": 0.7647058823529411,
+        "n_fired": 30,
+        "n_features": 4
+      },
+      "cce_only": {
+        "auc": 0.6844070961718021,
+        "f1": 0.42857142857142855,
+        "precision": 0.36,
+        "recall": 0.5294117647058824,
+        "n_fired": 25,
+        "n_features": 8
+      },
+      "embedding_se_only": {
+        "auc": 0.17927170868347336,
+        "f1": 0.08450704225352113,
+        "precision": 0.05555555555555555,
+        "recall": 0.17647058823529413,
+        "n_fired": 54,
+        "n_features": 4
+      },
+      "nli_se_only": {
+        "auc": 0.5070028011204482,
+        "f1": 0.39215686274509803,
+        "precision": 0.29411764705882354,
+        "recall": 0.5882352941176471,
+        "n_fired": 34,
+        "n_features": 4
+      },
+      "flare_plus_emb_se": {
+        "auc": 0.7917833800186741,
+        "f1": 0.5217391304347826,
+        "precision": 0.41379310344827586,
+        "recall": 0.7058823529411765,
+        "n_fired": 29,
+        "n_features": 8
+      },
+      "flare_plus_nli_se": {
+        "auc": 0.7927170868347339,
+        "f1": 0.5714285714285714,
+        "precision": 0.4375,
+        "recall": 0.8235294117647058,
+        "n_fired": 32,
+        "n_features": 8
+      },
+      "v6_full": {
+        "auc": 0.7843137254901962,
+        "f1": 0.5333333333333333,
+        "precision": 0.42857142857142855,
+        "recall": 0.7058823529411765,
+        "n_fired": 28,
+        "n_features": 11
+      }
+    }
+  }
+}
