@@ -1,0 +1,322 @@
+{
+  "task_1_retr": {
+    "answer": "To make a simple GET request using httpx, you can use the `get()` function provided by the `httpx` library. This function takes in a URL as a string or a `httpx.URL` object, and returns a `httpx.Response` object.\n\nHere's an example of how to make a GET request using httpx:\n```\nimport httpx\n\nresponse = httpx.get(\"https://httpbin.org/get\")\n\nprint(response.status_code)  # Output: 200\nprint(response.text)  # Output: JSON data from the server\n```\nIn this example, we're making a GET request to the `https://httpbin.org/get` endpoint, which returns a JSON object with information about the request. The `response` variable contains the `httpx.Response` object, which has a `status_code` attribute that contains the HTTP status code of the response, and a `text` attribute that contains the JSON data from the server.",
+    "correct": true
+  },
+  "task_2_retr": {
+    "answer": "To make a POST request with JSON data using httpx, you can use the `post()` method and pass in the JSON data as the `json` parameter. Here's an example:\n```\nimport httpx\n\nresponse = httpx.post(\n    \"https://example.com/api/data\",\n    json={\"key\": \"value\"}\n)\n\nprint(response.json())\n```\nThis will send a POST request to the specified URL with the JSON data `{\"key\": \"value\"}` in the request body. The response will be a `Response` object, which you can use to access the response data.\n\nNote that the `post()` method also accepts other parameters such as `content`, `data`, `files`, `params`, `headers`, `cookies`, `auth`, `proxy`, `follow_redirects`, and `verify`, which can be used to customize the request.",
+    "correct": true
+  },
+  "task_3_retr": {
+    "answer": "To access the response body as text in httpx, you can use the `text` attribute of the `Response` object.\n\nHere's an example:\n```\nresponse = httpx.get(\"https://example.com\")\nprint(response.text)\n```\nThis will print the response body as text.\n\nNote that the `text` attribute is only available if the response has not been consumed yet. If you try to access the `text` attribute after the response has been consumed, you will get an error.\n\nAlso, the `text` attribute is only available if the response has a valid encoding. If the response does not have a valid encoding, you will get an error.\n\nYou can also use the `decode` method of the `Response` object to decode the response body into text. Here's an example:\n```\nresponse = httpx.get(\"https://example.com\")\nprint(response.decode(\"utf-8\"))\n```\nThis will print the response body as text, using the \"utf-8\" encoding.\n\nNote that the `decode` method is only available if the response has not been consum",
+    "correct": true
+  },
+  "task_4_retr": {
+    "answer": "To access the JSON response body in httpx, you can use the `json()` method of the `Response` object. This method returns the response body as a JSON object.\n\nHere's an example of how you can use the `json()` method to access the JSON response body:\n```\nresponse = httpx.get(\"https://httpbin.org/json\")\njson_data = response.json()\nprint(json_data)\n```\nIn this example, we make a GET request to the `https://httpbin.org/json` endpoint, which returns a JSON response body. We then use the `json()` method to access the JSON response body and print it to the console.\n\nNote that the `json()` method assumes that the response body is a valid JSON object. If the response body is not a valid JSON object, the `json()` method will raise a `JSONDecodeError`.",
+    "correct": true
+  },
+  "task_5_retr": {
+    "answer": "To check the HTTP status code of a response in httpx, you can use the `status_code` property of the `Response` object.\n\nFor example, if you have a `response` object and you want to check its status code, you can do the following:\n```\nstatus_code = response.status_code\n```\nThis will return the HTTP status code of the response, which can be used to determine the type of response (e.g., informational, success, redirect, client error, server error, etc.).\n\nAlternatively, you can use the `is_informational`, `is_success`, `is_redirect`, `is_client_error`, and `is_server_error` properties of the `Response` object to check the status code in a more convenient way. For example:\n```\nif response.is_informational:\n    # Handle informational response\nelif response.is_success:\n    # Handle successful response\nelif response.is_redirect:\n    # Handle redirect response\nelif response.is_client_error:\n    # Handle client error response\nelif response.is_server_",
+    "correct": true
+  },
+  "task_6_retr": {
+    "answer": "To create an httpx Client for making multiple requests, you can use the `httpx.Client()` function. This function takes in various parameters that can be used to configure the client, such as the authentication class to use, query parameters, headers, cookies, and more.\n\nOnce you have created the client, you can use it to send requests by calling the `client.get()`, `client.post()`, `client.put()`, or other methods that correspond to the HTTP methods you want to use. For example, to send a GET request, you can use `client.get('https://example.org')`.\n\nThe `httpx.Client()` function also takes in a `timeout` parameter that can be used to set a timeout for the client. This can be useful if you want to limit the amount of time the client spends waiting for a response.\n\nOverall, the `httpx.Client()` function is a convenient way to create a client that can be used to send multiple requests with a single instance.",
+    "correct": true
+  },
+  "task_7_retr": {
+    "answer": "To set a timeout for requests in httpx, you can use the `Timeout` class. The `Timeout` class takes four parameters: `connect`, `read`, `write`, and `pool`. You can set the timeout for each of these parameters separately or pass a single `Timeout` object as the first argument.\n\nHere are some examples of how to set timeouts for requests in httpx:\n\n1. Set a single timeout for all requests:\n```\ntimeout = Timeout(5.0)\n```\nThis sets a timeout of 5 seconds for all requests.\n\n2. Set different timeouts for connect, read, write, and pool:\n```\ntimeout = Timeout(connect=10.0, read=20.0, write=30.0, pool=40.0)\n```\nThis sets a timeout of 10 seconds for connecting to the server, 20 seconds for reading the response, 30 seconds for writing the request, and 40 seconds for the connection pool.\n\n3. Set the same timeout for all parameters:\n```\ntimeout = Timeout(5.0, connect=5",
+    "correct": true
+  },
+  "task_8_retr": {
+    "answer": "To add custom headers to an httpx request, you can use the `headers` parameter in the `request()` function. This parameter takes a dictionary of key-value pairs, where the keys are the header names and the values are the header values.\n\nFor example, to add a custom `X-Custom-Header` header with the value `custom-value`, you can use the following code:\n```\nresponse = httpx.request(\n    \"GET\",\n    \"https://httpbin.org/get\",\n    headers={\"X-Custom-Header\": \"custom-value\"}\n)\n```\nThis will send a `GET` request to the specified URL with the custom header `X-Custom-Header` and the value `custom-value`.\n\nAlternatively, you can also use the `headers` parameter in the `get()`, `post()`, `head()`, `options()`, or `put()` functions to add custom headers to a request. For example:\n```\nresponse = httpx.get(\n    \"https://httpbin.org/get\",\n    headers={\"X-Custom-Header\": \"custom-value\"}\n)\n```",
+    "correct": true
+  },
+  "task_9_retr": {
+    "answer": "Yes, httpx supports async requests. The `AsyncClient` class in httpx provides methods for sending requests asynchronously, such as `async_request()`, `async_get()`, `async_post()`, and `async_head()`. These methods are used to send requests in an asynchronous manner, allowing for non-blocking I/O and improved performance.\n\nThe `async_request()` method is the most general-purpose method for sending requests asynchronously. It takes a `Request` object as an argument and returns a `Response` object. The `async_get()`, `async_post()`, and `async_head()` methods are convenience methods that create a `Request` object with the appropriate method and send it asynchronously.\n\nThe `AsyncClient` class also provides a `send()` method that can be used to send a `Request` object asynchronously. This method takes a `Request` object and an optional `auth` parameter, and returns a `Response` object.\n\nOverall, httpx provides a number of ways to send requests asynchronously, including the `async_request()`, `async_get()`, `async_post()`, `async_head",
+    "correct": true
+  },
+  "task_10_retr": {
+    "answer": "To send form data in an httpx POST request, you can use the `data` parameter in the `post()` method. The `data` parameter should be a dictionary of form data, where the keys are the form field names and the values are the form field values.\n\nFor example:\n```\nimport httpx\n\nresponse = httpx.post(\n    \"https://httpbin.org/post\",\n    data={\"name\": \"John Doe\", \"age\": 30}\n)\n\nprint(response.json())\n```\nThis will send a POST request to the specified URL with the form data in the `data` parameter. The response will be a JSON object containing the form data.\n\nAlternatively, you can use the `files` parameter to send a file in the request. The `files` parameter should be a dictionary of file names and file objects.\n```\nimport httpx\n\nwith open(\"file.txt\", \"rb\") as f:\n    response = httpx.post(\n        \"https://httpbin.org/post\",\n        files={\"file\": f}\n    )\n\nprint(",
+    "correct": true
+  },
+  "task_11_retr": {
+    "answer": "Based on the source code you provided, the default timeout value for httpx requests is 5 seconds. This is specified in the `Timeout` class, where the `connect` parameter is set to 5 seconds by default. This means that if a connection cannot be established within 5 seconds, the request will time out. The other parameters, `read` and `write`, are also set to 5 seconds by default, but they can be overridden by passing a different value when creating a `Timeout` object.",
+    "correct": true
+  },
+  "task_12_retr": {
+    "answer": "Based on the source code provided, the exact value of DEFAULT_MAX_REDIRECTS in httpx is 20.",
+    "correct": true
+  },
+  "task_13_retr": {
+    "answer": "The exact 3 parameters of httpx.Limits.__init__() are:\n\n1. max_connections: The maximum number of concurrent connections that may be established.\n2. max_keepalive_connections: Allow the connection pool to maintain keep-alive connections below this point. Should be less than or equal to `max_connections`.\n3. keepalive_expiry: Time limit on idle keep-alive connections in seconds.",
+    "correct": true
+  },
+  "task_14_retr": {
+    "answer": "Based on the source code, the default value for `max_connections` in `httpx.Limits` is `None`.",
+    "correct": true
+  },
+  "task_15_retr": {
+    "answer": "Based on the source code provided, the following five authentication classes are defined in the `httpx._auth` module:\n\n1. `Auth`: A base class for all authentication schemes.\n2. `BasicAuth`: Allows the 'auth' argument to be passed as a (username, password) pair, and uses HTTP Basic authentication.\n3. `DigestAuth`: Uses HTTP Digest authentication.\n4. `FunctionAuth`: Allows the 'auth' argument to be passed as a function that takes a request and returns a response.\n5. `NetRCAuth`: Uses a 'netrc' file to lookup basic auth credentials based on the url host.",
+    "correct": true
+  },
+  "task_16_retr": {
+    "answer": "Based on the source code, the parent class of ConnectError in httpx._exceptions is NetworkError.",
+    "correct": true
+  },
+  "task_17_retr": {
+    "answer": "Based on the source code provided, httpx raises an UnsupportedProtocol exception when attempting to make a request to an unsupported protocol, such as ftp://.",
+    "correct": true
+  },
+  "task_18_retr": {
+    "answer": "The two base transport classes in httpx._transports.base are:\n\n1. BaseTransport: This class provides a base implementation of the `handle_request` method, which sends a single HTTP request and returns a response. It also provides a context manager interface for opening and closing the transport.\n2. AsyncBaseTransport: This class provides a base implementation of the `handle_async_request` method, which sends a single HTTP request and returns a response asynchronously. It also provides an asynchronous context manager interface for opening and closing the transport.",
+    "correct": true
+  },
+  "task_19_retr": {
+    "answer": "Based on the source code provided, the default value of `keepalive_expiry` in `httpx.Limits` is 5.0 seconds. This is specified in the `__init__` method of the `Limits` class, where the parameter is set to 5.0 by default if not provided.",
+    "correct": true
+  },
+  "task_20_retr": {
+    "answer": "Based on the source code provided, the five timeout components in httpx.Timeout are:\n\n1. timeout: This is the default timeout value for all timeouts.\n2. connect: This is the timeout for establishing a connection.\n3. read: This is the timeout for reading data from a connection.\n4. write: This is the timeout for writing data to a connection.\n5. pool: This is the timeout for acquiring a connection from the connection pool.",
+    "correct": true
+  },
+  "task_101_retr": {
+    "answer": "To define a basic GET route in Flask, you can use the `route()` method of the `Flask` class. Here's an example:\n```\nfrom flask import Flask\n\napp = Flask(__name__)\n\n@app.route('/')\ndef index():\n    return 'Hello, World!'\n```\nIn this example, the `route()` method is used to define a route for the root URL (`'/'`) and the `index()` function is called when the route is accessed. The `index()` function returns the string `'Hello, World!'`.\n\nThe `route()` method takes two arguments: the first is the URL pattern, and the second is the function to call when the route is accessed. The URL pattern is a string that specifies the URL that the route should match. In this case, the URL pattern is `''`, which means that the route should match the root URL (`'/'`) of the application.\n\nThe `index()` function is called when the route is accessed, and it returns the string `'Hello, World!'`. This string is the response that is sent to the client when the route is accessed.\n\nNote that",
+    "correct": true
+  },
+  "task_102_retr": {
+    "answer": "Based on the source code provided, there are two ways to render an HTML template in Flask:\n\n1. Using the `render_template()` function:\n```\nrender_template('template_name.html', context=context)\n```\nThis function takes two arguments: the name of the template file (without the `.html` extension), and a dictionary of context variables. The template file should be located in the `templates` directory of the Flask application.\n\n2. Using the `render_template_string()` function:\n```\nrender_template_string('<html><body>{{ message }}</body></html>', message='Hello, World!')\n```\nThis function takes two arguments: the source code of the template as a string, and a dictionary of context variables. The template can be any valid HTML code, and the context variables are made available to the template using the `{{ variable_name }}` syntax.\n\nBoth functions return the rendered template as a string.",
+    "correct": true
+  },
+  "task_103_retr": {
+    "answer": "To access form data submitted via POST in Flask, you can use the `form` attribute of the `Request` object. This attribute is a `MultiDict` object that contains all the form data submitted in the request.\n\nHere's an example of how to access form data in a Flask view function:\n```\nfrom flask import request\n\n@app.route('/', methods=['POST'])\ndef index():\n    form_data = request.form\n    name = form_data['name']\n    return f'Hello, {name}!'\n```\nIn this example, the `form_data` variable is a `MultiDict` object that contains all the form data submitted in the request. The `name` variable is then assigned the value of the `name` key in the `form_data` dictionary.\n\nNote that the `form` attribute is only available if the request method is `POST`. If the request method is `GET`, the `form` attribute is not available.",
+    "correct": true
+  },
+  "task_104_retr": {
+    "answer": "To access URL query parameters in Flask, you can use the `args` attribute of the `Request` object. This attribute is a dictionary-like object that contains all the query parameters passed in the URL.\n\nFor example, if the URL is `http://example.com/path?name=John&age=30`, you can access the `name` parameter using `request.args['name']` and the `age` parameter using `request.args['age']`.\n\nYou can also use the `getlist()` method to access a list of values for a given parameter. For example, if the URL is `http://example.com/path?name=John&name=Jane`, you can access the list of values for the `name` parameter using `request.args.getlist('name')`.\n\nNote that the `args` attribute is only available if the request method is GET or HEAD. If the request method is POST or PUT, you can access the query parameters using the `form` attribute instead.",
+    "correct": true
+  },
+  "task_105_retr": {
+    "answer": "To access the JSON request body in Flask, you can use the `json` attribute of the `Request` object. This attribute is a dictionary that contains the JSON data sent in the request body.\n\nHere's an example of how to access the JSON request body in Flask:\n```\nfrom flask import request\n\n@app.route('/', methods=['POST'])\ndef index():\n    data = request.json\n    # do something with the JSON data\n    return 'OK'\n```\nIn this example, the `request.json` attribute is used to access the JSON data sent in the request body. The `data` variable is then used to process the JSON data.\n\nNote that the `json` attribute is only available if the request has a JSON content type (e.g., `application/json`). If the request has a different content type, the `json` attribute will be `None`.",
+    "correct": true
+  },
+  "task_106_retr": {
+    "answer": "To redirect to another URL in Flask, you can use the `redirect` function. This function takes two arguments: the first is the URL to redirect to, and the second is an optional status code.\n\nHere's an example of how to use the `redirect` function to redirect to another URL:\n```\nfrom flask import redirect\n\n@app.route('/')\ndef index():\n    return redirect('https://www.example.com')\n```\nIn this example, the `redirect` function is used to redirect the user to the URL `https://www.example.com` when they visit the root URL (`/`) of the application.\n\nAlternatively, you can use the `abort` function to raise an HTTP exception with a specific status code. For example:\n```\nfrom flask import abort\n\n@app.route('/')\ndef index():\n    abort(404)\n```\nIn this example, the `abort` function is used to raise an HTTP 404 exception when the user visits the root URL (`/`) of the application. This will result in a redirect to the error page for a 40",
+    "correct": true
+  },
+  "task_107_retr": {
+    "answer": "To store a value in a Flask user session, you can use the `session` object, which is a dictionary-like object that stores the session data. You can access the `session` object through the `request` object, which is passed as an argument to the `open_session` method.\n\nHere's an example of how to store a value in a Flask user session:\n```\nfrom flask import Flask, request, session\n\napp = Flask(__name__)\n\n@app.route('/')\ndef index():\n    session['name'] = 'John Doe'\n    return 'Hello, World!'\n\nif __name__ == '__main__':\n    app.run()\n```\nIn the above example, the `session['name'] = 'John Doe'` line stores the value `'John Doe'` in the `name` key of the session dictionary. The `session` object is automatically created and managed by Flask, and it is stored in the user's browser as a cookie.\n\nWhen the user makes a request to the `/` endpoint, the `open_session` method is called, which retr",
+    "correct": true
+  },
+  "task_108_retr": {
+    "answer": "To return a JSON response in Flask, you can use the `jsonify` function. This function takes in any number of positional or keyword arguments and returns a `Response` object with the `application/json` mimetype.\n\nFor example, to return a JSON response with a single value, you can use the following code:\n```\nfrom flask import jsonify\n\n@app.route('/')\ndef index():\n    return jsonify({'message': 'Hello, World!'})\n```\nThis will return a JSON response with the `message` key set to the value `'Hello, World!'`.\n\nAlternatively, you can use the `dumps` function to serialize a Python object to JSON and then use the `Response` object to return the JSON response. For example:\n```\nfrom flask import jsonify, Response\n\n@app.route('/')\ndef index():\n    data = {'message': 'Hello, World!'}\n    return Response(json.dumps(data), mimetype='application/json')\n```\nThis will return a JSON response with the `message` key set to the value `'Hello, World!'",
+    "correct": true
+  },
+  "task_109_retr": {
+    "answer": "To abort a Flask request with a 404 error, you can use the `abort` function from the `helpers` module. Here's an example:\n```\nfrom flask import abort\n\n@app.route('/')\ndef index():\n    abort(404)\n```\nThis will abort the request with a 404 error and return a response with the status code 404.\n\nAlternatively, you can use the `abort` function from the `werkzeug` module, which is used by Flask to handle HTTP exceptions. Here's an example:\n```\nfrom werkzeug.exceptions import HTTPException\n\n@app.route('/')\ndef index():\n    raise HTTPException(404)\n```\nThis will also abort the request with a 404 error and return a response with the status code 404.\n\nNote that the `abort` function from the `helpers` module is only available in Flask 2.2 and later, while the `abort` function from the `werkzeug` module is available in Flask 0.9 and",
+    "correct": true
+  },
+  "task_110_retr": {
+    "answer": "To build a URL for a named endpoint in Flask, you can use the `url_for()` function. This function takes several parameters, including the endpoint name, any values to be used in the URL, and some optional parameters such as the anchor, method, scheme, and external status.\n\nHere's an example of how to use `url_for()` to build a URL for a named endpoint:\n```\nfrom flask import url_for\n\n# Build a URL for the \"index\" endpoint\nurl = url_for('index')\n\n# Build a URL for the \"index\" endpoint with a specific value for the \"page\" parameter\nurl = url_for('index', page=1)\n\n# Build a URL for the \"index\" endpoint with multiple values for the \"page\" and \"sort\" parameters\nurl = url_for('index', page=1, sort='asc')\n```\nIn the first example, the URL will be built using the default values for the endpoint. In the second and third examples, the URL will be built using the specified values for the \"page\" and \"sort\" parameters.\n\nNote that the `url_for",
+    "correct": true
+  },
+  "task_111_retr": {
+    "answer": "The default value of the SECRET_KEY config in Flask is None.",
+    "correct": true
+  },
+  "task_112_retr": {
+    "answer": "The default value of PERMANENT_SESSION_LIFETIME in Flask is 31 days. This is specified in the default configuration of the Flask class, which is used as the default configuration for all Flask applications. The value is set to a timedelta object with a total_seconds() method that returns the number of seconds in the timedelta. The value is then converted to an integer by the get_send_file_max_age() method.",
+    "correct": true
+  },
+  "task_113_retr": {
+    "answer": "The parent class of the Flask class in flask.app is object.",
+    "correct": false
+  },
+  "task_114_retr": {
+    "answer": "The WSGI dispatch method on the Flask class is called `wsgi_app`.",
+    "correct": true
+  },
+  "task_115_retr": {
+    "answer": "The default JSON provider class used by Flask 2.2+ is the `DefaultJSONProvider` class.",
+    "correct": true
+  },
+  "task_116_retr": {
+    "answer": "The Flask signal that fires when a request finishes successfully is `request_finished`.",
+    "correct": true
+  },
+  "task_117_retr": {
+    "answer": "The Map of all routes on a Flask app is stored in the `self.url_map` attribute.",
+    "correct": true
+  },
+  "task_118_retr": {
+    "answer": "The name of the global object Flask provides for sharing data within a request is 'g'.",
+    "correct": false
+  },
+  "task_119_retr": {
+    "answer": "The default value of MAX_CONTENT_LENGTH in Flask is 500_000.",
+    "correct": false
+  },
+  "task_120_retr": {
+    "answer": "The default value of the JSON_SORT_KEYS config option in Flask is True. This can be seen in the source code of the DefaultJSONProvider class, where the sort_keys attribute is set to True by default.",
+    "correct": true
+  },
+  "task_201_retr": {
+    "answer": "To define a GET endpoint in FastAPI, you can use the `app.get()` method, which is a shortcut for `app.router.add_api_route()` with the `methods` parameter set to `[\"GET\"]`.\n\nHere's an example of how you can define a GET endpoint for a path `/items` that returns a list of items:\n```\nfrom fastapi import FastAPI\n\napp = FastAPI()\n\n@app.get(\"/items\")\nasync def read_items():\n    return [{\"name\": \"Item 1\"}, {\"name\": \"Item 2\"}]\n```\nIn this example, the `read_items()` function is the endpoint that will be called when a GET request is made to the `/items` path. The function returns a list of two items with the name \"Item 1\" and \"Item 2\".\n\nYou can also use the `app.get()` method to define a GET endpoint with additional parameters, such as a path parameter or a query parameter. For example:\n```\n@app.get(\"/items/{item_id}\")\nasync def read_item(item_id: int):",
+    "correct": true
+  },
+  "task_202_retr": {
+    "answer": "To define a POST endpoint that accepts a JSON body in FastAPI, you can use the `post()` method of the `FastAPI` class and pass in a `Body` parameter with the `media_type` set to `application/json`. Here's an example:\n```\nfrom fastapi import FastAPI, Body\n\napp = FastAPI()\n\n@app.post(\"/items/\", response_model=Item)\nasync def create_item(item: Item = Body(media_type=\"application/json\")):\n    # Your code to create the item goes here\n    return item\n```\nIn this example, the `create_item()` function is a POST endpoint that accepts a JSON body with the `media_type` set to `application/json`. The `Body` parameter is used to define the JSON body parameter, and the `response_model` parameter is used to specify the response model.\n\nNote that the `Body` parameter is a subclass of `Param`, so you can also use other parameters like `default`, `required`, and `example` to customize the behavior of the parameter.",
+    "correct": false
+  },
+  "task_203_retr": {
+    "answer": "To declare a path parameter in a FastAPI route, you can use the `Path` parameter type from the `fastapi.params` module. Here's an example:\n```\nfrom fastapi import FastAPI, Path\n\napp = FastAPI()\n\n@app.get(\"/items/{item_id}\")\nasync def read_item(item_id: Path):\n    return {\"item_id\": item_id}\n```\nIn this example, the `item_id` parameter is declared as a `Path` parameter, which means that it will be extracted from the URL path and passed to the `read_item` function as a positional argument.\n\nYou can also use other parameter types, such as `Query`, `Header`, and `Cookie`, to extract parameters from different parts of the request. For example:\n```\nfrom fastapi import FastAPI, Query\n\napp = FastAPI()\n\n@app.get(\"/items\")\nasync def read_items(q: Query):\n    return {\"q\": q}\n```\nIn this example, the `q` parameter is declared as a `Query` parameter, which means that it will",
+    "correct": true
+  },
+  "task_204_retr": {
+    "answer": "To declare a query parameter with a default value in FastAPI, you can use the `Query` class from the `fastapi.params` module. Here's an example:\n```\nfrom fastapi.params import Query\n\n@app.get(\"/items/\")\nasync def read_items(q: Query = Query(default=\"default_value\")):\n    # ...\n```\nIn this example, the `q` parameter is a query parameter with a default value of `\"default_value\"`. The `Query` class is used to specify the parameter type and the default value.\n\nYou can also use the `Query` class to specify other parameters such as `min_length`, `max_length`, `pattern`, `regex`, `discriminator`, `strict`, `multiple_of`, `allow_inf_nan`, `max_digits`, `decimal_places`, `examples`, `openapi_examples`, `deprecated`, `include_in_schema`, and `json_schema_extra`.\n\nFor example:\n```\nfrom fastapi.params import Query\n\n@app.get(\"/items/\")\nasync",
+    "correct": true
+  },
+  "task_205_retr": {
+    "answer": "To use Pydantic to validate a request body in FastAPI, you can use the `Body` parameter in the path operation decorator. The `Body` parameter takes a Pydantic model as its argument, which will be used to validate the request body.\n\nHere's an example:\n```\nfrom fastapi import FastAPI, Body\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass User(BaseModel):\n    name: str\n    age: int\n\n@app.post(\"/users/\")\nasync def create_user(user: User = Body(...)):\n    # Do something with the validated user data\n    return {\"message\": \"User created successfully\"}\n```\nIn this example, the `User` model is defined using Pydantic. The `Body` parameter in the path operation decorator is used to validate the request body against the `User` model. If the request body is valid, the validated data will be available in the `user` variable.\n\nYou can also use the `Body` parameter to validate a request body that is not a JSON object. For example:\n```\nfrom fastapi",
+    "correct": true
+  },
+  "task_206_retr": {
+    "answer": "To declare a dependency in FastAPI, you can use the `Depends` parameter type annotation. This parameter type annotation is used to indicate that a function parameter should be resolved using a dependency.\n\nHere's an example of how to use `Depends` to declare a dependency:\n```\nfrom fastapi import Depends\n\ndef get_user(user_id: int, user_repo: Depends[UserRepository]):\n    return user_repo.get_user(user_id)\n```\nIn this example, the `get_user` function has two parameters: `user_id` and `user_repo`. The `user_id` parameter is a regular function parameter, while the `user_repo` parameter is annotated with `Depends[UserRepository]`. This means that the `user_repo` parameter will be resolved using a dependency of type `UserRepository`.\n\nThe `Depends` parameter type annotation can also be used to specify additional information about the dependency, such as its scope or whether it should be cached. For example:\n```\nfrom fastapi import Depends\n\ndef get_user(user_id: int, user",
+    "correct": true
+  },
+  "task_207_retr": {
+    "answer": "To raise an HTTP 404 from inside a FastAPI route, you can use the `HTTPException` class and pass in the `status_code` parameter with a value of 404. Here's an example:\n```\nfrom fastapi import HTTPException\n\n@app.get(\"/items/{item_id}\")\nasync def read_item(item_id: str):\n    if item_id not in items:\n        raise HTTPException(status_code=404, detail=\"Item not found\")\n    return {\"item\": items[item_id]}\n```\nIn this example, if the `item_id` is not found in the `items` dictionary, an `HTTPException` with a status code of 404 will be raised, which will result in a 404 response being sent to the client.",
+    "correct": true
+  },
+  "task_208_retr": {
+    "answer": "To declare an async endpoint in FastAPI, you can use the `async` keyword before the function definition. For example:\n```\n@router.options(\"/items/\")\nasync def get_item_options():\n    return {\"additions\": [\"Aji\", \"Guacamole\"]}\n```\nThis will make the `get_item_options` function an async function that can be awaited in other async code.\n\nNote that the `async` keyword is only used in the function definition, and it does not affect the behavior of the function itself. The function will still run synchronously, but it can be awaited in other async code.\n\nAlso note that the `async` keyword is not used in the `APIRouter` class, but it is used in the `APIRoute` class, which is used to define the routes for the router.",
+    "correct": true
+  },
+  "task_209_retr": {
+    "answer": "To set a custom response status code on a FastAPI route, you can use the `status_code` parameter in the `@app.get()` decorator. For example:\n```\n@app.get(\"/items/\", status_code=201)\nasync def read_items():\n    return {\"items\": [{\"name\": \"Item 1\"}, {\"name\": \"Item 2\"}]}\n```\nThis will set the response status code to 201 (Created) for the `/items/` endpoint.\n\nAlternatively, you can use the `response_model` parameter to specify a custom response model, which can include a `status_code` attribute. For example:\n```\nfrom fastapi import FastAPI, HTTPException\n\napp = FastAPI()\n\nclass Item(BaseModel):\n    name: str\n\n@app.get(\"/items/\", response_model=Item)\nasync def read_items():\n    return {\"name\": \"Item 1\"}\n\n@app.get(\"/items/{item_id}\", response_model=Item)\nasync def read_item(item_id: str):",
+    "correct": true
+  },
+  "task_210_retr": {
+    "answer": "Based on the source code provided, the `BackgroundTasks` class in FastAPI allows you to add functions to be called in the background after the response is sent. You can use the `add_task` method to add a function to the background tasks collection.\n\nHere's an example of how you can use the `add_task` method to run a background task after returning a response:\n```\nfrom fastapi import BackgroundTasks\n\n@app.post(\"/items/\")\nasync def create_item(item: Item, background_tasks: BackgroundTasks):\n    background_tasks.add_task(send_notification, item.name)\n    return {\"message\": \"Item created successfully\"}\n\ndef send_notification(name: str):\n    # Send a notification to the user\n    pass\n```\nIn this example, the `create_item` endpoint adds a background task to send a notification to the user after the response is sent. The `send_notification` function is called in the background after the response is sent.\n\nNote that the `add_task` method can also be used to add asynchronous functions to the background tasks collection. If the function is",
+    "correct": true
+  },
+  "task_211_retr": {
+    "answer": "The parent class of the FastAPI application class is `APIRouter`.",
+    "correct": false
+  },
+  "task_212_retr": {
+    "answer": "The default value of the docs_url parameter in FastAPI() is \"/docs\". This is specified in the documentation for the FastAPI constructor, which can be found in the fastapi/applications.py file.",
+    "correct": true
+  },
+  "task_213_retr": {
+    "answer": "The default value of the redoc_url parameter in FastAPI() is None.",
+    "correct": false
+  },
+  "task_214_retr": {
+    "answer": "The parent class of HTTPException in fastapi.exceptions is StarletteHTTPException.",
+    "correct": true
+  },
+  "task_215_retr": {
+    "answer": "The default value of the `openapi_url` parameter in FastAPI() is `/openapi.json`.",
+    "correct": true
+  },
+  "task_216_retr": {
+    "answer": "FastAPI's APIRouter inherits from Starlette's APIRouter.",
+    "correct": true
+  },
+  "task_217_retr": {
+    "answer": "The name of FastAPI's parameter wrapper class for query parameters is `Query`.",
+    "correct": true
+  },
+  "task_218_retr": {
+    "answer": "Based on the source code provided, FastAPI raises a `ValidationException` when Pydantic validation of a request fails.",
+    "correct": false
+  },
+  "task_219_retr": {
+    "answer": "The default value of include_in_schema in FastAPI's @app.get is True. This means that the path operation will be included in the generated OpenAPI schema by default.",
+    "correct": true
+  },
+  "task_220_retr": {
+    "answer": "Based on the source code provided, FastAPI uses the `JSONResponse` class as its default JSON response class.",
+    "correct": true
+  },
+  "task_301_retr": {
+    "answer": "To make a simple GET request using the requests library, you can use the `get()` function from the `requests.api` module. The `get()` function takes two arguments: the first is the URL of the request, and the second is a dictionary of parameters that can be used to customize the request.\n\nHere's an example of how to make a simple GET request using the `get()` function:\n```\nimport requests\n\nresponse = requests.get('https://httpbin.org/get')\nprint(response.text)\n```\nThis code will send a GET request to the URL `https://httpbin.org/get` and print the response text.\n\nNote that the `get()` function is a shortcut for the `request()` function, which takes the same arguments as the `get()` function but with the method set to \"GET\". So, the following code is equivalent to the previous one:\n```\nresponse = requests.request('GET', 'https://httpbin.org/get')\nprint(response.text)\n```\nYou can also use the `options()` function to send an OPTIONS request, the `head()` function to",
+    "correct": true
+  },
+  "task_302_retr": {
+    "answer": "To POST JSON data with the requests library, you can use the `json` parameter in the `request()` function. The `json` parameter should be a Python object that can be serialized to JSON, such as a dictionary or a list.\n\nHere's an example of how to POST JSON data using the requests library:\n```\nimport requests\n\ndata = {'key1': 'value1', 'key2': 'value2'}\nresponse = requests.post('https://example.com/api/data', json=data)\n```\nIn this example, the `data` dictionary is serialized to JSON and sent as the body of the POST request. The `json` parameter is set to `data` in the `request()` function.\n\nNote that the `json` parameter is only available in requests version 2.4.2 and later. If you are using an earlier version of requests, you can use the `data` parameter instead, but you will need to encode the data as JSON yourself.\n```\nimport json\n\ndata = {'key1': 'value1', 'key2': 'value2'}\ndata_json = json.dumps",
+    "correct": true
+  },
+  "task_303_retr": {
+    "answer": "To send a GET request with query parameters using the `requests` library, you can use the `params` parameter in the `request()` function.\n\nHere's an example:\n```\nimport requests\n\nresponse = requests.request(\"GET\", \"https://example.com\", params={\"key1\": \"value1\", \"key2\": \"value2\"})\n```\nIn this example, the `params` parameter is a dictionary that contains the query parameters. The `request()` function will automatically add the query parameters to the URL as a query string.\n\nAlternatively, you can also use the `params` parameter in the `get()` function, which is a shortcut for sending a GET request.\n```\nresponse = requests.get(\"https://example.com\", params={\"key1\": \"value1\", \"key2\": \"value2\"})\n```\nBoth of these examples will send a GET request to `https://example.com?key1=value1&key2=value2`.",
+    "correct": true
+  },
+  "task_304_retr": {
+    "answer": "To set custom headers on a requests call, you can pass a dictionary of headers as a keyword argument to the request method. For example:\n```\nheaders = {'Authorization': 'Bearer my_token', 'Content-Type': 'application/json'}\nresponse = requests.get(url, headers=headers)\n```\nThis will set the `Authorization` header to `Bearer my_token` and the `Content-Type` header to `application/json` for the request.\n\nAlternatively, you can also set headers on a per-request basis by passing a `headers` parameter to the request method. For example:\n```\nresponse = requests.get(url, headers={'Authorization': 'Bearer my_token', 'Content-Type': 'application/json'})\n```\nThis will set the `Authorization` header to `Bearer my_token` and the `Content-Type` header to `application/json` for the request.\n\nNote that the headers you set will be added to the default headers set by the requests library, so you can also set default headers by using the `headers` parameter when creating a `",
+    "correct": true
+  },
+  "task_305_retr": {
+    "answer": "To access the response body as text in requests, you can use the `r.text` attribute. This attribute is a string representation of the response body, and it is decoded using the `r.encoding` attribute.\n\nFor example, if you have a response object `r` and you want to access the response body as text, you can use `r.text`. If you want to access the response body as a string, you can use `str(r.text)`.\n\nHere's an example of how you can use `r.text` to access the response body as text:\n```\nimport requests\n\nurl = \"https://www.example.com\"\nresponse = requests.get(url)\n\n# Access the response body as text\nprint(response.text)\n```\nThis will print the response body as text.\n\nNote that the `r.text` attribute is only available if the response body is a string. If the response body is a file-like object, you can use `r.content` to access the response body as a string.",
+    "correct": true
+  },
+  "task_306_retr": {
+    "answer": "To parse a JSON response body in requests, you can use the `json()` method of the `Response` object. This method will automatically decode the response body as JSON and return the resulting Python object.\n\nHere's an example of how you can use the `json()` method to parse a JSON response body:\n```\nimport requests\n\nresponse = requests.get('https://api.example.com/data')\ndata = response.json()\nprint(data)\n```\nIn this example, the `get()` method sends a GET request to the specified URL and returns a `Response` object. The `json()` method is then called on the `Response` object to parse the JSON response body and return the resulting Python object. The `data` variable will now contain the parsed JSON data.\n\nNote that the `json()` method will only work if the response body is valid JSON. If the response body is not valid JSON, the `json()` method will raise a `JSONDecodeError`.",
+    "correct": true
+  },
+  "task_307_retr": {
+    "answer": "To check the status code of a response in requests, you can use the `status_code` attribute of the `Response` object.\n\nFor example, if you have a `Response` object named `r`, you can check the status code like this:\n```\nif r.status_code == 200:\n    # The response was successful\nelse:\n    # The response was not successful\n```\nThe `status_code` attribute is an integer that represents the HTTP status code of the response. The most common status codes are:\n\n* 200: OK\n* 400: Bad Request\n* 401: Unauthorized\n* 403: Forbidden\n* 404: Not Found\n* 500: Internal Server Error\n\nYou can also use the `ok` attribute of the `Response` object to check if the response was successful. If the `ok` attribute is `True`, the response was successful. If it is `False`, the response was not successful.\n```\nif r.ok:\n    # The response was successful\nelse:\n    # The",
+    "correct": true
+  },
+  "task_308_retr": {
+    "answer": "To create a persistent Session in requests, you can use the `Session` class provided by the `requests` library. Here's an example of how to create a persistent Session:\n```\nimport requests\n\n# Create a new Session object\nsession = requests.Session()\n\n# Set the session's headers\nsession.headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}\n\n# Set the session's cookies\nsession.cookies = {'session_id': '1234567890'}\n\n# Set the session's proxies\nsession.proxies = {'http': 'http://127.0.0.1:8080'}\n\n# Set the session's verify\nsession.verify = False\n\n# Set the session's cert\nsession.cert = ('cert.pem",
+    "correct": true
+  },
+  "task_309_retr": {
+    "answer": "To set a request timeout in requests, you can pass the `timeout` parameter to the `request()` function. The `timeout` parameter specifies the maximum amount of time to wait for a response, and it can be specified as a float or a tuple of floats.\n\nFor example, to set a timeout of 10 seconds, you can pass `timeout=10` to the `request()` function. To set a timeout of 10 seconds for the connection and 20 seconds for the response, you can pass `timeout=(10, 20)`.\n\nHere's an example of how to set a request timeout in requests:\n```\nimport requests\n\nresponse = requests.request(\"GET\", \"https://www.example.com\", timeout=10)\n```\nThis will set a timeout of 10 seconds for the entire request, including the connection and the response. If the request takes longer than 10 seconds to complete, a `ReadTimeout` exception will be raised.\n\nNote that the `timeout` parameter is only supported in the `request()` function, and it is not supported in other functions such as `get()`, `post",
+    "correct": true
+  },
+  "task_310_retr": {
+    "answer": "To send Basic auth credentials with a requests call using the code provided, you can use the `HTTPBasicAuth` class and pass in the username and password as arguments to the constructor. Here's an example:\n```\nimport requests\nfrom requests.auth import HTTPBasicAuth\n\n# Create an instance of the HTTPBasicAuth class with the username and password\nauth = HTTPBasicAuth(\"username\", \"password\")\n\n# Make a GET request to a protected URL\nresponse = requests.get(\"https://example.com/protected-resource\", auth=auth)\n```\nIn this example, the `HTTPBasicAuth` class is used to create an instance of the `HTTPBasicAuth` class with the username and password. The `auth` parameter is then passed to the `get()` method of the `requests` module to send the request with the Basic auth credentials.\n\nNote that the `HTTPBasicAuth` class is a subclass of the `AuthBase` class, which is a base class for all authentication classes in the `requests` module. The `HTTPBasicAuth` class overrides the `__call__()` method of the `AuthBase` class to attach the Basic auth credentials to",
+    "correct": true
+  },
+  "task_311_retr": {
+    "answer": "The default value of allow_redirects for a requests.get call is False. This is specified in the documentation for the get method in the requests.api module.",
+    "correct": false
+  },
+  "task_312_retr": {
+    "answer": "According to the source code, the default value of verify (SSL cert verification) in requests is True. This means that by default, requests will verify the TLS certificate presented by the server. If verify is set to False, requests will accept any TLS certificate presented by the server, and will ignore hostname mismatches and/or expired certificates, which will make your application vulnerable to man-in-the-middle (MitM) attacks.",
+    "correct": true
+  },
+  "task_313_retr": {
+    "answer": "The parent class of HTTPError in requests.exceptions is RequestException.",
+    "correct": true
+  },
+  "task_314_retr": {
+    "answer": "Based on the source code, the parent class of RequestException in requests.exceptions is IOError.",
+    "correct": true
+  },
+  "task_315_retr": {
+    "answer": "The default value of DEFAULT_REDIRECT_LIMIT in requests.models is 30.",
+    "correct": true
+  },
+  "task_316_retr": {
+    "answer": "Based on the source code above, the following three authentication classes are provided by requests.auth:\n\n1. HTTPBasicAuth: This class attaches HTTP Basic Authentication to the given Request object.\n2. HTTPProxyAuth: This class attaches HTTP Proxy Authentication to a given Request object.\n3. HTTPDigestAuth: This class attaches HTTP Digest Authentication to the given Request object.",
+    "correct": true
+  },
+  "task_317_retr": {
+    "answer": "Based on the source code, Requests raises an SSLError exception when an SSL certificate cannot be verified.",
+    "correct": true
+  },
+  "task_318_retr": {
+    "answer": "Based on the source code, Requests raises the `Timeout` exception when a request times out. The `Timeout` exception is a subclass of the `RequestException` class and is raised when the request timed out while trying to connect to the remote server.",
+    "correct": true
+  },
+  "task_319_retr": {
+    "answer": "Based on the source code provided, the default value of the `stream` parameter in a `requests.get` call is `False`. This is because the `stream` parameter is not explicitly set in the `get` function, and the default value of the `stream` parameter in the `request` function is `False`. Therefore, the default value of the `stream` parameter in a `requests.get` call is `False`.",
+    "correct": true
+  },
+  "task_320_retr": {
+    "answer": "The default User-Agent string format used by requests is:\n\n{name}/{version}\n\nwhere name is the name of the library (in this case, \"requests\") and version is the version number of the library.\n\nThis is determined by the `default_user_agent()` function in `src/requests/utils.py`, which returns a string with the format \"requests/{version}\".",
+    "correct": false
+  }
+}

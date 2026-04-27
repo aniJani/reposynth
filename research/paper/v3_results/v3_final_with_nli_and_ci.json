@@ -1,0 +1,452 @@
+{
+  "Qwen/Qwen2.5-Coder-7B-Instruct": {
+    "n_tasks": 80,
+    "initial_accuracy": 0.8625,
+    "initial_accuracy_ci": [
+      0.775,
+      0.925
+    ],
+    "always_retrieve_accuracy": 0.9625,
+    "always_retrieve_accuracy_ci": [
+      0.9125,
+      1.0
+    ],
+    "arms": {
+      "no_signal_baseline": {
+        "f1": 0.0,
+        "f1_ci": [
+          0.0,
+          0.0
+        ],
+        "final_accuracy": 0.8625,
+        "final_accuracy_ci": [
+          0.775,
+          0.925
+        ],
+        "n_retrievals_used": 0,
+        "n_retrievals_saved": 80,
+        "retrieval_save_rate": 1.0
+      },
+      "saplma_only": {
+        "f1": 0.2727272727272727,
+        "f1_ci": [
+          0.10256410256410256,
+          0.4347826086956521
+        ],
+        "final_accuracy": 0.9,
+        "final_accuracy_ci": [
+          0.825,
+          0.9625
+        ],
+        "n_retrievals_used": 33,
+        "n_retrievals_saved": 47,
+        "retrieval_save_rate": 0.5875
+      },
+      "flare_only": {
+        "f1": 0.39999999999999997,
+        "f1_ci": [
+          0.21276595744680854,
+          0.5714285714285713
+        ],
+        "final_accuracy": 0.95,
+        "final_accuracy_ci": [
+          0.9,
+          0.9875
+        ],
+        "n_retrievals_used": 34,
+        "n_retrievals_saved": 46,
+        "retrieval_save_rate": 0.575
+      },
+      "v6_full": {
+        "f1": 0.23809523809523805,
+        "f1_ci": [
+          0.05878151260504201,
+          0.4
+        ],
+        "final_accuracy": 0.9,
+        "final_accuracy_ci": [
+          0.8375,
+          0.9625
+        ],
+        "n_retrievals_used": 31,
+        "n_retrievals_saved": 49,
+        "retrieval_save_rate": 0.6125
+      },
+      "cce_only": {
+        "f1": 0.2777777777777778,
+        "f1_ci": [
+          0.07400793650793651,
+          0.47058823529411764
+        ],
+        "final_accuracy": 0.9,
+        "final_accuracy_ci": [
+          0.825,
+          0.9625
+        ],
+        "n_retrievals_used": 25,
+        "n_retrievals_saved": 55,
+        "retrieval_save_rate": 0.6875
+      },
+      "embedding_se_only": {
+        "f1": 0.1818181818181818,
+        "f1_ci": [
+          0.0,
+          0.359
+        ],
+        "final_accuracy": 0.8875,
+        "final_accuracy_ci": [
+          0.8125,
+          0.95
+        ],
+        "n_retrievals_used": 22,
+        "n_retrievals_saved": 58,
+        "retrieval_save_rate": 0.725
+      },
+      "nli_se_only": {
+        "f1": 0.5161290322580645,
+        "f1_ci": [
+          0.2962418300653595,
+          0.7000675675675676
+        ],
+        "final_accuracy": 0.95,
+        "final_accuracy_ci": [
+          0.9,
+          0.9875
+        ],
+        "n_retrievals_used": 20,
+        "n_retrievals_saved": 60,
+        "retrieval_save_rate": 0.75
+      },
+      "flare_plus_emb_se": {
+        "f1": 0.3555555555555555,
+        "f1_ci": [
+          0.1713095238095238,
+          0.5306122448979591
+        ],
+        "final_accuracy": 0.925,
+        "final_accuracy_ci": [
+          0.8625,
+          0.975
+        ],
+        "n_retrievals_used": 34,
+        "n_retrievals_saved": 46,
+        "retrieval_save_rate": 0.575
+      },
+      "flare_plus_nli_se": {
+        "f1": 0.5,
+        "f1_ci": [
+          0.2857142857142857,
+          0.6896551724137931
+        ],
+        "final_accuracy": 0.95,
+        "final_accuracy_ci": [
+          0.9,
+          0.9875
+        ],
+        "n_retrievals_used": 21,
+        "n_retrievals_saved": 59,
+        "retrieval_save_rate": 0.7375
+      }
+    }
+  },
+  "deepseek-ai/deepseek-coder-7b-instruct-v1.5": {
+    "n_tasks": 80,
+    "initial_accuracy": 0.8,
+    "initial_accuracy_ci": [
+      0.7125,
+      0.875
+    ],
+    "always_retrieve_accuracy": 0.8625,
+    "always_retrieve_accuracy_ci": [
+      0.7871875,
+      0.9375
+    ],
+    "arms": {
+      "no_signal_baseline": {
+        "f1": 0.0,
+        "f1_ci": [
+          0.0,
+          0.0
+        ],
+        "final_accuracy": 0.8,
+        "final_accuracy_ci": [
+          0.7125,
+          0.875
+        ],
+        "n_retrievals_used": 0,
+        "n_retrievals_saved": 80,
+        "retrieval_save_rate": 1.0
+      },
+      "saplma_only": {
+        "f1": 0.15873015873015872,
+        "f1_ci": [
+          0.03508771929824561,
+          0.28125000000000006
+        ],
+        "final_accuracy": 0.8,
+        "final_accuracy_ci": [
+          0.7121875000000001,
+          0.8875
+        ],
+        "n_retrievals_used": 47,
+        "n_retrievals_saved": 33,
+        "retrieval_save_rate": 0.4125
+      },
+      "flare_only": {
+        "f1": 0.36000000000000004,
+        "f1_ci": [
+          0.1817171717171717,
+          0.5152356902356902
+        ],
+        "final_accuracy": 0.8625,
+        "final_accuracy_ci": [
+          0.7871875,
+          0.9253124999999998
+        ],
+        "n_retrievals_used": 34,
+        "n_retrievals_saved": 46,
+        "retrieval_save_rate": 0.575
+      },
+      "v6_full": {
+        "f1": 0.40816326530612246,
+        "f1_ci": [
+          0.23245847176079731,
+          0.5882835101253616
+        ],
+        "final_accuracy": 0.825,
+        "final_accuracy_ci": [
+          0.7375,
+          0.9
+        ],
+        "n_retrievals_used": 33,
+        "n_retrievals_saved": 47,
+        "retrieval_save_rate": 0.5875
+      },
+      "cce_only": {
+        "f1": 0.33333333333333337,
+        "f1_ci": [
+          0.12903225806451613,
+          0.5
+        ],
+        "final_accuracy": 0.85,
+        "final_accuracy_ci": [
+          0.775,
+          0.925
+        ],
+        "n_retrievals_used": 26,
+        "n_retrievals_saved": 54,
+        "retrieval_save_rate": 0.675
+      },
+      "embedding_se_only": {
+        "f1": 0.45,
+        "f1_ci": [
+          0.2222222222222222,
+          0.6223529411764706
+        ],
+        "final_accuracy": 0.875,
+        "final_accuracy_ci": [
+          0.8,
+          0.9375
+        ],
+        "n_retrievals_used": 24,
+        "n_retrievals_saved": 56,
+        "retrieval_save_rate": 0.7
+      },
+      "nli_se_only": {
+        "f1": 0.5,
+        "f1_ci": [
+          0.3043148880105402,
+          0.6565104166666664
+        ],
+        "final_accuracy": 0.8875,
+        "final_accuracy_ci": [
+          0.8125,
+          0.95
+        ],
+        "n_retrievals_used": 28,
+        "n_retrievals_saved": 52,
+        "retrieval_save_rate": 0.65
+      },
+      "flare_plus_emb_se": {
+        "f1": 0.39024390243902435,
+        "f1_ci": [
+          0.17142857142857143,
+          0.5714285714285714
+        ],
+        "final_accuracy": 0.8625,
+        "final_accuracy_ci": [
+          0.7875,
+          0.925
+        ],
+        "n_retrievals_used": 25,
+        "n_retrievals_saved": 55,
+        "retrieval_save_rate": 0.6875
+      },
+      "flare_plus_nli_se": {
+        "f1": 0.375,
+        "f1_ci": [
+          0.1904761904761905,
+          0.5454545454545454
+        ],
+        "final_accuracy": 0.8625,
+        "final_accuracy_ci": [
+          0.7875,
+          0.925
+        ],
+        "n_retrievals_used": 32,
+        "n_retrievals_saved": 48,
+        "retrieval_save_rate": 0.6
+      }
+    }
+  },
+  "codellama/CodeLlama-7b-Instruct-hf": {
+    "n_tasks": 80,
+    "initial_accuracy": 0.725,
+    "initial_accuracy_ci": [
+      0.625,
+      0.825
+    ],
+    "always_retrieve_accuracy": 0.8875,
+    "always_retrieve_accuracy_ci": [
+      0.8125,
+      0.95
+    ],
+    "arms": {
+      "no_signal_baseline": {
+        "f1": 0.0,
+        "f1_ci": [
+          0.0,
+          0.0
+        ],
+        "final_accuracy": 0.725,
+        "final_accuracy_ci": [
+          0.625,
+          0.825
+        ],
+        "n_retrievals_used": 0,
+        "n_retrievals_saved": 80,
+        "retrieval_save_rate": 1.0
+      },
+      "saplma_only": {
+        "f1": 0.5084745762711864,
+        "f1_ci": [
+          0.3404054596547571,
+          0.6545611285266458
+        ],
+        "final_accuracy": 0.8375,
+        "final_accuracy_ci": [
+          0.75,
+          0.9125
+        ],
+        "n_retrievals_used": 37,
+        "n_retrievals_saved": 43,
+        "retrieval_save_rate": 0.5375
+      },
+      "flare_only": {
+        "f1": 0.6538461538461539,
+        "f1_ci": [
+          0.4888888888888889,
+          0.7797347089167281
+        ],
+        "final_accuracy": 0.85,
+        "final_accuracy_ci": [
+          0.7746875000000001,
+          0.925
+        ],
+        "n_retrievals_used": 30,
+        "n_retrievals_saved": 50,
+        "retrieval_save_rate": 0.625
+      },
+      "v6_full": {
+        "f1": 0.6296296296296297,
+        "f1_ci": [
+          0.47058823529411764,
+          0.760047619047619
+        ],
+        "final_accuracy": 0.85,
+        "final_accuracy_ci": [
+          0.7746875000000001,
+          0.925
+        ],
+        "n_retrievals_used": 32,
+        "n_retrievals_saved": 48,
+        "retrieval_save_rate": 0.6
+      },
+      "cce_only": {
+        "f1": 0.5098039215686274,
+        "f1_ci": [
+          0.3225518433179723,
+          0.6545454545454545
+        ],
+        "final_accuracy": 0.8375,
+        "final_accuracy_ci": [
+          0.7621875,
+          0.9125
+        ],
+        "n_retrievals_used": 29,
+        "n_retrievals_saved": 51,
+        "retrieval_save_rate": 0.6375
+      },
+      "embedding_se_only": {
+        "f1": 0.4337349397590361,
+        "f1_ci": [
+          0.3013698630136986,
+          0.5647186700767264
+        ],
+        "final_accuracy": 0.8625,
+        "final_accuracy_ci": [
+          0.7875,
+          0.9375
+        ],
+        "n_retrievals_used": 61,
+        "n_retrievals_saved": 19,
+        "retrieval_save_rate": 0.23750000000000004
+      },
+      "nli_se_only": {
+        "f1": 0.46428571428571425,
+        "f1_ci": [
+          0.29618055555555556,
+          0.6101694915254238
+        ],
+        "final_accuracy": 0.8125,
+        "final_accuracy_ci": [
+          0.725,
+          0.8875
+        ],
+        "n_retrievals_used": 34,
+        "n_retrievals_saved": 46,
+        "retrieval_save_rate": 0.575
+      },
+      "flare_plus_emb_se": {
+        "f1": 0.6296296296296297,
+        "f1_ci": [
+          0.4760504201680672,
+          0.7647549019607844
+        ],
+        "final_accuracy": 0.8625,
+        "final_accuracy_ci": [
+          0.7875,
+          0.9375
+        ],
+        "n_retrievals_used": 32,
+        "n_retrievals_saved": 48,
+        "retrieval_save_rate": 0.6
+      },
+      "flare_plus_nli_se": {
+        "f1": 0.6415094339622641,
+        "f1_ci": [
+          0.48000000000000004,
+          0.7741935483870968
+        ],
+        "final_accuracy": 0.85,
+        "final_accuracy_ci": [
+          0.7746875000000001,
+          0.925
+        ],
+        "n_retrievals_used": 31,
+        "n_retrievals_saved": 49,
+        "retrieval_save_rate": 0.6125
+      }
+    }
+  }
+}
