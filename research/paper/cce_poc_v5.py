@@ -153,6 +153,35 @@ def make_repobench_verify(ground_truth: str):
     return verify
 
 
+def _flatten_context_field(value) -> str:
+    """RepoBench's `context` field can be str, list[str], or list[dict-or-tuple].
+
+    Normalizes any of those to a single string. List entries are joined with
+    blank lines; dicts use a 'path'+'content' or 'filepath'+'code' shape.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        parts = []
+        for item in value:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict):
+                p = item.get("path") or item.get("filepath") or item.get("file") or ""
+                c = (item.get("content") or item.get("code")
+                     or item.get("text") or "")
+                parts.append(f"# {p}\n{c}" if p else str(c))
+            elif isinstance(item, (list, tuple)) and len(item) == 2:
+                p, c = item
+                parts.append(f"# {p}\n{c}")
+            else:
+                parts.append(str(item))
+        return "\n\n".join(p for p in parts if p)
+    return str(value)
+
+
 def load_repobench(n_tasks: int, split: str, seed: int = 42) -> list[dict]:
     """Load + adapt RepoBench Python cross_file_* into our task dict format.
 
@@ -166,17 +195,25 @@ def load_repobench(n_tasks: int, split: str, seed: int = 42) -> list[dict]:
     rng = random.Random(seed)
     by_repo: dict[str, list[dict]] = {}
     skipped = {"no_next_line": 0, "no_cropped": 0, "no_context": 0}
+    inspected_first = False
     for row in ds:
         d = dict(row)
+        if not inspected_first:
+            print(f"[load] field types: " + ", ".join(
+                f"{k}={type(v).__name__}" for k, v in d.items()
+            ), flush=True)
+            inspected_first = True
         gt = (d.get("next_line") or "").strip()
         if not gt:
             skipped["no_next_line"] += 1
             continue
-        in_file = d.get("cropped_code") or d.get("all_code") or ""
+        in_file = _flatten_context_field(
+            d.get("cropped_code") or d.get("all_code") or ""
+        )
         if not in_file.strip():
             skipped["no_cropped"] += 1
             continue
-        cross_file = d.get("context") or ""
+        cross_file = _flatten_context_field(d.get("context"))
         if not cross_file.strip():
             skipped["no_context"] += 1
             continue
