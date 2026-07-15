@@ -27,9 +27,13 @@ FROM pg_indexes WHERE schemaname = 'public' ORDER BY 1, 2
 """
 
 FOREIGN_KEYS_SQL = """
-SELECT conname AS name, conrelid::regclass::text AS from_table,
-       confrelid::regclass::text AS to_table
-FROM pg_constraint WHERE contype = 'f' ORDER BY 1
+SELECT con.conname AS name, rel.relname AS from_table, frel.relname AS to_table
+FROM pg_constraint con
+JOIN pg_class rel ON rel.oid = con.conrelid
+JOIN pg_namespace n ON n.oid = rel.relnamespace
+JOIN pg_class frel ON frel.oid = con.confrelid
+WHERE con.contype = 'f' AND n.nspname = 'public'
+ORDER BY 1
 """
 
 POLICIES_SQL = """
