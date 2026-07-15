@@ -12,8 +12,11 @@ guessing. Five read-only tools over Supabase / any Postgres:
 | `infra_drift` | What changed between two states / environments? |
 
 Read-only by construction: the connector protocol has no write method, and
-Postgres sessions open with `default_transaction_read_only=on`. Secret values
-are hashed at capture and never stored.
+Postgres sessions open with `default_transaction_read_only=on`. The Supabase
+connector runs its SQL via the Management API without a read-only
+transaction; its safety comes from static SELECT-only introspection queries
+plus the recommended read-scoped token. Secret values are hashed at capture
+and never stored.
 
 ## Setup
 

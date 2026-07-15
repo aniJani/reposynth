@@ -63,3 +63,19 @@ def test_snapshot_then_drift_live(project):
 def test_unknown_target_returns_error(project):
     out = tools.infra_state("staging")
     assert "error" in out
+
+
+def test_drift_traversal_ref_returns_error(project):
+    out = tools.infra_drift("../../../etc/passwd", "live:prod")
+    assert "error" in out
+
+
+class ExplodingConnector(FakeConnector):
+    def fetch_state(self, target):
+        raise ValueError("connection refused: db host unreachable")
+
+
+def test_connector_runtime_error_returns_error(project, monkeypatch):
+    monkeypatch.setattr(tools, "get_connector", lambda _id: ExplodingConnector())
+    out = tools.infra_state("prod")
+    assert "error" in out and "unreachable" in out["error"]

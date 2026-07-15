@@ -26,7 +26,7 @@ def _fetch(target_name: str):
 def infra_state(target: str, section: Optional[str] = None) -> dict:
     try:
         t, doc = _fetch(target)
-    except (KeyError, RuntimeError) as exc:
+    except Exception as exc:
         return {"error": str(exc)}
     state = doc if section is None else doc["sections"].get(section)
     if state is None:
@@ -38,7 +38,7 @@ def infra_state(target: str, section: Optional[str] = None) -> dict:
 def infra_verify(target: str, assertions: list) -> dict:
     try:
         t, doc = _fetch(target)
-    except (KeyError, RuntimeError) as exc:
+    except Exception as exc:
         return {"error": str(exc)}
     return {"target": target, "risk": t["risk"], **run_verify(doc, assertions)}
 
@@ -46,7 +46,7 @@ def infra_verify(target: str, assertions: list) -> dict:
 def infra_impact(target: str, op: dict) -> dict:
     try:
         t, doc = _fetch(target)
-    except (KeyError, RuntimeError) as exc:
+    except Exception as exc:
         return {"error": str(exc)}
     return {"target": target, **run_impact(doc, op, risk=t["risk"])}
 
@@ -54,7 +54,7 @@ def infra_impact(target: str, op: dict) -> dict:
 def infra_snapshot(target: str, label: Optional[str] = None) -> dict:
     try:
         t, doc = _fetch(target)
-    except (KeyError, RuntimeError) as exc:
+    except Exception as exc:
         return {"error": str(exc)}
     return {"target": target, "risk": t["risk"],
             "snapshot": snapshots.save_snapshot(doc, label=label)}
@@ -72,7 +72,7 @@ def infra_drift(ref_a: str, ref_b: str) -> dict:
     try:
         doc_a, risk_a = _resolve_ref(ref_a)
         doc_b, risk_b = _resolve_ref(ref_b)
-    except (KeyError, RuntimeError) as exc:
+    except Exception as exc:
         return {"error": str(exc)}
     live_risks = [r for r in (risk_a, risk_b) if r]
     risk = min(live_risks, key=lambda r: _RISK_ORDER[r]) if live_risks else None
