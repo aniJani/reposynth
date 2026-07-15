@@ -14,8 +14,24 @@ def _analyzed(op, risk, findings):
     return {"op": op, "risk": risk, "result": "analyzed", "findings": findings}
 
 
+_REQUIRED_SECTIONS = {
+    "drop_table": ("schema", "rls"),
+    "delete_bucket": ("storage",),
+    "drop_policy": ("rls",),
+    "drop_role": ("rls",),
+    "delete_function": ("functions",),
+}
+
+
 def impact(state_doc: dict, op: dict, risk: str) -> dict:
     kind = op.get("op")
+    if kind not in _REQUIRED_SECTIONS:
+        return {"op": op, "risk": risk, "result": "unknown",
+                "findings": [f"op '{kind}' is outside the analyzed set — no claim made"]}
+    missing = [n for n in _REQUIRED_SECTIONS[kind] if _section(state_doc, n) is None]
+    if missing:
+        return {"op": op, "risk": risk, "result": "unknown",
+                "findings": [f"section '{n}' not captured for this target — no claim made" for n in missing]}
     schema = _section(state_doc, "schema") or {"tables": []}
     rls = _section(state_doc, "rls") or {"tables": []}
 
@@ -46,6 +62,9 @@ def impact(state_doc: dict, op: dict, risk: str) -> dict:
         table = next((t for t in rls["tables"] if t["table"] == op["table"]), None)
         if table is None:
             return _analyzed(op, risk, [f"table '{op['table']}' not found in captured state"])
+        if not any(p["name"] == op["policy"] for p in table["policies"]):
+            return _analyzed(op, risk, [
+                f"policy '{op['policy']}' not found on table '{op['table']}' in captured state — drop would be a no-op"])
         remaining = [p["name"] for p in table["policies"] if p["name"] != op["policy"]]
         findings = [f"{len(remaining)} remaining policies on '{op['table']}': {remaining}"]
         if table["enabled"] and not remaining:
@@ -69,6 +88,3 @@ def impact(state_doc: dict, op: dict, risk: str) -> dict:
         if fn is None:
             return _analyzed(op, risk, [f"function '{op['function']}' not found in captured state"])
         return _analyzed(op, risk, [f"function '{op['function']}' is {fn.get('status')}; callers will 404"])
-
-    return {"op": op, "risk": risk, "result": "unknown",
-            "findings": [f"op '{kind}' is outside the analyzed set — no claim made"]}
