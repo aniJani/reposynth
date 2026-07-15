@@ -72,3 +72,9 @@ def test_function_deployed_optional_status():
     assert ok["result"] == "pass"
     bad = run_one({"type": "function_deployed", "function": "resize", "status": "REMOVED"})
     assert bad["result"] == "fail"
+
+
+def test_malformed_assertion_is_unsupported_not_raised():
+    out = verify(DOC, [{"type": "table_exists", "table": "orders"}, {"type": "table_exists"}])
+    assert out["summary"] == {"pass": 1, "fail": 0, "unsupported": 1}
+    assert "table" in str(out["results"][1]["actual"])

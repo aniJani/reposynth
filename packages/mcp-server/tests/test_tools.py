@@ -79,3 +79,18 @@ def test_connector_runtime_error_returns_error(project, monkeypatch):
     monkeypatch.setattr(tools, "get_connector", lambda _id: ExplodingConnector())
     out = tools.infra_state("prod")
     assert "error" in out and "unreachable" in out["error"]
+
+
+def test_verify_malformed_assertion_does_not_lose_batch(project):
+    out = tools.infra_verify("prod", [
+        {"type": "table_exists", "table": "users"},
+        {"type": "table_exists"},
+    ])
+    assert "error" not in out
+    assert out["summary"] == {"pass": 1, "fail": 0, "unsupported": 1}
+
+
+def test_impact_missing_arg_returns_unknown_not_error(project):
+    out = tools.infra_impact("prod", {"op": "drop_table"})
+    assert "error" not in out
+    assert out["result"] == "unknown"

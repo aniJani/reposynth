@@ -22,6 +22,14 @@ _REQUIRED_SECTIONS = {
     "delete_function": ("functions",),
 }
 
+_REQUIRED_ARGS = {
+    "drop_table": ("table",),
+    "delete_bucket": ("bucket",),
+    "drop_policy": ("table", "policy"),
+    "drop_role": ("role",),
+    "delete_function": ("function",),
+}
+
 
 def impact(state_doc: dict, op: dict, risk: str) -> dict:
     kind = op.get("op")
@@ -32,6 +40,11 @@ def impact(state_doc: dict, op: dict, risk: str) -> dict:
     if missing:
         return {"op": op, "risk": risk, "result": "unknown",
                 "findings": [f"section '{n}' not captured for this target — no claim made" for n in missing]}
+    missing_args = [k for k in _REQUIRED_ARGS[kind] if k not in op]
+    if missing_args:
+        return {"op": op, "risk": risk, "result": "unknown",
+                "findings": [f"op '{kind}' missing required argument '{k}' — no claim made"
+                             for k in missing_args]}
     schema = _section(state_doc, "schema") or {"tables": []}
     rls = _section(state_doc, "rls") or {"tables": []}
 
