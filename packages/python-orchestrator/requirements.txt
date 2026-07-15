@@ -43,3 +43,4 @@ slowapi==0.1.9
 
 # Additional utilities
 python-multipart==0.0.6
+mcp>=1.2.0
