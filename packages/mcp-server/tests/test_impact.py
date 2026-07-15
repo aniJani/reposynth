@@ -38,3 +38,29 @@ def test_drop_role_finds_referencing_policies():
 def test_unknown_op_is_unknown_not_empty():
     out = impact(DOC, {"op": "vaporize_cluster"}, risk="prod")
     assert out["result"] == "unknown"
+
+
+def test_delete_bucket_reports_visibility_and_not_found():
+    out = impact(DOC, {"op": "delete_bucket", "bucket": "avatars"}, risk="prod")
+    assert out["result"] == "analyzed" and any("PUBLIC" in str(f) for f in out["findings"])
+    missing = impact(DOC, {"op": "delete_bucket", "bucket": "nope"}, risk="prod")
+    assert any("not found" in str(f) for f in missing["findings"])
+
+
+def test_delete_function_reports_status_and_not_found():
+    out = impact(DOC, {"op": "delete_function", "function": "resize"}, risk="dev")
+    assert any("404" in str(f) for f in out["findings"])
+    missing = impact(DOC, {"op": "delete_function", "function": "nope"}, risk="dev")
+    assert any("not found" in str(f) for f in missing["findings"])
+
+
+def test_missing_required_section_is_unknown():
+    bare = make_state_doc("postgres", "prod", {"schema": {"tables": []}})
+    out = impact(bare, {"op": "delete_bucket", "bucket": "avatars"}, risk="prod")
+    assert out["result"] == "unknown"
+    assert any("storage" in str(f) for f in out["findings"])
+
+
+def test_drop_policy_nonexistent_policy_is_flagged():
+    out = impact(DOC, {"op": "drop_policy", "table": "users", "policy": "ghost"}, risk="prod")
+    assert any("not found" in str(f) for f in out["findings"])
