@@ -65,3 +65,10 @@ def test_summary_counts():
         {"type": "quantum_check"},
     ])
     assert out["summary"] == {"pass": 1, "fail": 1, "unsupported": 1}
+
+
+def test_function_deployed_optional_status():
+    ok = run_one({"type": "function_deployed", "function": "resize", "status": "ACTIVE"})
+    assert ok["result"] == "pass"
+    bad = run_one({"type": "function_deployed", "function": "resize", "status": "REMOVED"})
+    assert bad["result"] == "fail"
