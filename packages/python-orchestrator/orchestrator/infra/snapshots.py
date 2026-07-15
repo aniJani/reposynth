@@ -15,14 +15,27 @@ def _snap_dir(project: Optional[Path]) -> Path:
     return d
 
 
+def _utc_ts() -> str:
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
 def save_snapshot(doc: dict, project: Optional[Path] = None, label: Optional[str] = None) -> dict:
-    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    ts = _utc_ts()
     digest = section_hash(doc)[len("sha256:"):][:8]
     snap_id = f"{ts}-{digest}"
     if label:
         snap_id += "-" + re.sub(r"[^A-Za-z0-9_-]", "_", label)[:32]
+    payload = json.dumps(doc, indent=2, default=str)
+    base_id = snap_id
     path = _snap_dir(project) / f"{snap_id}.json"
-    path.write_text(json.dumps(doc, indent=2, default=str))
+    suffix = 2
+    # ponytail: identical re-save is a no-op (content-addressed); a true
+    # id collision with different content gets a numeric suffix, never a clobber.
+    while path.exists() and path.read_text() != payload:
+        snap_id = f"{base_id}-{suffix}"
+        path = _snap_dir(project) / f"{snap_id}.json"
+        suffix += 1
+    path.write_text(payload)
     return {"id": snap_id, "path": str(path),
             "target": doc.get("target"), "capturedAt": doc.get("capturedAt")}
 

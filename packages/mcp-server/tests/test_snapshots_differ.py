@@ -59,3 +59,53 @@ def test_diff_config_rotation():
     b = make_doc([T_USERS], env={"envNames": ["KEY"], "valueHashes": {"KEY": "sha256:bbb"}})
     out = differ.diff(a, b)
     assert out["sections"]["config"]["rotated"] == ["KEY"]
+
+
+def test_save_snapshot_never_clobbers_on_id_collision(tmp_path, monkeypatch):
+    monkeypatch.setattr(snapshots, "_utc_ts", lambda: "20260101T000000Z")
+    monkeypatch.setattr(snapshots, "section_hash", lambda _doc: "sha256:" + "0" * 64)
+    doc_a = make_doc([T_USERS])
+    doc_b = make_doc([T_ORDERS])
+    meta_a = snapshots.save_snapshot(doc_a, project=tmp_path)
+    meta_b = snapshots.save_snapshot(doc_b, project=tmp_path)
+    assert meta_a["id"] != meta_b["id"]
+    assert snapshots.load_snapshot(meta_a["id"], project=tmp_path) == doc_a
+    assert snapshots.load_snapshot(meta_b["id"], project=tmp_path) == doc_b
+    again = snapshots.save_snapshot(doc_a, project=tmp_path)
+    assert again["id"] == meta_a["id"]
+
+
+def test_diff_section_added_and_removed():
+    a = make_doc([T_USERS])
+    b = make_doc([T_USERS], buckets=[{"name": "avatars", "public": False}])
+    out = differ.diff(a, b)
+    assert out["sections"]["storage"] == {"status": "added"}
+    back = differ.diff(b, a)
+    assert back["sections"]["storage"] == {"status": "removed"}
+
+
+def test_diff_rls_functions_and_auth_branches():
+    a = make_state_doc("supabase", "dev", {
+        "rls": {"tables": [{"table": "users", "enabled": True, "policies": []}]},
+        "functions": {"list": [{"name": "resize", "status": "ACTIVE"}]},
+        "auth": {"providers": ["github"], "settings": {}},
+    })
+    b = make_state_doc("supabase", "dev", {
+        "rls": {"tables": [{"table": "users", "enabled": False, "policies": []}]},
+        "functions": {"list": [{"name": "resize", "status": "ACTIVE"},
+                               {"name": "mail", "status": "ACTIVE"}]},
+        "auth": {"providers": ["github", "google"], "settings": {}},
+    })
+    out = differ.diff(a, b)
+    assert out["sections"]["rls"]["changed"] == ["users"]
+    assert out["sections"]["functions"]["added"] == ["mail"]
+    assert out["sections"]["auth"]["added"] == ["google"]
+
+
+def test_label_sanitized_and_truncated(tmp_path):
+    doc = make_doc([T_USERS])
+    meta = snapshots.save_snapshot(doc, project=tmp_path, label="my label!/" + "x" * 40)
+    label_part = meta["id"].split("-", 2)[2]
+    assert len(label_part) == 32
+    allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-")
+    assert set(label_part) <= allowed
