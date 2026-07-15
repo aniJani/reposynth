@@ -117,7 +117,13 @@ def _check(doc, a):
 
 
 def verify(state_doc: dict, assertions: list) -> dict:
-    results = [_check(state_doc, a) for a in assertions]
+    results = []
+    for a in assertions:
+        try:
+            results.append(_check(state_doc, a))
+        except KeyError as exc:
+            results.append({"assertion": a, "result": "unsupported", "expected": None,
+                            "actual": f"assertion missing required key {exc}"})
     summary = {"pass": 0, "fail": 0, "unsupported": 0}
     for r in results:
         summary[r["result"]] += 1

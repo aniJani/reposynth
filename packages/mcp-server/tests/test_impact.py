@@ -64,3 +64,9 @@ def test_missing_required_section_is_unknown():
 def test_drop_policy_nonexistent_policy_is_flagged():
     out = impact(DOC, {"op": "drop_policy", "table": "users", "policy": "ghost"}, risk="prod")
     assert any("not found" in str(f) for f in out["findings"])
+
+
+def test_missing_op_argument_is_unknown():
+    out = impact(DOC, {"op": "drop_policy", "table": "users"}, risk="prod")
+    assert out["result"] == "unknown"
+    assert "policy" in str(out["findings"])
