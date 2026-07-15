@@ -50,6 +50,8 @@ def list_snapshots(project: Optional[Path] = None) -> list:
 
 
 def load_snapshot(snapshot_id: str, project: Optional[Path] = None) -> dict:
+    if not re.fullmatch(r"[A-Za-z0-9._-]+", snapshot_id or ""):
+        raise KeyError(f"Invalid snapshot id '{snapshot_id}'")
     path = _snap_dir(project) / f"{snapshot_id}.json"
     if not path.exists():
         available = [p.stem for p in _snap_dir(project).glob("*.json")]
