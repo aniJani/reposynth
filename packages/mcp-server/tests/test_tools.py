@@ -67,7 +67,7 @@ def test_unknown_target_returns_error(project):
 
 def test_drift_traversal_ref_returns_error(project):
     out = tools.infra_drift("../../../etc/passwd", "live:prod")
-    assert "error" in out
+    assert "error" in out and "Invalid snapshot id" in out["error"]
 
 
 class ExplodingConnector(FakeConnector):
