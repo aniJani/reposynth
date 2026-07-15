@@ -38,3 +38,8 @@ def test_make_state_doc_shape_and_hashes():
 def test_make_state_doc_rejects_unknown_section():
     with pytest.raises(ValueError):
         make_state_doc("postgres", "prod", {"bogus": {}})
+
+
+def test_make_state_doc_rejects_non_dict_payload():
+    with pytest.raises(ValueError):
+        make_state_doc("postgres", "prod", {"schema": [("tables", [])]})

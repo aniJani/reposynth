@@ -37,6 +37,10 @@ def make_state_doc(
     for name, payload in sections.items():
         if name not in SECTION_NAMES:
             raise ValueError(f"Unknown StateDoc section '{name}'. Valid: {SECTION_NAMES}")
+        if not isinstance(payload, dict):
+            raise ValueError(
+                f"Section '{name}' payload must be a dict, got {type(payload).__name__}"
+            )
         entry = dict(payload)
         entry["hash"] = section_hash(payload)
         out[name] = entry
