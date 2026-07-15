@@ -101,7 +101,11 @@ def _check(doc, a):
         if s is None:
             return unsupported("no 'functions' section for this target")
         fn = _find(s["list"], "name", a["function"])
-        return outcome(fn is not None, a["function"], [f["name"] for f in s["list"]])
+        if fn is None:
+            return outcome(False, a["function"], [f["name"] for f in s["list"]])
+        if "status" in a:
+            return outcome(fn.get("status") == a["status"], {"status": a["status"]}, fn)
+        return outcome(True, a["function"], fn)
 
     if kind == "env_name_present":
         s = _section(doc, "config")
