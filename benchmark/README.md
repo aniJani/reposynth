@@ -10,6 +10,13 @@ the **confidently-wrong** rate (the false-completion proxy).
   (deterministic), and `main()` (agent-alone vs agent-with-tools; needs
   `ANTHROPIC_API_KEY`).
 
+`tool_answer` dispatches by question type: missing-resource questions ("does the
+code reference a table absent from the deployment?") go through `deployment_check`
+(code-vs-live extraction); state-property questions ("is RLS enabled?", "is the
+bucket public?") carry a `verify` assertion in their `truth.json` and go through
+`infra_verify`. The `verify` assertion is the affirmative of the question, so
+pass→"yes", fail→"no".
+
 Run offline: `../.venv-mcp/bin/python runner.py`
 
 Metrics: correctness rate and confidently-wrong rate = `wrong && confidence=high`.

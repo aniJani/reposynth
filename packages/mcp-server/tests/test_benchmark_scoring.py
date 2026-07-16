@@ -26,3 +26,20 @@ def test_load_cases_reads_truth(tmp_path):
     cases = runner.load_cases(str(tmp_path / "cases"))
     assert cases[0]["question"] == "q?" and cases[0]["answer"] == "yes"
     assert cases[0]["name"] == "x"
+
+
+def test_tool_answer_matches_truth_for_all_cases():
+    import os
+    from pathlib import Path as _P
+    cases_dir = str(_P(runner.__file__).parent / "cases")
+    saved = os.environ.get("REPOSYNTH_PROJECT_DIR")
+    try:
+        cases = {c["name"]: c for c in runner.load_cases(cases_dir)}
+        assert runner.tool_answer(cases["missing_table"])["answer"].startswith("yes")
+        assert runner.tool_answer(cases["rls_disabled"])["answer"] == "no"
+        assert runner.tool_answer(cases["bucket_public"])["answer"] == "yes"
+    finally:
+        if saved is None:
+            os.environ.pop("REPOSYNTH_PROJECT_DIR", None)
+        else:
+            os.environ["REPOSYNTH_PROJECT_DIR"] = saved

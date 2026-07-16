@@ -1,1 +1,1 @@
-{"question": "Is the avatars storage bucket public?", "answer": "yes"}
+{"question": "Is the avatars storage bucket public?", "answer": "yes", "verify": {"type": "bucket_exists", "bucket": "avatars", "public": true}}

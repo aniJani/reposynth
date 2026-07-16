@@ -22,6 +22,7 @@ def load_cases(cases_dir):
             continue
         truth = json.loads((case / "truth.json").read_text())
         out.append({"name": case.name, "question": truth["question"], "answer": truth["answer"],
+                    "verify": truth.get("verify"),
                     "repo_dir": str(case / "repo"), "state_path": str(case / "state.json")})
     return out
 
@@ -35,13 +36,29 @@ def score(rows):
 
 
 def tool_answer(case):
-    """Deterministic tool-derived answer for the missing-table question type."""
+    """Deterministic tool-derived answer.
+
+    Dispatches by question type: state-property questions (rls/bucket/etc.) carry
+    a `verify` assertion in truth.json and go through `infra_verify`; missing-
+    resource questions go through `deployment_check` (code-vs-live extraction).
+    The `verify` assertion is phrased as the AFFIRMATIVE of the question, so a
+    passing assertion means "yes" and a failing one means "no".
+    """
     os.environ["REPOSYNTH_PROJECT_DIR"] = str(Path(case["repo_dir"]).parent)
     # point a fixture target at this case's state.json
     reposynth = Path(case["repo_dir"]).parent / ".reposynth"
     reposynth.mkdir(exist_ok=True)
     (reposynth / "targets.json").write_text(json.dumps({
         "targets": {"dev": {"connector": "fixture", "statePath": case["state_path"], "risk": "dev"}}}))
+    if case.get("verify"):
+        res = tools.infra_verify("dev", [case["verify"]])
+        results = res.get("results", [])
+        result = results[0]["result"] if results else "unsupported"
+        if result == "pass":
+            return {"answer": "yes", "confidence": "high"}
+        if result == "fail":
+            return {"answer": "no", "confidence": "high"}
+        return {"answer": "unknown", "confidence": "low"}
     res = tools.deployment_check("dev", repo_path=case["repo_dir"])
     fails = [e for e in res.get("expectations", []) if e["result"] == "fail"]
     if fails:
