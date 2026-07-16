@@ -1,1 +1,1 @@
-{"question": "Is row-level security enabled on the orders table?", "answer": "no"}
+{"question": "Is row-level security enabled on the orders table?", "answer": "no", "verify": {"type": "rls_enabled", "table": "orders"}}
