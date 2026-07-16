@@ -1,0 +1,1 @@
+{"connector": "fixture", "target": "dev", "sections": {"storage": {"hash": "x", "buckets": [{"name": "avatars", "public": true}]}}}

@@ -1,0 +1,1 @@
+{"connector": "fixture", "target": "dev", "sections": {"rls": {"hash": "x", "tables": [{"table": "orders", "enabled": false, "policies": []}]}}}
