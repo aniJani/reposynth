@@ -4,6 +4,7 @@ Pure: reads source text, emits assertions in verify.py's closed vocabulary.
 Imports nothing from the frozen reposynth layer.
 """
 import ast
+import os
 
 
 def _site(relpath, lineno):
@@ -57,7 +58,6 @@ import tree_sitter_typescript as _tsts
 from tree_sitter import Language, Parser, Query, QueryCursor
 
 _TS = Language(_tsts.language_typescript())
-_PARSER = Parser(_TS)
 
 _Q_CLIENTS = Query(_TS, """
 (variable_declarator
@@ -117,8 +117,9 @@ def _literal_str(node):
 
 def collect_clients(sources):
     clients = set()
+    parser = Parser(_TS)
     for _relpath, src in sources:
-        tree = _PARSER.parse(src.encode() if isinstance(src, str) else src)
+        tree = parser.parse(src.encode() if isinstance(src, str) else src)
         for name, nodes in QueryCursor(_Q_CLIENTS).captures(tree.root_node).items():
             if name == "name":
                 clients.update(_text(n) for n in nodes)
@@ -141,7 +142,8 @@ def _obj_is_client_member(obj_node, clients, prop):
 def extract_ts(source: str, relpath: str, clients) -> dict:
     findings, app_env, skipped = [], [], []
     src = source.encode()
-    tree = _PARSER.parse(src)
+    parser = Parser(_TS)
+    tree = parser.parse(src)
     root = tree.root_node
     under_functions = "supabase/functions/" in relpath.replace("\\", "/")
     drizzle = "drizzle-orm/pg-core" in source
@@ -223,13 +225,13 @@ _TS_EXT = {".ts", ".tsx", ".js", ".jsx"}
 
 
 def _iter_files(repo):
-    for p in Path(repo).rglob("*"):
-        if not p.is_file():
-            continue
-        if any(part in _SKIP_DIRS or part.startswith(".venv") for part in p.parts):
-            continue
-        if p.suffix in _TS_EXT or p.suffix == ".py":
-            yield p
+    for dirpath, dirnames, filenames in os.walk(repo):
+        dirnames[:] = [d for d in dirnames
+                       if d not in _SKIP_DIRS and not d.startswith(".venv")]
+        for name in filenames:
+            p = Path(dirpath) / name
+            if p.suffix in _TS_EXT or p.suffix == ".py":
+                yield p
 
 
 def extract(repo_dir: str) -> dict:
