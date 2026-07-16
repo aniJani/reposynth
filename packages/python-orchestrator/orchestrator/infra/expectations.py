@@ -17,27 +17,31 @@ def extract_python(source: str, relpath: str) -> dict:
     except SyntaxError:
         return {"findings": [], "app_env": [], "skipped": []}
 
-    for node in ast.walk(tree):
-        # __tablename__ = "<literal>"  -> table_exists  (SQLAlchemy)
-        if isinstance(node, ast.Assign) and any(
-            isinstance(t, ast.Name) and t.id == "__tablename__" for t in node.targets
-        ):
-            if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
-                findings.append({"assertion": {"type": "table_exists", "table": node.value.value},
-                                 "site": _site(relpath, node.lineno)})
+    # __tablename__ = "<literal>"  -> table_exists  (only inside a class body)
+    for cls in (n for n in ast.walk(tree) if isinstance(n, ast.ClassDef)):
+        for stmt in cls.body:
+            if isinstance(stmt, ast.Assign):
+                targets = stmt.targets
+            elif isinstance(stmt, ast.AnnAssign):
+                targets = [stmt.target]
             else:
-                skipped.append({"reason": "dynamic argument", "site": _site(relpath, node.lineno)})
-            continue
+                continue
+            if not any(isinstance(t, ast.Name) and t.id == "__tablename__" for t in targets):
+                continue
+            val = stmt.value
+            if isinstance(val, ast.Constant) and isinstance(val.value, str):
+                findings.append({"assertion": {"type": "table_exists", "table": val.value},
+                                 "site": _site(relpath, stmt.lineno)})
+            elif val is not None:
+                skipped.append({"reason": "dynamic argument", "site": _site(relpath, stmt.lineno)})
 
-        # os.environ["X"]  -> app-host env (note, never emitted)
+    # os.environ["X"] read / os.getenv("X") / os.environ.get("X")  -> app-host env
+    for node in ast.walk(tree):
         if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Attribute) \
            and node.value.attr == "environ" and isinstance(node.slice, ast.Constant) \
-           and isinstance(node.slice.value, str):
+           and isinstance(node.slice.value, str) and isinstance(node.ctx, ast.Load):
             app_env.append({"env": node.slice.value, "site": _site(relpath, node.lineno)})
-            continue
-
-        # os.getenv("X") / os.environ.get("X")  -> app-host env
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) \
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) \
            and node.func.attr in ("getenv", "get") and node.args \
            and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
             recv = node.func.value

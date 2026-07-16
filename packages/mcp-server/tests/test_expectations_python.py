@@ -39,3 +39,22 @@ def test_dynamic_tablename_is_skipped():
 def test_syntax_error_returns_empty_not_raise():
     out = extract_python("def (:", "bad.py")
     assert out == {"findings": [], "app_env": [], "skipped": []}
+
+
+def test_module_level_tablename_not_matched():
+    src = '__tablename__ = "sneaky"\n'
+    out = extract_python(src, "m.py")
+    assert out["findings"] == []
+
+
+def test_env_write_not_collected():
+    src = 'import os\nos.environ["COMPUTED"] = make()\n'
+    out = extract_python(src, "m.py")
+    assert out["app_env"] == []
+
+
+def test_annassign_tablename_matched():
+    src = 'class M(Base):\n    __tablename__: str = "products"\n'
+    out = extract_python(src, "m.py")
+    assert any(f["assertion"] == {"type": "table_exists", "table": "products"}
+               for f in out["findings"])
