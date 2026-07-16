@@ -65,18 +65,12 @@ _Q_CLIENTS = Query(_TS, """
   value: (call_expression function: (identifier) @fn (#eq? @fn "createClient")))
 """)
 
-# member-call with a single string-literal arg: <obj>.<method>("literal")
+# member-call with a first arg (literal or dynamic): <obj>.<method>(<arg>)
+# The arg is captured generically and classified in Python (_literal_str).
 _Q_MEMBER_CALL = Query(_TS, """
 (call_expression
   function: (member_expression object: (_) @obj property: (property_identifier) @method)
-  arguments: (arguments . (string (string_fragment) @arg) .)) @call
-""")
-
-# member-call with a non-string first arg (dynamic): <obj>.<method>(<expr>)
-_Q_MEMBER_CALL_DYN = Query(_TS, """
-(call_expression
-  function: (member_expression object: (_) @obj property: (property_identifier) @method)
-  arguments: (arguments . (identifier) @arg .)) @call
+  arguments: (arguments . (_) @arg))
 """)
 
 _Q_OAUTH = Query(_TS, """
@@ -84,13 +78,13 @@ _Q_OAUTH = Query(_TS, """
   function: (member_expression property: (property_identifier) @m (#eq? @m "signInWithOAuth"))
   arguments: (arguments (object (pair
     key: (property_identifier) @k (#eq? @k "provider")
-    value: (string (string_fragment) @prov)))))
+    value: (_) @prov))))
 """)
 
 _Q_PGTABLE = Query(_TS, """
 (call_expression
   function: (identifier) @fn (#eq? @fn "pgTable")
-  arguments: (arguments . (string (string_fragment) @t)))
+  arguments: (arguments . (_) @t))
 """)
 
 # process.env.X  /  import.meta.env.X  /  Deno.env.get("X")
@@ -111,6 +105,14 @@ _Q_DENO_ENV = Query(_TS, """
 
 def _text(n):
     return n.text.decode()
+
+
+def _literal_str(node):
+    """String value if node is a string literal, else None (dynamic argument)."""
+    if node.type != "string":
+        return None
+    frag = next((c for c in node.named_children if c.type == "string_fragment"), None)
+    return frag.text.decode() if frag else ""
 
 
 def collect_clients(sources):
@@ -147,44 +149,47 @@ def extract_ts(source: str, relpath: str, clients) -> dict:
     def site(node):
         return _site(relpath, node.start_point[0] + 1)
 
-    # literal-arg member calls
+    # member calls on a bound client: literal arg -> finding, dynamic -> skipped
     for _m, cap in QueryCursor(_Q_MEMBER_CALL).matches(root):
         if "arg" not in cap:
             continue
-        obj = cap["obj"][0]; method = _text(cap["method"][0]); arg = _text(cap["arg"][0])
-        node = cap["method"][0]
-        if method in ("from", "table") and _obj_is_client(obj, clients):
-            findings.append({"assertion": {"type": "table_exists", "table": arg}, "site": site(node)})
-        elif method == "from" and _obj_is_client_member(obj, clients, "storage"):
-            findings.append({"assertion": {"type": "bucket_exists", "bucket": arg}, "site": site(node)})
-        elif method == "invoke" and _obj_is_client_member(obj, clients, "functions"):
-            findings.append({"assertion": {"type": "function_deployed", "function": arg}, "site": site(node)})
-
-    # dynamic-arg member calls on a bound client -> skipped
-    for _m, cap in QueryCursor(_Q_MEMBER_CALL_DYN).matches(root):
-        if "arg" not in cap:
-            continue
         obj = cap["obj"][0]; method = _text(cap["method"][0]); node = cap["method"][0]
-        relevant = (method in ("from", "table") and (_obj_is_client(obj, clients)
-                    or _obj_is_client_member(obj, clients, "storage"))) \
-                or (method == "invoke" and _obj_is_client_member(obj, clients, "functions"))
-        if relevant:
+        if method in ("from", "table") and _obj_is_client(obj, clients):
+            kind, key = "table_exists", "table"
+        elif method == "from" and _obj_is_client_member(obj, clients, "storage"):
+            kind, key = "bucket_exists", "bucket"
+        elif method == "invoke" and _obj_is_client_member(obj, clients, "functions"):
+            kind, key = "function_deployed", "function"
+        else:
+            continue
+        val = _literal_str(cap["arg"][0])
+        if val is not None:
+            findings.append({"assertion": {"type": kind, key: val}, "site": site(node)})
+        else:
             skipped.append({"reason": "dynamic argument", "site": site(node)})
 
-    # signInWithOAuth
-    for name, nodes in QueryCursor(_Q_OAUTH).captures(root).items():
-        if name == "prov":
-            for n in nodes:
-                findings.append({"assertion": {"type": "auth_provider_enabled", "provider": _text(n)},
-                                 "site": site(n)})
+    # signInWithOAuth: literal provider -> finding, dynamic -> skipped
+    for _m, cap in QueryCursor(_Q_OAUTH).matches(root):
+        if "prov" not in cap:
+            continue
+        prov = cap["prov"][0]
+        val = _literal_str(prov)
+        if val is not None:
+            findings.append({"assertion": {"type": "auth_provider_enabled", "provider": val}, "site": site(prov)})
+        else:
+            skipped.append({"reason": "dynamic argument", "site": site(prov)})
 
-    # drizzle pgTable
+    # drizzle pgTable: literal -> finding, dynamic -> skipped
     if drizzle:
-        for name, nodes in QueryCursor(_Q_PGTABLE).captures(root).items():
-            if name == "t":
-                for n in nodes:
-                    findings.append({"assertion": {"type": "table_exists", "table": _text(n)},
-                                     "site": site(n)})
+        for _m, cap in QueryCursor(_Q_PGTABLE).matches(root):
+            if "t" not in cap:
+                continue
+            t = cap["t"][0]
+            val = _literal_str(t)
+            if val is not None:
+                findings.append({"assertion": {"type": "table_exists", "table": val}, "site": site(t)})
+            else:
+                skipped.append({"reason": "dynamic argument", "site": site(t)})
 
     # Deno.env.get(...) -> emit if under functions dir, else app_env
     for name, nodes in QueryCursor(_Q_DENO_ENV).captures(root).items():
