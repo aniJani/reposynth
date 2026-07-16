@@ -213,3 +213,66 @@ def extract_ts(source: str, relpath: str, clients) -> dict:
                 app_env.append(entry)
 
     return {"findings": findings, "app_env": app_env, "skipped": skipped}
+
+
+import json as _json
+from pathlib import Path
+
+_SKIP_DIRS = {"node_modules", ".git", "__pycache__", ".reposynth_cache", "dist", "build"}
+_TS_EXT = {".ts", ".tsx", ".js", ".jsx"}
+
+
+def _iter_files(repo):
+    for p in Path(repo).rglob("*"):
+        if not p.is_file():
+            continue
+        if any(part in _SKIP_DIRS or part.startswith(".venv") for part in p.parts):
+            continue
+        if p.suffix in _TS_EXT or p.suffix == ".py":
+            yield p
+
+
+def extract(repo_dir: str) -> dict:
+    repo = Path(repo_dir)
+    files = list(_iter_files(repo))
+
+    ts_sources = []
+    for p in files:
+        if p.suffix in _TS_EXT:
+            try:
+                ts_sources.append((str(p.relative_to(repo)), p.read_text(encoding="utf-8", errors="replace")))
+            except OSError:
+                pass
+    clients = collect_clients(ts_sources)
+
+    all_findings, all_skipped, all_app_env = [], [], []
+    for p in files:
+        rel = str(p.relative_to(repo)).replace("\\", "/")
+        try:
+            src = p.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if p.suffix == ".py":
+            r = extract_python(src, rel)
+        else:
+            r = extract_ts(src, rel, clients)
+        all_findings += r["findings"]; all_skipped += r["skipped"]; all_app_env += r["app_env"]
+
+    # dedupe identical assertions -> one entry, many sites
+    by_key = {}
+    for f in all_findings:
+        key = _json.dumps(f["assertion"], sort_keys=True)
+        by_key.setdefault(key, {"assertion": f["assertion"], "sites": []})
+        by_key[key]["sites"].append(f["site"])
+    assertions = []
+    for entry in by_key.values():
+        entry["sites"] = sorted(entry["sites"], key=lambda s: (s["file"], s["line"]))
+        assertions.append(entry)
+    assertions.sort(key=lambda a: _json.dumps(a["assertion"], sort_keys=True))
+
+    notes = ["RLS intent is not derived from code; verify explicitly with rls_enabled / policy_exists assertions."]
+    if all_app_env:
+        notes.append(f"{len(all_app_env)} app-level env references were not checked — "
+                     f"no connector exists for the application host.")
+
+    return {"assertions": assertions, "skipped": all_skipped, "notes": notes}
