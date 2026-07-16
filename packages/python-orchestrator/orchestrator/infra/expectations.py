@@ -51,3 +51,160 @@ def extract_python(source: str, relpath: str) -> dict:
                 app_env.append({"env": node.args[0].value, "site": _site(relpath, node.lineno)})
 
     return {"findings": findings, "app_env": app_env, "skipped": skipped}
+
+
+import tree_sitter_typescript as _tsts
+from tree_sitter import Language, Parser, Query, QueryCursor
+
+_TS = Language(_tsts.language_typescript())
+_PARSER = Parser(_TS)
+
+_Q_CLIENTS = Query(_TS, """
+(variable_declarator
+  name: (identifier) @name
+  value: (call_expression function: (identifier) @fn (#eq? @fn "createClient")))
+""")
+
+# member-call with a single string-literal arg: <obj>.<method>("literal")
+_Q_MEMBER_CALL = Query(_TS, """
+(call_expression
+  function: (member_expression object: (_) @obj property: (property_identifier) @method)
+  arguments: (arguments . (string (string_fragment) @arg) .)) @call
+""")
+
+# member-call with a non-string first arg (dynamic): <obj>.<method>(<expr>)
+_Q_MEMBER_CALL_DYN = Query(_TS, """
+(call_expression
+  function: (member_expression object: (_) @obj property: (property_identifier) @method)
+  arguments: (arguments . (identifier) @arg .)) @call
+""")
+
+_Q_OAUTH = Query(_TS, """
+(call_expression
+  function: (member_expression property: (property_identifier) @m (#eq? @m "signInWithOAuth"))
+  arguments: (arguments (object (pair
+    key: (property_identifier) @k (#eq? @k "provider")
+    value: (string (string_fragment) @prov)))))
+""")
+
+_Q_PGTABLE = Query(_TS, """
+(call_expression
+  function: (identifier) @fn (#eq? @fn "pgTable")
+  arguments: (arguments . (string (string_fragment) @t)))
+""")
+
+# process.env.X  /  import.meta.env.X  /  Deno.env.get("X")
+_Q_PROCESS_ENV = Query(_TS, """
+(member_expression
+  object: (member_expression) @envobj
+  property: (property_identifier) @name) @full
+""")
+_Q_DENO_ENV = Query(_TS, """
+(call_expression
+  function: (member_expression
+    object: (member_expression object: (identifier) @o (#eq? @o "Deno")
+             property: (property_identifier) @p1 (#eq? @p1 "env"))
+    property: (property_identifier) @p2 (#eq? @p2 "get"))
+  arguments: (arguments (string (string_fragment) @env)))
+""")
+
+
+def _text(n):
+    return n.text.decode()
+
+
+def collect_clients(sources):
+    clients = set()
+    for _relpath, src in sources:
+        tree = _PARSER.parse(src.encode() if isinstance(src, str) else src)
+        for name, nodes in QueryCursor(_Q_CLIENTS).captures(tree.root_node).items():
+            if name == "name":
+                clients.update(_text(n) for n in nodes)
+    return clients
+
+
+def _obj_is_client(obj_node, clients):
+    """True if obj is `<client>` identifier bound to createClient."""
+    return obj_node.type == "identifier" and _text(obj_node) in clients
+
+
+def _obj_is_client_member(obj_node, clients, prop):
+    """True if obj is `<client>.<prop>` (e.g. supabase.storage / supabase.functions)."""
+    return (obj_node.type == "member_expression"
+            and obj_node.child_by_field_name("property") is not None
+            and _text(obj_node.child_by_field_name("property")) == prop
+            and _obj_is_client(obj_node.child_by_field_name("object"), clients))
+
+
+def extract_ts(source: str, relpath: str, clients) -> dict:
+    findings, app_env, skipped = [], [], []
+    src = source.encode()
+    tree = _PARSER.parse(src)
+    root = tree.root_node
+    under_functions = "supabase/functions/" in relpath.replace("\\", "/")
+    drizzle = "drizzle-orm/pg-core" in source
+
+    def site(node):
+        return _site(relpath, node.start_point[0] + 1)
+
+    # literal-arg member calls
+    for _m, cap in QueryCursor(_Q_MEMBER_CALL).matches(root):
+        if "arg" not in cap:
+            continue
+        obj = cap["obj"][0]; method = _text(cap["method"][0]); arg = _text(cap["arg"][0])
+        node = cap["method"][0]
+        if method in ("from", "table") and _obj_is_client(obj, clients):
+            findings.append({"assertion": {"type": "table_exists", "table": arg}, "site": site(node)})
+        elif method == "from" and _obj_is_client_member(obj, clients, "storage"):
+            findings.append({"assertion": {"type": "bucket_exists", "bucket": arg}, "site": site(node)})
+        elif method == "invoke" and _obj_is_client_member(obj, clients, "functions"):
+            findings.append({"assertion": {"type": "function_deployed", "function": arg}, "site": site(node)})
+
+    # dynamic-arg member calls on a bound client -> skipped
+    for _m, cap in QueryCursor(_Q_MEMBER_CALL_DYN).matches(root):
+        if "arg" not in cap:
+            continue
+        obj = cap["obj"][0]; method = _text(cap["method"][0]); node = cap["method"][0]
+        relevant = (method in ("from", "table") and (_obj_is_client(obj, clients)
+                    or _obj_is_client_member(obj, clients, "storage"))) \
+                or (method == "invoke" and _obj_is_client_member(obj, clients, "functions"))
+        if relevant:
+            skipped.append({"reason": "dynamic argument", "site": site(node)})
+
+    # signInWithOAuth
+    for name, nodes in QueryCursor(_Q_OAUTH).captures(root).items():
+        if name == "prov":
+            for n in nodes:
+                findings.append({"assertion": {"type": "auth_provider_enabled", "provider": _text(n)},
+                                 "site": site(n)})
+
+    # drizzle pgTable
+    if drizzle:
+        for name, nodes in QueryCursor(_Q_PGTABLE).captures(root).items():
+            if name == "t":
+                for n in nodes:
+                    findings.append({"assertion": {"type": "table_exists", "table": _text(n)},
+                                     "site": site(n)})
+
+    # Deno.env.get(...) -> emit if under functions dir, else app_env
+    for name, nodes in QueryCursor(_Q_DENO_ENV).captures(root).items():
+        if name == "env":
+            for n in nodes:
+                if under_functions:
+                    findings.append({"assertion": {"type": "env_name_present", "env": _text(n)},
+                                     "site": site(n)})
+                else:
+                    app_env.append({"env": _text(n), "site": site(n)})
+
+    # process.env.X / import.meta.env.X
+    for _m, cap in QueryCursor(_Q_PROCESS_ENV).matches(root):
+        envobj = _text(cap["envobj"][0])
+        if envobj in ("process.env", "import.meta.env"):
+            n = cap["name"][0]
+            entry = {"env": _text(n), "site": site(n)}
+            if under_functions:
+                findings.append({"assertion": {"type": "env_name_present", "env": _text(n)}, "site": site(n)})
+            else:
+                app_env.append(entry)
+
+    return {"findings": findings, "app_env": app_env, "skipped": skipped}
