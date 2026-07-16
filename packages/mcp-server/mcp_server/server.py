@@ -53,6 +53,19 @@ def infra_drift(ref_a: str, ref_b: str) -> dict:
     return tools.infra_drift(ref_a=ref_a, ref_b=ref_b)
 
 
+@mcp.tool()
+def deployment_check(target: str, repo_path: Optional[str] = None) -> dict:
+    """Verify the repo's backend assumptions against the LIVE target, with provenance.
+
+    Extracts what the code assumes exists — tables (ORM/SQL/Supabase client calls),
+    storage buckets, edge functions, auth providers, edge-function env vars — and
+    checks each against reality. Each result carries file:line sites. `skipped`
+    lists assumptions with non-literal args that could not be resolved; a non-empty
+    `skipped` means "not everything was checked." Use before declaring infra work done.
+    """
+    return tools.deployment_check(target=target, repo_path=repo_path)
+
+
 def main() -> None:
     mcp.run()
 
