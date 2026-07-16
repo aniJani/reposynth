@@ -7,11 +7,11 @@ from typing import Optional
 
 from . import _paths  # noqa: F401  (side effect: orchestrator importable)
 
-from orchestrator.infra import differ, snapshots
+from orchestrator.infra import differ, expectations, snapshots
 from orchestrator.infra.connectors.base import get_connector
-from orchestrator.infra.connectors import postgres, supabase  # noqa: F401  (register)
+from orchestrator.infra.connectors import fixture, postgres, supabase  # noqa: F401  (register)
 from orchestrator.infra.impact import impact as run_impact
-from orchestrator.infra.targets import get_target
+from orchestrator.infra.targets import get_target, project_dir
 from orchestrator.infra.verify import verify as run_verify
 
 _RISK_ORDER = {"prod": 0, "staging": 1, "dev": 2}
@@ -75,5 +75,27 @@ def infra_drift(ref_a: str, ref_b: str) -> dict:
         live_risks = [r for r in (risk_a, risk_b) if r]
         risk = min(live_risks, key=lambda r: _RISK_ORDER[r]) if live_risks else None
         return {"refA": ref_a, "refB": ref_b, "risk": risk, "diff": differ.diff(doc_a, doc_b)}
+    except Exception as exc:
+        return {"error": str(exc)}
+
+
+def deployment_check(target: str, repo_path: Optional[str] = None) -> dict:
+    try:
+        t, doc = _fetch(target)
+        ex = expectations.extract(repo_path or str(project_dir()))
+        entries = ex["assertions"]
+        verified = run_verify(doc, [e["assertion"] for e in entries])
+        out_exps = []
+        for entry, res in zip(entries, verified["results"]):
+            item = {"assertion": entry["assertion"], "result": res["result"],
+                    "sites": entry["sites"]}
+            if res["result"] != "unsupported":
+                item["expected"] = res["expected"]
+                item["actual"] = res["actual"]
+            out_exps.append(item)
+        summary = dict(verified["summary"])
+        summary["skipped"] = len(ex["skipped"])
+        return {"target": target, "risk": t["risk"], "expectations": out_exps,
+                "skipped": ex["skipped"], "notes": ex["notes"], "summary": summary}
     except Exception as exc:
         return {"error": str(exc)}
