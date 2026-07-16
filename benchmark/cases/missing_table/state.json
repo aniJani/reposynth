@@ -1,0 +1,1 @@
+{"connector": "fixture", "target": "dev", "sections": {"schema": {"hash": "x", "tables": [{"name": "orders", "columns": [], "indexes": [], "foreignKeys": []}]}}}

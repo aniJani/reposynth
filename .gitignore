@@ -164,6 +164,12 @@ docker-compose.override.yml
 # =============================================================================
 # Persistent cache directory for stage outputs
 .reposynth_cache/
+
+# =============================================================================
+# Legibility benchmark (M2 Task 6) - scratch target config written by
+# runner.tool_answer() into each case dir at run time; not a fixture.
+# =============================================================================
+benchmark/cases/*/.reposynth/
 TROUBLESHOOTING_PORTS.md
 WEEK8_CHECKLIST.md
 WEEK8_INDEX.md
