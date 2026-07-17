@@ -3,7 +3,8 @@ from .state_doc import section_hash
 
 # section name -> (list field, identity key)
 _KEYED = {"schema": ("tables", "name"), "rls": ("tables", "table"),
-          "storage": ("buckets", "name"), "functions": ("list", "name")}
+          "storage": ("buckets", "name"), "functions": ("list", "name"),
+          "collections": ("list", "collectionId")}
 
 
 def _keyed_diff(pa: dict, pb: dict, list_field: str, key: str) -> dict:
@@ -40,6 +41,12 @@ def diff(a: dict, b: dict) -> dict:
             ha, hb = sa[name].get("valueHashes", {}), sb[name].get("valueHashes", {})
             sections[name] = {"added": sorted(nb - na), "removed": sorted(na - nb),
                               "rotated": sorted(k for k in na & nb if ha.get(k) != hb.get(k))}
+        elif name == "rules":
+            ha = {s["service"]: s.get("contentSha256") for s in sa[name].get("services", [])}
+            hb = {s["service"]: s.get("contentSha256") for s in sb[name].get("services", [])}
+            sections[name] = {"added": sorted(set(hb) - set(ha)),
+                              "removed": sorted(set(ha) - set(hb)),
+                              "changed": sorted(k for k in set(ha) & set(hb) if ha[k] != hb[k])}
         else:
             sections[name] = {"changed": ["<section content>"]}
     return {"sections": sections, "unchanged": unchanged}
