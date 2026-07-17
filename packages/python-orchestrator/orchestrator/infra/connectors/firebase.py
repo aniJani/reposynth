@@ -124,3 +124,30 @@ def fetch_auth(call, project: str) -> dict:
             "settings": {"tier": cfg.get("subtype"),
                          "authorizedDomains": cfg.get("authorizedDomains", []),
                          "mfaState": cfg.get("mfa", {}).get("state")}}
+
+
+_FB_STORAGE = "https://firebasestorage.googleapis.com/v1beta"
+_GCS = "https://storage.googleapis.com/storage/v1"
+_PUBLIC_MEMBERS = {"allUsers", "allAuthenticatedUsers"}
+
+
+def fetch_storage(call, project: str) -> dict:
+    listed = call("GET", f"{_FB_STORAGE}/projects/{project}/buckets").get("buckets", [])
+    out = []
+    for entry in listed:
+        name = _leaf(entry.get("name", ""))
+        meta = call("GET", f"{_GCS}/b/{name}")
+        pap = meta.get("iamConfiguration", {}).get("publicAccessPrevention")
+        iam = call("GET", f"{_GCS}/b/{name}/iam")
+        public_via_iam = any(m in _PUBLIC_MEMBERS
+                             for binding in iam.get("bindings", [])
+                             for m in binding.get("members", []))
+        bucket = {"name": name, "publicViaIAM": public_via_iam,
+                  "publicViaSecurityRules": None}
+        if pap == "enforced":
+            bucket["public"] = False
+        elif public_via_iam:
+            bucket["public"] = True
+        # else: private-via-IAM + rules unknown -> omit `public` (honest unknown)
+        out.append(bucket)
+    return {"buckets": out}
