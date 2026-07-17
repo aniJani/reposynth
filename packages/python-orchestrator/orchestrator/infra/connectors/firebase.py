@@ -151,3 +151,20 @@ def fetch_storage(call, project: str) -> dict:
         # else: private-via-IAM + rules unknown -> omit `public` (honest unknown)
         out.append(bucket)
     return {"buckets": out}
+
+
+_FUNCTIONS = "https://cloudfunctions.googleapis.com/v2"
+
+
+def fetch_functions(call, project: str) -> dict:
+    resp = call("GET", f"{_FUNCTIONS}/projects/{project}/locations/-/functions")
+    out = []
+    for f in resp.get("functions", []):
+        parts = f["name"].split("/")
+        region = parts[parts.index("locations") + 1] if "locations" in parts else None
+        gen = "gen2" if f.get("environment") == "GEN_2" else "gen1"
+        trigger = "https" if f.get("serviceConfig", {}).get("uri") or f.get("httpsTrigger") \
+            else ("event" if f.get("eventTrigger") else None)
+        out.append({"name": _leaf(f["name"]), "status": f.get("state") or f.get("status"),
+                    "region": region, "generation": gen, "triggerType": trigger})
+    return {"list": out, "unreachable": resp.get("unreachable", [])}
