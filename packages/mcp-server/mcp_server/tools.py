@@ -9,7 +9,7 @@ from . import _paths  # noqa: F401  (side effect: orchestrator importable)
 
 from orchestrator.infra import differ, expectations, snapshots
 from orchestrator.infra.connectors.base import get_connector
-from orchestrator.infra.connectors import fixture, postgres, supabase  # noqa: F401  (register)
+from orchestrator.infra.connectors import fixture, postgres, supabase, firebase  # noqa: F401  (register)
 from orchestrator.infra.impact import impact as run_impact
 from orchestrator.infra.targets import get_target, project_dir
 from orchestrator.infra.verify import verify as run_verify
