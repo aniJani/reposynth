@@ -68,7 +68,8 @@ def impact(state_doc: dict, op: dict, risk: str) -> dict:
         bucket = next((b for b in storage["buckets"] if b["name"] == op["bucket"]), None)
         if bucket is None:
             return _analyzed(op, risk, [f"bucket '{op['bucket']}' not found in captured state"])
-        vis = "PUBLIC" if bucket["public"] else "private"
+        pub = bucket.get("public")
+        vis = "PUBLIC" if pub is True else ("private" if pub is False else "of unknown visibility")
         return _analyzed(op, risk, [f"bucket '{op['bucket']}' is {vis}; objects become unreachable"])
 
     if kind == "drop_policy":

@@ -14,3 +14,17 @@ def test_fetch_functions_parses_name_region_status():
     assert fn["name"] == "sendEmail" and fn["region"] == "us-central1"
     assert fn["status"] == "ACTIVE" and fn["generation"] == "gen2"
     assert out["unreachable"] == ["europe-west1"]
+
+
+def test_fetch_functions_paginates():
+    calls = {"n": 0}
+    def call(method, url, params=None, json_body=None):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return {"functions": [{"name": "projects/p/locations/us-central1/functions/a",
+                                   "state": "ACTIVE"}], "nextPageToken": "T", "unreachable": ["r1"]}
+        return {"functions": [{"name": "projects/p/locations/us-central1/functions/b",
+                               "state": "ACTIVE"}], "unreachable": ["r1"]}
+    out = fetch_functions(call, "p")
+    assert [f["name"] for f in out["list"]] == ["a", "b"]
+    assert out["unreachable"] == ["r1"]  # deduped across pages
