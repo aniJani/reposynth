@@ -5,6 +5,11 @@ A fail-closed IAM probe refuses to run a credential that holds write access.
 Firestore Native mode only.
 """
 import hashlib
+from pathlib import Path
+
+from ..state_doc import make_state_doc
+from ..targets import resolve_env
+from . import base
 
 WRITE_PERMS = [
     "datastore.entities.create", "datastore.entities.update", "datastore.entities.delete",
@@ -168,3 +173,59 @@ def fetch_functions(call, project: str) -> dict:
         out.append({"name": _leaf(f["name"]), "status": f.get("state") or f.get("status"),
                     "region": region, "generation": gen, "triggerType": trigger})
     return {"list": out, "unreachable": resp.get("unreachable", [])}
+
+
+_SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]
+
+
+def _build_call(sa_path: str):
+    """Mint a token from the service-account JSON and return an authed `call`."""
+    import requests
+    from google.oauth2 import service_account
+    from google.auth.transport.requests import Request
+
+    creds = service_account.Credentials.from_service_account_file(sa_path, scopes=_SCOPES)
+    creds.refresh(Request())
+    session = requests.Session()
+
+    def call(method, url, params=None, json_body=None):
+        resp = session.request(method, url, params=params, json=json_body,
+                               headers={"Authorization": f"Bearer {creds.token}"}, timeout=30)
+        resp.raise_for_status()
+        return resp.json()
+    return call
+
+
+class FirebaseConnector:
+    id = "firebase"
+
+    def detect(self, project_dir: str) -> dict:
+        found = (Path(project_dir) / "firebase.json").exists() or \
+                (Path(project_dir) / ".firebaserc").exists()
+        return {"detected": found, "connector": self.id}
+
+    def fetch_state(self, target: dict, call=None) -> dict:
+        project = target["projectId"]
+        db = target.get("databaseId", "(default)")
+        if call is None:
+            call = _build_call(resolve_env(target, "credentialsEnv"))
+
+        probe_readonly(call, project)
+
+        meta = call("GET", f"{_FIRESTORE}/projects/{project}/databases/{db}")
+        if meta.get("type") == "DATASTORE_MODE":
+            raise RuntimeError(
+                f"project '{project}' database '{db}' is in Datastore mode — not supported")
+
+        sections = {
+            "collections": fetch_collections(call, project, db),
+            "indexes": fetch_indexes(call, project, db),
+            "rules": fetch_rules(call, project),
+            "auth": fetch_auth(call, project),
+            "storage": fetch_storage(call, project),
+            "functions": fetch_functions(call, project),
+        }
+        return make_state_doc("firebase", target["name"], sections)
+
+
+base.register(FirebaseConnector())

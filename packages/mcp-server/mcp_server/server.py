@@ -24,8 +24,8 @@ def infra_verify(target: str, assertions: list) -> dict:
 
     Assertion types: table_exists, column_matches, rls_enabled, policy_exists,
     index_exists, auth_provider_enabled, bucket_exists, function_deployed,
-    env_name_present. Use this to check your work against reality before
-    declaring a task done.
+    env_name_present, collection_exists. Use this to check your work against
+    reality before declaring a task done.
     """
     return tools.infra_verify(target=target, assertions=assertions)
 
