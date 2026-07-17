@@ -68,3 +68,36 @@ def fetch_indexes(call, project: str, db: str) -> dict:
                params={"filter": "indexConfig.usesAncestorConfig:false"}).get("fields", [])
     single = [{"fieldPath": _leaf(f["name"])} for f in fld]
     return {"composite": composite, "singleFieldOverrides": single}
+
+
+_RULES = "https://firebaserules.googleapis.com/v1"
+
+
+def _sha256(text: str) -> str:
+    return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def fetch_rules(call, project: str) -> dict:
+    releases, token = [], None
+    while True:
+        params = {"pageToken": token} if token else None
+        resp = call("GET", f"{_RULES}/projects/{project}/releases", params=params)
+        releases.extend(resp.get("releases", []))
+        token = resp.get("nextPageToken")
+        if not token:
+            break
+    services = []
+    for rel in releases:
+        rel_leaf = rel["name"].split("/releases/", 1)[-1]  # e.g. cloud.firestore | firebase.storage/bkt
+        if rel_leaf.startswith("cloud.firestore"):
+            service, scope = "cloud.firestore", rel_leaf[len("cloud.firestore"):].lstrip("/") or "(default)"
+        elif rel_leaf.startswith("firebase.storage"):
+            service, scope = "firebase.storage", rel_leaf[len("firebase.storage"):].lstrip("/")
+        else:
+            continue
+        ruleset = call("GET", f"{_RULES}/{rel['rulesetName']}")
+        content = "\n".join(f.get("content", "") for f in ruleset.get("source", {}).get("files", []))
+        services.append({"service": service, "scope": scope,
+                         "releaseName": rel["name"], "rulesetName": rel["rulesetName"],
+                         "content": content, "contentSha256": _sha256(content)})
+    return {"services": services}
