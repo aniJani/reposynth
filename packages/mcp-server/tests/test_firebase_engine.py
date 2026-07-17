@@ -40,8 +40,17 @@ def test_differ_collections_added_removed():
 
 def test_differ_rules_hash_drift():
     a = make_state_doc("firebase", "dev", {"rules": {"services": [
-        {"service": "cloud.firestore", "content": "A", "contentSha256": "sha256:a"}]}})
+        {"service": "cloud.firestore", "scope": "(default)", "content": "A", "contentSha256": "sha256:a"}]}})
     b = make_state_doc("firebase", "dev", {"rules": {"services": [
-        {"service": "cloud.firestore", "content": "B", "contentSha256": "sha256:b"}]}})
+        {"service": "cloud.firestore", "scope": "(default)", "content": "B", "contentSha256": "sha256:b"}]}})
     d = diff(a, b)
-    assert "cloud.firestore" in d["sections"]["rules"]["changed"]
+    assert "cloud.firestore/(default)" in d["sections"]["rules"]["changed"]
+
+
+def test_differ_rules_multiple_storage_buckets_not_collapsed():
+    def _doc(sha_b1, sha_b2):
+        return make_state_doc("firebase", "dev", {"rules": {"services": [
+            {"service": "firebase.storage", "scope": "b1", "contentSha256": sha_b1},
+            {"service": "firebase.storage", "scope": "b2", "contentSha256": sha_b2}]}})
+    d = diff(_doc("sha256:a", "sha256:x"), _doc("sha256:a", "sha256:y"))  # only b2 changed
+    assert d["sections"]["rules"]["changed"] == ["firebase.storage/b2"]

@@ -93,6 +93,8 @@ def _check(doc, a):
         if bucket is None:
             return outcome(False, a["bucket"], [b["name"] for b in s["buckets"]])
         if "public" in a:
+            if "public" not in bucket:
+                return unsupported(f"bucket '{a['bucket']}' visibility is unknown for this target")
             return outcome(bucket["public"] == a["public"], {"public": a["public"]}, bucket)
         return outcome(True, a["bucket"], bucket)
 

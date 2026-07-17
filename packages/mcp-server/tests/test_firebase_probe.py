@@ -18,9 +18,13 @@ def test_probe_passes_when_no_write_granted():
 
 
 def test_probe_proceeds_when_call_errors():
+    import warnings
     def call(method, url, params=None, json_body=None):
         raise RuntimeError("API disabled")
-    probe_readonly(call, "proj")  # warn-and-proceed: must not raise
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        probe_readonly(call, "proj")  # must not raise
+    assert any("could not verify read-only" in str(x.message) for x in w)
 
 
 def test_write_perms_are_all_mutating():

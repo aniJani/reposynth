@@ -5,12 +5,15 @@ A fail-closed IAM probe refuses to run a credential that holds write access.
 Firestore Native mode only.
 """
 import hashlib
+import warnings
 from pathlib import Path
 
 from ..state_doc import make_state_doc
 from ..targets import resolve_env
 from . import base
 
+# Representative sample of mutating permissions (not exhaustive) — the connector
+# is read-only by construction; this probe is a fail-closed credential-hygiene check.
 WRITE_PERMS = [
     "datastore.entities.create", "datastore.entities.update", "datastore.entities.delete",
     "firebaserules.releases.update", "firebaserules.rulesets.create",
@@ -31,8 +34,10 @@ def probe_readonly(call, project: str) -> None:
     try:
         resp = call("POST", f"{_RESOURCE_MANAGER}/projects/{project}:testIamPermissions",
                     json_body={"permissions": WRITE_PERMS})
-    except Exception:
-        return  # could not verify; proceed (code is read-only anyway)
+    except Exception as exc:
+        warnings.warn(f"could not verify read-only for project '{project}': {exc}; "
+                      "proceeding (connector is read-only by construction)")
+        return
     granted = resp.get("permissions") or []
     if granted:
         raise RuntimeError(
@@ -97,7 +102,8 @@ def fetch_rules(call, project: str) -> dict:
         if rel_leaf.startswith("cloud.firestore"):
             service, scope = "cloud.firestore", rel_leaf[len("cloud.firestore"):].lstrip("/") or "(default)"
         elif rel_leaf.startswith("firebase.storage"):
-            service, scope = "firebase.storage", rel_leaf[len("firebase.storage"):].lstrip("/")
+            service = "firebase.storage"
+            scope = rel_leaf[len("firebase.storage"):].lstrip("/") or "(default)"
         else:
             continue
         ruleset = call("GET", f"{_RULES}/{rel['rulesetName']}")
@@ -137,7 +143,14 @@ _PUBLIC_MEMBERS = {"allUsers", "allAuthenticatedUsers"}
 
 
 def fetch_storage(call, project: str) -> dict:
-    listed = call("GET", f"{_FB_STORAGE}/projects/{project}/buckets").get("buckets", [])
+    listed, _tok = [], None
+    while True:
+        _params = {"pageToken": _tok} if _tok else None
+        _resp = call("GET", f"{_FB_STORAGE}/projects/{project}/buckets", params=_params)
+        listed.extend(_resp.get("buckets", []))
+        _tok = _resp.get("nextPageToken")
+        if not _tok:
+            break
     out = []
     for entry in listed:
         name = _leaf(entry.get("name", ""))
@@ -162,17 +175,23 @@ _FUNCTIONS = "https://cloudfunctions.googleapis.com/v2"
 
 
 def fetch_functions(call, project: str) -> dict:
-    resp = call("GET", f"{_FUNCTIONS}/projects/{project}/locations/-/functions")
-    out = []
-    for f in resp.get("functions", []):
-        parts = f["name"].split("/")
-        region = parts[parts.index("locations") + 1] if "locations" in parts else None
-        gen = "gen2" if f.get("environment") == "GEN_2" else "gen1"
-        trigger = "https" if f.get("serviceConfig", {}).get("uri") or f.get("httpsTrigger") \
-            else ("event" if f.get("eventTrigger") else None)
-        out.append({"name": _leaf(f["name"]), "status": f.get("state") or f.get("status"),
-                    "region": region, "generation": gen, "triggerType": trigger})
-    return {"list": out, "unreachable": resp.get("unreachable", [])}
+    out, unreachable, token = [], [], None
+    while True:
+        params = {"pageToken": token} if token else None
+        resp = call("GET", f"{_FUNCTIONS}/projects/{project}/locations/-/functions", params=params)
+        for f in resp.get("functions", []):
+            parts = f["name"].split("/")
+            region = parts[parts.index("locations") + 1] if "locations" in parts else None
+            gen = "gen2" if f.get("environment") == "GEN_2" else "gen1"
+            trigger = "https" if f.get("serviceConfig", {}).get("uri") or f.get("httpsTrigger") \
+                else ("event" if f.get("eventTrigger") else None)
+            out.append({"name": _leaf(f["name"]), "status": f.get("state") or f.get("status"),
+                        "region": region, "generation": gen, "triggerType": trigger})
+        unreachable.extend(resp.get("unreachable", []))
+        token = resp.get("nextPageToken")
+        if not token:
+            break
+    return {"list": out, "unreachable": sorted(set(unreachable))}
 
 
 _SCOPES = ["https://www.googleapis.com/auth/cloud-platform"]

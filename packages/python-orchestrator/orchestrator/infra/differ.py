@@ -42,8 +42,10 @@ def diff(a: dict, b: dict) -> dict:
             sections[name] = {"added": sorted(nb - na), "removed": sorted(na - nb),
                               "rotated": sorted(k for k in na & nb if ha.get(k) != hb.get(k))}
         elif name == "rules":
-            ha = {s["service"]: s.get("contentSha256") for s in sa[name].get("services", [])}
-            hb = {s["service"]: s.get("contentSha256") for s in sb[name].get("services", [])}
+            def _rk(s):
+                return f"{s.get('service')}/{s.get('scope')}"
+            ha = {_rk(s): s.get("contentSha256") for s in sa[name].get("services", [])}
+            hb = {_rk(s): s.get("contentSha256") for s in sb[name].get("services", [])}
             sections[name] = {"added": sorted(set(hb) - set(ha)),
                               "removed": sorted(set(ha) - set(hb)),
                               "changed": sorted(k for k in set(ha) & set(hb) if ha[k] != hb[k])}
