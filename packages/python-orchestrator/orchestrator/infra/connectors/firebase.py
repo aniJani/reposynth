@@ -101,3 +101,26 @@ def fetch_rules(call, project: str) -> dict:
                          "releaseName": rel["name"], "rulesetName": rel["rulesetName"],
                          "content": content, "contentSha256": _sha256(content)})
     return {"services": services}
+
+
+_IDENTITY = "https://identitytoolkit.googleapis.com/admin/v2"
+
+
+def fetch_auth(call, project: str) -> dict:
+    cfg = call("GET", f"{_IDENTITY}/projects/{project}/config")
+    signin = cfg.get("signIn", {})
+    providers = []
+    if signin.get("email", {}).get("enabled"):
+        providers.append("password")
+    if signin.get("phoneNumber", {}).get("enabled"):
+        providers.append("phone")
+    if signin.get("anonymous", {}).get("enabled"):
+        providers.append("anonymous")
+    idps = call("GET", f"{_IDENTITY}/projects/{project}/defaultSupportedIdpConfigs")
+    for idp in idps.get("defaultSupportedIdpConfigs", []):
+        if idp.get("enabled"):
+            providers.append(idp["name"].rsplit("/", 1)[-1])
+    return {"providers": sorted(providers),
+            "settings": {"tier": cfg.get("subtype"),
+                         "authorizedDomains": cfg.get("authorizedDomains", []),
+                         "mfaState": cfg.get("mfa", {}).get("state")}}
