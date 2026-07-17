@@ -8,7 +8,8 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-SECTION_NAMES = ("schema", "rls", "auth", "storage", "functions", "config")
+SECTION_NAMES = ("schema", "rls", "auth", "storage", "functions", "config",
+                 "collections", "indexes", "rules")
 
 
 def section_hash(payload: Any) -> str:

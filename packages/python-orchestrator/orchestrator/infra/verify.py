@@ -113,6 +113,16 @@ def _check(doc, a):
             return unsupported("no 'config' section for this target")
         return outcome(a["env"] in s["envNames"], a["env"], s["envNames"])
 
+    if kind == "collection_exists":
+        s = _section(doc, "collections")
+        if s is None:
+            return unsupported("no 'collections' section for this target")
+        names = [c["collectionId"] for c in s["list"]]
+        caveat = ("Firestore collections are ephemeral — an empty collection reports "
+                  "absent, so a fail may mean 'currently empty', not 'misconfigured'. "
+                  f"present={names}")
+        return outcome(a["collection"] in names, a["collection"], caveat)
+
     return unsupported(f"unknown assertion type '{kind}'")
 
 
